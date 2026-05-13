@@ -9,38 +9,194 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WardrobeRouteImport } from './routes/wardrobe'
+import { Route as SoloRouteImport } from './routes/solo'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as GachaRouteImport } from './routes/gacha'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MultiIndexRouteImport } from './routes/multi/index'
+import { Route as MultiRoomRouteImport } from './routes/multi/room'
+import { Route as MultiRandomRouteImport } from './routes/multi/random'
+import { Route as MultiLocalRouteImport } from './routes/multi/local'
 
+const WardrobeRoute = WardrobeRouteImport.update({
+  id: '/wardrobe',
+  path: '/wardrobe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SoloRoute = SoloRouteImport.update({
+  id: '/solo',
+  path: '/solo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GachaRoute = GachaRouteImport.update({
+  id: '/gacha',
+  path: '/gacha',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MultiIndexRoute = MultiIndexRouteImport.update({
+  id: '/multi/',
+  path: '/multi/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MultiRoomRoute = MultiRoomRouteImport.update({
+  id: '/multi/room',
+  path: '/multi/room',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MultiRandomRoute = MultiRandomRouteImport.update({
+  id: '/multi/random',
+  path: '/multi/random',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MultiLocalRoute = MultiLocalRouteImport.update({
+  id: '/multi/local',
+  path: '/multi/local',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/gacha': typeof GachaRoute
+  '/history': typeof HistoryRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/solo': typeof SoloRoute
+  '/wardrobe': typeof WardrobeRoute
+  '/multi/local': typeof MultiLocalRoute
+  '/multi/random': typeof MultiRandomRoute
+  '/multi/room': typeof MultiRoomRoute
+  '/multi/': typeof MultiIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/gacha': typeof GachaRoute
+  '/history': typeof HistoryRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/solo': typeof SoloRoute
+  '/wardrobe': typeof WardrobeRoute
+  '/multi/local': typeof MultiLocalRoute
+  '/multi/random': typeof MultiRandomRoute
+  '/multi/room': typeof MultiRoomRoute
+  '/multi': typeof MultiIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/gacha': typeof GachaRoute
+  '/history': typeof HistoryRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/solo': typeof SoloRoute
+  '/wardrobe': typeof WardrobeRoute
+  '/multi/local': typeof MultiLocalRoute
+  '/multi/random': typeof MultiRandomRoute
+  '/multi/room': typeof MultiRoomRoute
+  '/multi/': typeof MultiIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/gacha'
+    | '/history'
+    | '/leaderboard'
+    | '/solo'
+    | '/wardrobe'
+    | '/multi/local'
+    | '/multi/random'
+    | '/multi/room'
+    | '/multi/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/gacha'
+    | '/history'
+    | '/leaderboard'
+    | '/solo'
+    | '/wardrobe'
+    | '/multi/local'
+    | '/multi/random'
+    | '/multi/room'
+    | '/multi'
+  id:
+    | '__root__'
+    | '/'
+    | '/gacha'
+    | '/history'
+    | '/leaderboard'
+    | '/solo'
+    | '/wardrobe'
+    | '/multi/local'
+    | '/multi/random'
+    | '/multi/room'
+    | '/multi/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GachaRoute: typeof GachaRoute
+  HistoryRoute: typeof HistoryRoute
+  LeaderboardRoute: typeof LeaderboardRoute
+  SoloRoute: typeof SoloRoute
+  WardrobeRoute: typeof WardrobeRoute
+  MultiLocalRoute: typeof MultiLocalRoute
+  MultiRandomRoute: typeof MultiRandomRoute
+  MultiRoomRoute: typeof MultiRoomRoute
+  MultiIndexRoute: typeof MultiIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wardrobe': {
+      id: '/wardrobe'
+      path: '/wardrobe'
+      fullPath: '/wardrobe'
+      preLoaderRoute: typeof WardrobeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solo': {
+      id: '/solo'
+      path: '/solo'
+      fullPath: '/solo'
+      preLoaderRoute: typeof SoloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gacha': {
+      id: '/gacha'
+      path: '/gacha'
+      fullPath: '/gacha'
+      preLoaderRoute: typeof GachaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +204,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/multi/': {
+      id: '/multi/'
+      path: '/multi'
+      fullPath: '/multi/'
+      preLoaderRoute: typeof MultiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/multi/room': {
+      id: '/multi/room'
+      path: '/multi/room'
+      fullPath: '/multi/room'
+      preLoaderRoute: typeof MultiRoomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/multi/random': {
+      id: '/multi/random'
+      path: '/multi/random'
+      fullPath: '/multi/random'
+      preLoaderRoute: typeof MultiRandomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/multi/local': {
+      id: '/multi/local'
+      path: '/multi/local'
+      fullPath: '/multi/local'
+      preLoaderRoute: typeof MultiLocalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GachaRoute: GachaRoute,
+  HistoryRoute: HistoryRoute,
+  LeaderboardRoute: LeaderboardRoute,
+  SoloRoute: SoloRoute,
+  WardrobeRoute: WardrobeRoute,
+  MultiLocalRoute: MultiLocalRoute,
+  MultiRandomRoute: MultiRandomRoute,
+  MultiRoomRoute: MultiRoomRoute,
+  MultiIndexRoute: MultiIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
