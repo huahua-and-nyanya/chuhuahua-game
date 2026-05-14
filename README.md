@@ -1,8 +1,24 @@
-# 츄와와 ~뽀뽀 돌격~
+# 츄와와 ♥ 뽀뽀 돌격 ♥
 
-뽀뽀하려는 츄와와 vs 죽어도 싫은 고양이. 비둘기도 자꾸 끼어든다. 브라우저에서 돌아가는 솔로 엔드리스 + 로컬/온라인 PvP 게임.
+<div align="center">
+  <img width="2400" height="1792" alt="츄와와 메인" src="https://github.com/user-attachments/assets/0ed8d800-f38c-4ee1-97e2-b3d75c937c0f" />
+  <h3><i>츄와와의 일편단심 뽀뽀 대작전. 냐냐의 마음을 사로잡을 수 있을까?</i></h3>
+</div>
 
-A browser game built with Vite, React 19, TypeScript, TanStack Router, and Tailwind CSS v4. Backend (Supabase) integration lands in a later cycle.
+---
+
+## 기본 정보
+
+| 항목 | 내용 |
+|---|---|
+| **제목** | 츄와와 ~뽀뽀 돌격~ |
+| **영문 작업명** | chuhuahua-game |
+| **한 줄 소개** | 츄와와의 일편단심 뽀뽀 대작전. 냐냐의 마음을 사로잡을 수 있을까? |
+| **장르** | 추격·회피 액션, 캐주얼 아케이드 |
+| **플랫폼** | 웹 브라우저 (Chrome, Edge, Safari, Firefox) |
+| **진입 방식** | 별도 설치 및 회원가입 없음. URL 접속만으로 즉시 실행 |
+| **플레이 인원** | 1인(솔로) / 2인(로컬 PvP, 단일 키보드) / 1:1(온라인 PvP) |
+| **1판 플레이 시간** | 30초 ~ 3분, 누적 플레이 시간 무제한 |
 
 ## 실행 방법
 
@@ -34,7 +50,4 @@ pnpm dev
 ## 라이선스
 
 비공개 프로젝트 (공모전 출품).
-# 츄와와  뽀뽀돌격
-
-<img width="2400" height="1792" alt="츄와와 메인" src="https://github.com/user-attachments/assets/0ed8d800-f38c-4ee1-97e2-b3d75c937c0f" />
 
