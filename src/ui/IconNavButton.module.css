@@ -6,8 +6,7 @@
   height: var(--icon-button-size);
   padding: 0;
   background: var(--color-bg-icon-button);
-  border: var(--icon-button-border-width) solid
-    var(--color-border-icon-button);
+  border: var(--icon-button-border-width) solid var(--color-border-icon-button);
   border-radius: var(--radius-circle);
   cursor: pointer;
   box-shadow: var(--shadow-icon-button-rest);

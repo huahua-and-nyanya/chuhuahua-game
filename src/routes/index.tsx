@@ -62,7 +62,10 @@ function HomePage() {
         }
         sideMenu={
           <>
-            <NavButton label="혼자서" onClick={() => navigate({ to: '/solo' })} />
+            <NavButton
+              label="혼자서"
+              onClick={() => navigate({ to: '/solo' })}
+            />
             <NavButton label="둘이서" onClick={() => setMultiOpen(true)} />
             <NavButton
               label="옷장"
