@@ -91,7 +91,7 @@
 
 | 파일명           | 상수         | 용도                                                          | 권장 사이즈            |
 | ---------------- | ------------ | ------------------------------------------------------------- | ---------------------- |
-| `main-hero.jpeg` | `MAIN_HERO`  | 메인 화면(`/`) 풀 일러스트 (도시 배경 + 캐릭터 + 타이틀 박힘) | 1280×720 JPEG q82~85   |
+| `main-hero.png`  | `MAIN_HERO`  | 메인 화면(`/`) 풀 일러스트 (도시 배경 + 캐릭터 + 타이틀 박힘) | 1280×720 PNG           |
 | `title-logo.png` | `TITLE_LOGO` | 투명 배경 타이틀 텍스트 (모달/헤더 재사용)                    | 700×500 PNG, 투명 배경 |
 
 **`main-hero`** — 메인 페이지에서 풀 화면 또는 큰 영역으로 표시. 단독으로 게임 정체성 전달.
@@ -108,10 +108,10 @@
 
 | 파일명       | 키                | 적용 시기  |
 | ------------ | ----------------- | ---------- |
-| `spring.jpg` | `PAGE_BGS.spring` | 3-5월      |
-| `summer.jpg` | `PAGE_BGS.summer` | 6-8월      |
-| `autumn.jpg` | `PAGE_BGS.autumn` | 9-11월     |
-| `winter.jpg` | `PAGE_BGS.winter` | 12, 1, 2월 |
+| `spring.png` | `PAGE_BGS.spring` | 3-5월      |
+| `summer.png` | `PAGE_BGS.summer` | 6-8월      |
+| `autumn.png` | `PAGE_BGS.autumn` | 9-11월     |
+| `winter.png` | `PAGE_BGS.winter` | 12, 1, 2월 |
 
 **계절 분기 로직** (`src/lib/season.ts`):
 
@@ -145,7 +145,7 @@ export function getCurrentSeason(date: Date = new Date()): Season {
 }
 ```
 
-**권장 사이즈**: 1080×1920 또는 세로 비율 (모바일 우선), JPEG q78~85
+**권장 사이즈**: 1080×1920 또는 세로 비율 (모바일 우선), PNG
 
 **예외**: 메인 페이지(`/`)는 `main-hero`를 absolute로 덮어 페이지 배경 가려짐.
 
@@ -157,8 +157,8 @@ export function getCurrentSeason(date: Date = new Date()): Season {
 
 | 파일명                   | 상수            | 사용처                                    |
 | ------------------------ | --------------- | ----------------------------------------- |
-| `bg-1.jpg` ~ `bg-10.jpg` | `GAME_BGS[0~9]` | 솔로 레벨 1~10 / PvP 랜덤                 |
-| `bg-space.jpg`           | `SPACE_BG`      | 솔로 레벨 11+ 고정 (우주로 날아간 츄와와) |
+| `bg-1.png` ~ `bg-10.png` | `GAME_BGS[0~9]` | 솔로 레벨 1~10 / PvP 랜덤                 |
+| `bg-space.png`           | `SPACE_BG`      | 솔로 레벨 11+ 고정 (우주로 날아간 츄와와) |
 
 **선택 규칙**:
 
@@ -185,7 +185,7 @@ export function getRandomBackground(): string {
 }
 ```
 
-**권장 사이즈**: 1280×720 JPEG q75~85, 가로 비율
+**권장 사이즈**: 1280×720 PNG, 가로 비율
 
 ---
 
@@ -195,8 +195,8 @@ export function getRandomBackground(): string {
 
 | 파일명                      | 용도                                      | 토큰             |
 | --------------------------- | ----------------------------------------- | ---------------- |
-| `moneygraphy-pixel.woff2`   | 타이틀 / 헤딩 / 강조 텍스트 / 점수 카운터 | `--font-display` |
-| `moneygraphy-rounded.woff2` | 본문 / 버튼 / 모달 설명 / 랭킹 표         | `--font-body`    |
+| `Moneygraphy-Pixel.woff2`   | 타이틀 / 헤딩 / 강조 텍스트 / 점수 카운터 | `--font-display` |
+| `Moneygraphy-Rounded.woff2` | 본문 / 버튼 / 모달 설명 / 랭킹 표         | `--font-body`    |
 
 Pixel은 게임 픽셀 톤, Rounded는 본문 가독성 담당.
 
@@ -205,7 +205,7 @@ Pixel은 게임 픽셀 톤, Rounded는 본문 가독성 담당.
 ```css
 @font-face {
   font-family: 'Moneygraphy Pixel';
-  src: url('/fonts/moneygraphy-pixel.woff2') format('woff2');
+  src: url('/fonts/Moneygraphy-Pixel.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -213,7 +213,7 @@ Pixel은 게임 픽셀 톤, Rounded는 본문 가독성 담당.
 
 @font-face {
   font-family: 'Moneygraphy Rounded';
-  src: url('/fonts/moneygraphy-rounded.woff2') format('woff2');
+  src: url('/fonts/Moneygraphy-Rounded.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -256,11 +256,11 @@ public/
 │  ├─ items/                  # 4개 PNG (128×128)
 │  ├─ page-bgs/               # 4개 JPG (4계절)
 │  ├─ backgrounds/            # 11개 JPG (bg-1~10 + bg-space)
-│  ├─ main-hero.jpeg          # 메인 히어로
+│  ├─ main-hero.png           # 메인 히어로
 │  └─ title-logo.png          # 타이틀 로고
 └─ fonts/
-   ├─ moneygraphy-pixel.woff2
-   └─ moneygraphy-rounded.woff2
+   ├─ Moneygraphy-Pixel.woff2
+   └─ Moneygraphy-Rounded.woff2
 ```
 
 ---
