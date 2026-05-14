@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { PixelButton } from '@/ui/PixelButton'
+import { PixelCard } from '@/ui/PixelCard'
 
 export const Route = createFileRoute('/dev/ui-preview')({
   component: UiPreviewPage,
@@ -49,6 +50,21 @@ function UiPreviewPage() {
             </PixelButton>
           </PreviewRow>
         ))}
+      </PreviewSection>
+
+      <PreviewSection title="PixelCard">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: 'var(--gap-lg)',
+          }}
+        >
+          <PixelCard>헤더 없는 단순 카드</PixelCard>
+          <PixelCard header="영수증">
+            본문 영역에 점선 보더 + 그림자가 적용된 카드.
+          </PixelCard>
+        </div>
       </PreviewSection>
     </main>
   )
