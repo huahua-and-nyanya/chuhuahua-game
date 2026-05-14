@@ -3,5 +3,5 @@
  * 실제 값은 다음 사이클에서 채움
  */
 :root {
-  /* 다음 사이클: 게임 wrapper, 캐릭터 transform 등 토큰 */
+  --color-bg-letterbox: #ffffff;
 }
