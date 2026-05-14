@@ -93,8 +93,6 @@
   --shadow-nav-rest: 3px 3px 0 var(--color-ink-base);
   --shadow-nav-hover: 4px 4px 0 var(--color-ink-base);
   --shadow-icon-button-rest: 2px 2px 0 var(--color-ink-base);
-  --shadow-icon-button-hover:
-    0 0 0 6px rgba(255, 61, 127, 0.25), 2px 2px 0 var(--color-ink-base);
 
   /* === 라운드 === */
   --radius-sm: 6px;

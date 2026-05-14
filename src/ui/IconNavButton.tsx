@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import styles from './IconNavButton.module.css'
 
 interface IconNavButtonProps {
@@ -18,14 +19,17 @@ export function IconNavButton({
   const rootClass = [styles.root, className].filter(Boolean).join(' ')
 
   return (
-    <button
+    <motion.button
       type="button"
       className={rootClass}
       onClick={onClick}
       disabled={disabled}
       aria-label={alt}
+      whileHover={disabled ? undefined : { scale: 1.08 }}
+      whileTap={disabled ? undefined : { scale: 0.96 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
     >
       <img src={icon} alt={alt} className={styles.icon} />
-    </button>
+    </motion.button>
   )
 }
