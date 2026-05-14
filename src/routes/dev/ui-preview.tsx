@@ -5,6 +5,7 @@ import { PixelCard } from '@/ui/PixelCard'
 import { PixelChip } from '@/ui/PixelChip'
 import { CenterModal } from '@/ui/CenterModal'
 import { GameFrame } from '@/ui/GameFrame'
+import { NavButton } from '@/ui/NavButton'
 
 export const Route = createFileRoute('/dev/ui-preview')({
   component: UiPreviewPage,
@@ -81,6 +82,23 @@ function UiPreviewPage() {
         </PreviewRow>
       </PreviewSection>
 
+      <PreviewSection title="NavButton">
+        <PreviewRow label="vertical stack">
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--nav-button-gap)',
+            }}
+          >
+            <NavButton label="혼자서" onClick={() => undefined} />
+            <NavButton label="둘이서" onClick={() => undefined} />
+            <NavButton label="옷장" onClick={() => undefined} />
+            <NavButton label="비활성" disabled onClick={() => undefined} />
+          </div>
+        </PreviewRow>
+      </PreviewSection>
+
       <PreviewSection title="GameFrame">
         <GameFrame
           cornerActions={
@@ -95,9 +113,9 @@ function UiPreviewPage() {
           }
           sideMenu={
             <>
-              <PixelButton size="sm">탭1</PixelButton>
-              <PixelButton size="sm">탭2</PixelButton>
-              <PixelButton size="sm">탭3</PixelButton>
+              <NavButton label="혼자서" onClick={() => undefined} />
+              <NavButton label="둘이서" onClick={() => undefined} />
+              <NavButton label="옷장" onClick={() => undefined} />
             </>
           }
         >
