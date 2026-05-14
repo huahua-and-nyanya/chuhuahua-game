@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+pnpm-lock.yaml
+public
+
+# 정책 문서 — 사용자가 직접 관리
+CLAUDE.md
+
+# 자동 생성물
+src/routeTree.gen.ts

@@ -1,0 +1,7 @@
+/*
+ * 추가 CSS 변수 (Tailwind @theme로 표현하기 어려운 동적 값)
+ * 실제 값은 다음 사이클에서 채움
+ */
+:root {
+  /* 다음 사이클: 게임 wrapper, 캐릭터 transform 등 토큰 */
+}

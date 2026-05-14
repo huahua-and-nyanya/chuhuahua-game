@@ -12,13 +12,25 @@ dist
 dist-ssr
 *.local
 
+# Env
+.env
+.env.local
+.env.*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Reference (참조용 임시 파일)
+reference/
+
+# Claude Code 작업용
+.claude/
