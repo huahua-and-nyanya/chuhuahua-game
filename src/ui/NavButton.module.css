@@ -19,6 +19,14 @@
     box-shadow var(--transition-fast),
     background-color var(--transition-fast);
   user-select: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .root {
+    padding: 0 var(--gap-sm);
+    font-size: var(--text-xs);
+  }
 }
 
 .root:hover:not(:disabled) {

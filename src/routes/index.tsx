@@ -45,17 +45,19 @@ function HomePage() {
     <main className={styles.page}>
       <img src={TITLE_LOGO} alt="츄와와 뽀뽀 돌격" className={styles.title} />
 
-      <div className={styles.mobileCornerActions}>{cornerActions}</div>
+      <div className={styles.frameStack}>
+        <div className={styles.mobileCornerActions}>{cornerActions}</div>
 
-      <GameFrame
-        background={`url(${MAIN_HERO}) center / cover no-repeat`}
-        cornerActions={cornerActions}
-        sideMenu={sideMenu}
-      >
-        <div aria-hidden style={{ width: '100%', height: '100%' }} />
-      </GameFrame>
+        <GameFrame
+          background={`url(${MAIN_HERO}) center / cover no-repeat`}
+          cornerActions={cornerActions}
+          sideMenu={sideMenu}
+        >
+          <div aria-hidden style={{ width: '100%', height: '100%' }} />
+        </GameFrame>
 
-      <div className={styles.mobileNav}>{sideMenu}</div>
+        <div className={styles.mobileNav}>{sideMenu}</div>
+      </div>
 
       <MultiplayerSelectModal
         open={multiOpen}
