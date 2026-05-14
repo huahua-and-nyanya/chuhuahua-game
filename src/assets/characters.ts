@@ -1,0 +1,15 @@
+export const CHARACTER_ASSETS = {
+  chihuahua: '/assets/characters/chihuahua.png',
+  chihuahuaKissing: '/assets/characters/chihuahua-kissing.png',
+  chihuahuaSlow: '/assets/characters/chihuahua-slow.png',
+  chihuahuaSad: '/assets/characters/chihuahua-sad.png',
+  chihuahuaVictory: '/assets/characters/chihuahua-victory.png',
+  cat: '/assets/characters/cat.png',
+  catKissing: '/assets/characters/cat-kissing.png',
+  catAngry: '/assets/characters/cat-angry.png',
+  catScared: '/assets/characters/cat-scared.png',
+  catSlow: '/assets/characters/cat-slow.png',
+  catShield: '/assets/characters/cat-shield.png',
+  catVictory: '/assets/characters/cat-victory.png',
+  pigeon: '/assets/characters/pigeon.png',
+} as const;
