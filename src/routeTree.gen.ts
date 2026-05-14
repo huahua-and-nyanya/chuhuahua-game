@@ -19,6 +19,7 @@ import { Route as MultiIndexRouteImport } from './routes/multi/index'
 import { Route as MultiRoomRouteImport } from './routes/multi/room'
 import { Route as MultiRandomRouteImport } from './routes/multi/random'
 import { Route as MultiLocalRouteImport } from './routes/multi/local'
+import { Route as DevUiPreviewRouteImport } from './routes/dev/ui-preview'
 
 const WardrobeRoute = WardrobeRouteImport.update({
   id: '/wardrobe',
@@ -70,6 +71,11 @@ const MultiLocalRoute = MultiLocalRouteImport.update({
   path: '/multi/local',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevUiPreviewRoute = DevUiPreviewRouteImport.update({
+  id: '/dev/ui-preview',
+  path: '/dev/ui-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
+  '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
   '/multi/random': typeof MultiRandomRoute
   '/multi/room': typeof MultiRoomRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
+  '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
   '/multi/random': typeof MultiRandomRoute
   '/multi/room': typeof MultiRoomRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
+  '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
   '/multi/random': typeof MultiRandomRoute
   '/multi/room': typeof MultiRoomRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/solo'
     | '/wardrobe'
+    | '/dev/ui-preview'
     | '/multi/local'
     | '/multi/random'
     | '/multi/room'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/solo'
     | '/wardrobe'
+    | '/dev/ui-preview'
     | '/multi/local'
     | '/multi/random'
     | '/multi/room'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/solo'
     | '/wardrobe'
+    | '/dev/ui-preview'
     | '/multi/local'
     | '/multi/random'
     | '/multi/room'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   SoloRoute: typeof SoloRoute
   WardrobeRoute: typeof WardrobeRoute
+  DevUiPreviewRoute: typeof DevUiPreviewRoute
   MultiLocalRoute: typeof MultiLocalRoute
   MultiRandomRoute: typeof MultiRandomRoute
   MultiRoomRoute: typeof MultiRoomRoute
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MultiLocalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/ui-preview': {
+      id: '/dev/ui-preview'
+      path: '/dev/ui-preview'
+      fullPath: '/dev/ui-preview'
+      preLoaderRoute: typeof DevUiPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   SoloRoute: SoloRoute,
   WardrobeRoute: WardrobeRoute,
+  DevUiPreviewRoute: DevUiPreviewRoute,
   MultiLocalRoute: MultiLocalRoute,
   MultiRandomRoute: MultiRandomRoute,
   MultiRoomRoute: MultiRoomRoute,

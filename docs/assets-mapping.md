@@ -10,11 +10,12 @@
 | ------------------- | ------------- | ----------------------------------------------- |
 | 캐릭터              | 13            | `public/assets/characters/`                     |
 | 아이템              | 4             | `public/assets/items/`                          |
+| 아이콘              | 2             | `public/assets/icons/`                          |
 | 메인 자산           | 2             | `public/assets/`                                |
 | 페이지 배경 (4계절) | 4             | `public/assets/page-bgs/`                       |
 | 게임 배경           | 11            | `public/assets/backgrounds/` (지구 10 + 우주 1) |
 | 폰트                | 2             | `public/fonts/`                                 |
-| **합계**            | **36개 파일** |                                                 |
+| **합계**            | **38개 파일** |                                                 |
 
 효과(쉴드 버블)는 PNG 자산이 아닌 **CSS 컴포넌트(`ShieldBubble`)**로 구현 — 게임 코어 사이클에서 작성.
 
@@ -67,6 +68,21 @@
 - 냐냐 쉴드는 츄 뽀뽀 1회 추가 차단
 
 **권장 사이즈**: 128×128 정사각 PNG, 투명 배경
+
+---
+
+## 2-1. 아이콘 (2개)
+
+위치: `public/assets/icons/`
+
+| 파일명             | 코드 키   | 용도                                   |
+| ------------------ | --------- | -------------------------------------- |
+| `icon-help.png`    | `help`    | 메인 코너 아이콘 (게임 방법 모달 진입) |
+| `icon-ranking.png` | `ranking` | 메인 코너 아이콘 (랭킹 모달 진입)      |
+
+**스타일**: 픽셀 아트 PNG, 투명 배경, 256×256.
+
+**렌더링 주의**: `IconNavButton` 컴포넌트가 `image-rendering: pixelated`로 nearest-neighbor 스케일링을 강제. 안티앨리어싱이 끼면 픽셀 경계가 흐려져 의도한 룩이 깨짐.
 
 ---
 
@@ -272,6 +288,7 @@ src/assets/
 ├─ index.ts          # re-export
 ├─ characters.ts     # CHARACTER_ASSETS
 ├─ items.ts          # ITEM_ASSETS
+├─ icons.ts          # ICON_ASSETS
 └─ backgrounds.ts    # MAIN_HERO, TITLE_LOGO, PAGE_BGS, GAME_BGS, SPACE_BG
 ```
 
@@ -280,6 +297,7 @@ src/assets/
 ```ts
 export { CHARACTER_ASSETS } from './characters'
 export { ITEM_ASSETS } from './items'
+export { ICON_ASSETS } from './icons'
 export {
   MAIN_HERO,
   TITLE_LOGO,

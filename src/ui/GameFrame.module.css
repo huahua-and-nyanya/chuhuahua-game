@@ -1,0 +1,53 @@
+.root {
+  position: relative;
+  width: 100%;
+  max-width: var(--frame-max-width);
+  aspect-ratio: var(--frame-aspect-ratio);
+  margin: 0 auto;
+  border-radius: var(--frame-radius);
+  border: var(--frame-border-width) solid var(--color-border-frame);
+  background: var(--gradient-frame-bg);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 var(--frame-inset-width)
+    var(--color-border-frame-inset);
+}
+
+.content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--frame-inner-padding);
+}
+
+.sideMenu {
+  position: absolute;
+  right: var(--frame-inner-padding);
+  bottom: var(--frame-inner-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--nav-button-gap);
+  z-index: 2;
+}
+
+.cornerActions {
+  position: absolute;
+  top: var(--frame-inner-padding);
+  right: var(--frame-inner-padding);
+  display: flex;
+  flex-direction: row;
+  gap: var(--gap-sm);
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .root {
+    max-width: 95vw;
+  }
+
+  .sideMenu,
+  .cornerActions {
+    display: none;
+  }
+}

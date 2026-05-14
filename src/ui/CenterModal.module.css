@@ -1,0 +1,74 @@
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg-modal-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: var(--gap-lg);
+  animation: backdrop-in 180ms ease-out;
+}
+
+.wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  animation: card-in 220ms ease-out;
+  filter: drop-shadow(var(--shadow-modal));
+}
+
+.close {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-circle);
+  background: var(--color-pink-700);
+  color: var(--color-text-on-pink);
+  border: 3px solid var(--color-ink-base);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--text-md);
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--color-ink-base);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.close:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--color-ink-base);
+}
+
+.close:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--color-ink-base);
+}

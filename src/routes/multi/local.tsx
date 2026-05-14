@@ -1,17 +1,38 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { PixelButton } from '@/ui/PixelButton'
 
 export const Route = createFileRoute('/multi/local')({
   component: LocalPvpPage,
 })
 
 function LocalPvpPage() {
+  const navigate = useNavigate()
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-8">
-      <h1 className="text-2xl font-bold">로컬 PvP</h1>
-      <p className="text-sm">placeholder</p>
-      <Link to="/" className="rounded-md border px-4 py-2">
-        메인으로
-      </Link>
+    <main
+      style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div style={{ padding: 'var(--gap-lg)' }}>
+        <PixelButton variant="ghost" onClick={() => navigate({ to: '/' })}>
+          {'< 메인으로'}
+        </PixelButton>
+      </div>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--text-2xl)',
+          color: 'var(--color-text-primary)',
+        }}
+      >
+        로컬 PvP — 준비 중
+      </div>
     </main>
   )
 }
