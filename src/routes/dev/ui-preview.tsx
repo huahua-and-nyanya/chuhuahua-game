@@ -6,6 +6,8 @@ import { PixelChip } from '@/ui/PixelChip'
 import { CenterModal } from '@/ui/CenterModal'
 import { GameFrame } from '@/ui/GameFrame'
 import { NavButton } from '@/ui/NavButton'
+import { IconNavButton } from '@/ui/IconNavButton'
+import { ICON_ASSETS } from '@/assets'
 
 export const Route = createFileRoute('/dev/ui-preview')({
   component: UiPreviewPage,
@@ -99,16 +101,41 @@ function UiPreviewPage() {
         </PreviewRow>
       </PreviewSection>
 
+      <PreviewSection title="IconNavButton">
+        <PreviewRow label="default + disabled">
+          <IconNavButton
+            icon={ICON_ASSETS.ranking}
+            alt="랭킹"
+            onClick={() => undefined}
+          />
+          <IconNavButton
+            icon={ICON_ASSETS.help}
+            alt="게임 방법"
+            onClick={() => undefined}
+          />
+          <IconNavButton
+            icon={ICON_ASSETS.help}
+            alt="비활성"
+            disabled
+            onClick={() => undefined}
+          />
+        </PreviewRow>
+      </PreviewSection>
+
       <PreviewSection title="GameFrame">
         <GameFrame
           cornerActions={
             <>
-              <PixelButton size="sm" variant="ghost">
-                A
-              </PixelButton>
-              <PixelButton size="sm" variant="ghost">
-                B
-              </PixelButton>
+              <IconNavButton
+                icon={ICON_ASSETS.ranking}
+                alt="랭킹"
+                onClick={() => undefined}
+              />
+              <IconNavButton
+                icon={ICON_ASSETS.help}
+                alt="게임 방법"
+                onClick={() => undefined}
+              />
             </>
           }
           sideMenu={

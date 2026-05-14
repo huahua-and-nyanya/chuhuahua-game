@@ -1,0 +1,41 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-button-size);
+  height: var(--icon-button-size);
+  padding: 0;
+  background: var(--color-bg-icon-button);
+  border: var(--icon-button-border-width) solid
+    var(--color-border-icon-button);
+  border-radius: var(--radius-circle);
+  cursor: pointer;
+  box-shadow: var(--shadow-icon-button-rest);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.root:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-icon-button-hover);
+}
+
+.root:active:not(:disabled) {
+  transform: scale(1);
+  box-shadow: var(--shadow-icon-button-rest);
+}
+
+.root:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon {
+  width: calc(var(--icon-button-size) * var(--icon-content-ratio));
+  height: calc(var(--icon-button-size) * var(--icon-content-ratio));
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
