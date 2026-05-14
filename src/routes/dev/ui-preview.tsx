@@ -7,7 +7,7 @@ import { CenterModal } from '@/ui/CenterModal'
 import { GameFrame } from '@/ui/GameFrame'
 import { NavButton } from '@/ui/NavButton'
 import { IconNavButton } from '@/ui/IconNavButton'
-import { ICON_ASSETS } from '@/assets'
+import { ICON_ASSETS, MAIN_HERO } from '@/assets'
 import { MultiplayerSelectModal } from '../-components/MultiplayerSelectModal'
 import { PreviewSection, PreviewRow } from './-components/PreviewLayout'
 
@@ -152,6 +152,12 @@ function UiPreviewPage() {
             }}
           >
             캐릭터 영역 (placeholder)
+          </span>
+        </GameFrame>
+
+        <GameFrame background={`url(${MAIN_HERO}) center / cover no-repeat`}>
+          <span style={{ color: 'var(--color-text-on-pink)' }}>
+            background prop (url)
           </span>
         </GameFrame>
       </PreviewSection>

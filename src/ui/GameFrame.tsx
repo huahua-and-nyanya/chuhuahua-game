@@ -5,6 +5,7 @@ interface GameFrameProps {
   children: ReactNode
   sideMenu?: ReactNode
   cornerActions?: ReactNode
+  background?: string
   className?: string
 }
 
@@ -12,12 +13,13 @@ export function GameFrame({
   children,
   sideMenu,
   cornerActions,
+  background,
   className,
 }: GameFrameProps) {
   const rootClass = [styles.root, className].filter(Boolean).join(' ')
 
   return (
-    <div className={rootClass}>
+    <div className={rootClass} style={background ? { background } : undefined}>
       <div className={styles.content}>{children}</div>
       {cornerActions && (
         <div className={styles.cornerActions}>{cornerActions}</div>
