@@ -3,14 +3,14 @@ import styles from './GameFrame.module.css'
 
 interface GameFrameProps {
   children: ReactNode
-  bottomMenu?: ReactNode
+  sideMenu?: ReactNode
   cornerActions?: ReactNode
   className?: string
 }
 
 export function GameFrame({
   children,
-  bottomMenu,
+  sideMenu,
   cornerActions,
   className,
 }: GameFrameProps) {
@@ -22,7 +22,7 @@ export function GameFrame({
       {cornerActions && (
         <div className={styles.cornerActions}>{cornerActions}</div>
       )}
-      {bottomMenu && <div className={styles.bottomMenu}>{bottomMenu}</div>}
+      {sideMenu && <div className={styles.sideMenu}>{sideMenu}</div>}
     </div>
   )
 }

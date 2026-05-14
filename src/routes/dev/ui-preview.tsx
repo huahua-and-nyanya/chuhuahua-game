@@ -136,7 +136,7 @@ function UiPreviewPage() {
               />
             </>
           }
-          bottomMenu={
+          sideMenu={
             <>
               <NavButton label="혼자서" onClick={() => undefined} />
               <NavButton label="둘이서" onClick={() => undefined} />
