@@ -28,10 +28,6 @@ function HomePage() {
         justifyContent: 'center',
         gap: 'var(--gap-lg)',
         padding: 'var(--gap-lg)',
-        backgroundImage: `url(${MAIN_HERO})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
       }}
     >
       <img
@@ -46,6 +42,7 @@ function HomePage() {
       />
 
       <GameFrame
+        background={`url(${MAIN_HERO}) center / cover no-repeat`}
         cornerActions={
           <>
             <IconNavButton
