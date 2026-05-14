@@ -9,6 +9,7 @@ import { NavButton } from '@/ui/NavButton'
 import { IconNavButton } from '@/ui/IconNavButton'
 import { ICON_ASSETS } from '@/assets'
 import { MultiplayerSelectModal } from '../-components/MultiplayerSelectModal'
+import { PreviewSection, PreviewRow } from './-components/PreviewLayout'
 
 export const Route = createFileRoute('/dev/ui-preview')({
   component: UiPreviewPage,
@@ -32,20 +33,15 @@ function UiPreviewPage() {
         gap: 'var(--gap-xl)',
       }}
     >
-      <header>
-        <h1
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-2xl)',
-            margin: 0,
-          }}
-        >
-          UI Preview
-        </h1>
-        <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--gap-xs)' }}>
-          공용 컴포넌트 시각 회귀 확인용 (prod 빌드에도 포함, 메뉴 진입점 없음)
-        </p>
-      </header>
+      <h1
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--text-2xl)',
+          margin: 0,
+        }}
+      >
+        UI Preview
+      </h1>
 
       <PreviewSection title="PixelButton">
         {VARIANTS.map((v) => (
@@ -162,7 +158,9 @@ function UiPreviewPage() {
 
       <PreviewSection title="CenterModal">
         <PreviewRow label="trigger">
-          <PixelButton onClick={() => setModalOpen(true)}>모달 열기</PixelButton>
+          <PixelButton onClick={() => setModalOpen(true)}>
+            모달 열기
+          </PixelButton>
         </PreviewRow>
         <CenterModal
           open={modalOpen}
@@ -170,7 +168,12 @@ function UiPreviewPage() {
           title="모달 타이틀"
         >
           <p>ESC / 바깥 클릭 / X 버튼으로 닫힘</p>
-          <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--gap-sm)' }}>
+          <p
+            style={{
+              color: 'var(--color-text-muted)',
+              marginTop: 'var(--gap-sm)',
+            }}
+          >
             열려있는 동안 body 스크롤 잠김
           </p>
         </CenterModal>
@@ -178,7 +181,9 @@ function UiPreviewPage() {
 
       <PreviewSection title="MultiplayerSelectModal">
         <PreviewRow label="trigger">
-          <PixelButton onClick={() => setMultiOpen(true)}>둘이서 모달</PixelButton>
+          <PixelButton onClick={() => setMultiOpen(true)}>
+            둘이서 모달
+          </PixelButton>
         </PreviewRow>
         <MultiplayerSelectModal
           open={multiOpen}
@@ -186,66 +191,5 @@ function UiPreviewPage() {
         />
       </PreviewSection>
     </main>
-  )
-}
-
-function PreviewSection({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <section
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--gap-md)',
-      }}
-    >
-      <h2
-        style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 'var(--text-xl)',
-          margin: 0,
-        }}
-      >
-        {title}
-      </h2>
-      {children}
-    </section>
-  )
-}
-
-function PreviewRow({
-  label,
-  children,
-}: {
-  label: string
-  children: React.ReactNode
-}) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--gap-sm)',
-      }}
-    >
-      <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>
-        {label}
-      </span>
-      <div
-        style={{
-          display: 'flex',
-          gap: 'var(--gap-md)',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-        }}
-      >
-        {children}
-      </div>
-    </div>
   )
 }
