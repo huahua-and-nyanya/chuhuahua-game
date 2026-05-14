@@ -23,10 +23,8 @@ function HomePage() {
         position: 'relative',
         minHeight: '100dvh',
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 'var(--gap-lg)',
         padding: 'var(--gap-lg)',
       }}
     >
@@ -34,10 +32,16 @@ function HomePage() {
         src={TITLE_LOGO}
         alt="츄와와 뽀뽀 돌격"
         style={{
+          position: 'absolute',
+          top: 'var(--gap-lg)',
+          left: '50%',
+          transform: 'translateX(-50%)',
           width: '100%',
           maxWidth: '360px',
           height: 'auto',
           objectFit: 'contain',
+          pointerEvents: 'none',
+          zIndex: 1,
         }}
       />
 
