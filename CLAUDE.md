@@ -104,7 +104,7 @@ src/
   hooks/         # useGameLoop, trackedTimeout, useInput
   lib/           # math, storage 등 순수 유틸
   styles/        # tokens.css, globals.css
-  assets.ts      # 자산 경로 lookup
+  assets/        # 카테고리별 lookup (characters/items/backgrounds + index.ts re-export)
 public/assets/   # characters / items / effects / clothes
 public/fonts/    # moneygraphy.woff2
 docs/            # assets-guide.md, schema.md, adr/
