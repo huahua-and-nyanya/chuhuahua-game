@@ -33,6 +33,10 @@
 }
 
 @media (max-width: 768px) {
+  .title {
+    display: none;
+  }
+
   .frameStack {
     max-width: 95vw;
     gap: var(--gap-sm);
