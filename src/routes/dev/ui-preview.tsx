@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { PixelButton } from '@/ui/PixelButton'
 import { PixelCard } from '@/ui/PixelCard'
 import { PixelChip } from '@/ui/PixelChip'
+import { CenterModal } from '@/ui/CenterModal'
 
 export const Route = createFileRoute('/dev/ui-preview')({
   component: UiPreviewPage,
@@ -11,6 +13,7 @@ const VARIANTS = ['primary', 'secondary', 'ghost'] as const
 const SIZES = ['sm', 'md', 'lg'] as const
 
 function UiPreviewPage() {
+  const [modalOpen, setModalOpen] = useState(false)
   return (
     <main
       style={{
@@ -75,6 +78,22 @@ function UiPreviewPage() {
           <PixelChip variant="danger">danger</PixelChip>
           <PixelChip>준비 중</PixelChip>
         </PreviewRow>
+      </PreviewSection>
+
+      <PreviewSection title="CenterModal">
+        <PreviewRow label="trigger">
+          <PixelButton onClick={() => setModalOpen(true)}>모달 열기</PixelButton>
+        </PreviewRow>
+        <CenterModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title="모달 타이틀"
+        >
+          <p>ESC / 바깥 클릭 / X 버튼으로 닫힘</p>
+          <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--gap-sm)' }}>
+            열려있는 동안 body 스크롤 잠김
+          </p>
+        </CenterModal>
       </PreviewSection>
     </main>
   )
