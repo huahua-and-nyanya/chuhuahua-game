@@ -8,6 +8,7 @@ import { GameFrame } from '@/ui/GameFrame'
 import { NavButton } from '@/ui/NavButton'
 import { IconNavButton } from '@/ui/IconNavButton'
 import { ICON_ASSETS } from '@/assets'
+import { MultiplayerSelectModal } from '../-components/MultiplayerSelectModal'
 
 export const Route = createFileRoute('/dev/ui-preview')({
   component: UiPreviewPage,
@@ -18,6 +19,7 @@ const SIZES = ['sm', 'md', 'lg'] as const
 
 function UiPreviewPage() {
   const [modalOpen, setModalOpen] = useState(false)
+  const [multiOpen, setMultiOpen] = useState(false)
   return (
     <main
       style={{
@@ -172,6 +174,16 @@ function UiPreviewPage() {
             열려있는 동안 body 스크롤 잠김
           </p>
         </CenterModal>
+      </PreviewSection>
+
+      <PreviewSection title="MultiplayerSelectModal">
+        <PreviewRow label="trigger">
+          <PixelButton onClick={() => setMultiOpen(true)}>둘이서 모달</PixelButton>
+        </PreviewRow>
+        <MultiplayerSelectModal
+          open={multiOpen}
+          onClose={() => setMultiOpen(false)}
+        />
       </PreviewSection>
     </main>
   )
