@@ -12,4 +12,4 @@ export const CHARACTER_ASSETS = {
   catShield: '/assets/characters/cat-shield.png',
   catVictory: '/assets/characters/cat-victory.png',
   pigeon: '/assets/characters/pigeon.png',
-} as const;
+} as const
