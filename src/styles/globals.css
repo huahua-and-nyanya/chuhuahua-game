@@ -19,9 +19,9 @@
 }
 
 /*
- * @theme — Tailwind v4 디자인 토큰 진입점
- * 실제 색상/간격 값은 다음 사이클에서 디자인 확정 후 채움
- * 토큰 이름은 의미 기반 (--color-bg-primary 등)
+ * @theme — Tailwind v4 유틸 생성용 노출 토큰
+ * - 의미 기반 토큰 본체는 tokens.css :root에 정의되어 있음
+ * - 여기서는 Tailwind 클래스 (bg-pink-700, text-ink-base 등)로 쓰고 싶은 색상만 노출
  */
 @theme {
   --font-display:
@@ -30,10 +30,23 @@
   --font-body:
     'Moneygraphy Rounded', 'Pretendard', 'Apple SD Gothic Neo', system-ui,
     sans-serif;
+
+  --color-pink-50: #ffeef5;
+  --color-pink-100: #ffd6e0;
+  --color-pink-200: #ffd1dc;
+  --color-pink-300: #ffadc6;
+  --color-pink-400: #ff9ec1;
+  --color-pink-500: #ff85a1;
+  --color-pink-600: #ff6b9d;
+  --color-pink-700: #ff3d7f;
+
+  --color-ink-base: #2d1b3d;
+  --color-ink-soft: #7a3a5a;
 }
 
 body {
   font-family: var(--font-body);
+  color: var(--color-text-primary);
 }
 
 .page-bg {

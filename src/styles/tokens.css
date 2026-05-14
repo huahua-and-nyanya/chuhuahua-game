@@ -1,7 +1,151 @@
 /*
- * 추가 CSS 변수 (Tailwind @theme로 표현하기 어려운 동적 값)
- * 실제 값은 다음 사이클에서 채움
+ * 디자인 토큰 — 의미 기반 CSS 변수
+ *
+ * 값 출처: reference/ChihuahuaCatKissGame.txt (휘게가 검증한 기존 패턴)
+ * - 게임 wrapper 종횡비: 640 x 480 (= 4 / 3)
+ * - 분홍 팔레트: TOKEN.paperPink* / TOKEN.primary 계열
+ * - 그림자: 평면 오프셋 (`Npx Npx 0 ink`) — 옛 플래시 게임 톤
+ * - 보더: GameFrame은 ink 솔리드 + 흰 inset / PixelCard는 분홍 점선
+ *
+ * 컴포넌트 코드에서 색상/그림자 하드코딩 금지. 항상 var(--token) 참조.
  */
+
 :root {
+  /* === 분홍 팔레트 (raw) === */
+  --color-pink-50: #ffeef5;
+  --color-pink-100: #ffd6e0;
+  --color-pink-200: #ffd1dc;
+  --color-pink-300: #ffadc6;
+  --color-pink-400: #ff9ec1;
+  --color-pink-500: #ff85a1;
+  --color-pink-600: #ff6b9d;
+  --color-pink-700: #ff3d7f;
+
+  /* 게임 wrapper 그래디언트 중단 톤 (살구) — raw */
+  --color-peach-100: #ffe1d1;
+
+  /* === 잉크 (보라) — 글자/보더/그림자 기본색 === */
+  --color-ink-base: #2d1b3d;
+  --color-ink-soft: #7a3a5a;
+
+  /* === 의미 기반 배경 === */
+  --color-bg-page: #ffffff;
   --color-bg-letterbox: #ffffff;
+  --color-bg-frame: var(--color-pink-50);
+  --color-bg-frame-inner: #ffffff;
+  --color-bg-modal-backdrop: rgba(45, 27, 61, 0.45);
+  --color-bg-icon-button: #ffffff;
+  --color-bg-card: #ffffff;
+
+  /* === 의미 기반 보더 === */
+  --color-border-frame: var(--color-ink-base);
+  --color-border-frame-inset: #ffffff;
+  --color-border-card: var(--color-pink-300);
+  --color-border-icon-button: var(--color-pink-700);
+  --color-border-button: var(--color-ink-base);
+
+  /* === 의미 기반 텍스트 === */
+  --color-text-primary: var(--color-ink-base);
+  --color-text-muted: var(--color-ink-soft);
+  --color-text-on-pink: #ffffff;
+  --color-text-accent: var(--color-pink-700);
+
+  /* === NavButton (사이드 탭) === */
+  --color-tab-default: var(--color-pink-600);
+  --color-tab-hover: var(--color-pink-700);
+  --color-tab-disabled: #c7b8c5;
+  --color-tab-text: #ffffff;
+
+  /* === PixelButton variants === */
+  --color-button-primary-bg: var(--color-pink-700);
+  --color-button-primary-text: #ffffff;
+  --color-button-secondary-bg: var(--color-pink-100);
+  --color-button-secondary-text: var(--color-pink-700);
+  --color-button-ghost-bg-hover: var(--color-pink-50);
+  --color-button-ghost-text: var(--color-pink-700);
+
+  /* === PixelChip variants === */
+  --color-chip-default-bg: var(--color-pink-300);
+  --color-chip-default-text: var(--color-ink-base);
+  --color-chip-disabled-bg: #e8e0e8;
+  --color-chip-disabled-text: var(--color-ink-soft);
+  --color-chip-danger-bg: #d94747;
+  --color-chip-danger-text: #ffffff;
+
+  /* === 상태 === */
+  --color-danger: #d94747;
+  --color-disabled: #c7b8c5;
+
+  /* === 그래디언트 === */
+  --gradient-frame-bg: linear-gradient(
+    180deg,
+    var(--color-pink-50) 0%,
+    var(--color-peach-100) 60%,
+    var(--color-pink-100) 100%
+  );
+
+  /* === 그림자 (레퍼런스: 평면 오프셋) === */
+  --shadow-button-rest: 3px 3px 0 var(--color-ink-base);
+  --shadow-button-hover: 4px 4px 0 var(--color-ink-base);
+  --shadow-button-pressed: 1px 1px 0 var(--color-ink-base);
+  --shadow-card: 3px 3px 0 var(--color-ink-base);
+  --shadow-modal: 6px 6px 0 var(--color-ink-base);
+  --shadow-nav-rest: 3px 3px 0 var(--color-ink-base);
+  --shadow-nav-hover: 4px 4px 0 var(--color-ink-base);
+  --shadow-icon-button-rest: 2px 2px 0 var(--color-ink-base);
+  --shadow-icon-button-hover:
+    0 0 0 6px rgba(255, 61, 127, 0.25), 2px 2px 0 var(--color-ink-base);
+
+  /* === 라운드 === */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+
+  /* === 폰트 사이즈 === */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+
+  /* === 버튼 사이즈 === */
+  --button-height-sm: 32px;
+  --button-height-md: 40px;
+  --button-height-lg: 48px;
+  --button-padding-x-sm: 12px;
+  --button-padding-x-md: 16px;
+  --button-padding-x-lg: 24px;
+  --button-border-width: 3px;
+
+  /* === NavButton (사이드 탭) === */
+  --nav-button-height: 36px;
+  --nav-button-width: 96px;
+  --nav-button-gap: 10px;
+
+  /* === IconNavButton (코너 아이콘) === */
+  --icon-button-size: 48px;
+  --icon-button-border-width: 4px;
+  --icon-content-ratio: 0.68;
+
+  /* === GameFrame === */
+  --frame-max-width: 640px;
+  --frame-aspect-ratio: 4 / 3;
+  --frame-border-width: 4px;
+  --frame-inset-width: 3px;
+  --frame-inner-padding: 14px;
+  --frame-radius: var(--radius-lg);
+
+  /* === 간격 === */
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 12px;
+  --gap-lg: 16px;
+  --gap-xl: 24px;
+
+  /* === 트랜지션 === */
+  --transition-fast: 120ms ease-out;
+  --transition-base: 180ms ease-out;
 }
