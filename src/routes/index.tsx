@@ -60,7 +60,7 @@ function HomePage() {
             />
           </>
         }
-        sideMenu={
+        bottomMenu={
           <>
             <NavButton
               label="혼자서"
