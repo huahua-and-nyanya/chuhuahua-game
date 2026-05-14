@@ -4,6 +4,7 @@ import { PixelButton } from '@/ui/PixelButton'
 import { PixelCard } from '@/ui/PixelCard'
 import { PixelChip } from '@/ui/PixelChip'
 import { CenterModal } from '@/ui/CenterModal'
+import { GameFrame } from '@/ui/GameFrame'
 
 export const Route = createFileRoute('/dev/ui-preview')({
   component: UiPreviewPage,
@@ -78,6 +79,38 @@ function UiPreviewPage() {
           <PixelChip variant="danger">danger</PixelChip>
           <PixelChip>준비 중</PixelChip>
         </PreviewRow>
+      </PreviewSection>
+
+      <PreviewSection title="GameFrame">
+        <GameFrame
+          cornerActions={
+            <>
+              <PixelButton size="sm" variant="ghost">
+                A
+              </PixelButton>
+              <PixelButton size="sm" variant="ghost">
+                B
+              </PixelButton>
+            </>
+          }
+          sideMenu={
+            <>
+              <PixelButton size="sm">탭1</PixelButton>
+              <PixelButton size="sm">탭2</PixelButton>
+              <PixelButton size="sm">탭3</PixelButton>
+            </>
+          }
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-xl)',
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            캐릭터 영역 (placeholder)
+          </span>
+        </GameFrame>
       </PreviewSection>
 
       <PreviewSection title="CenterModal">
