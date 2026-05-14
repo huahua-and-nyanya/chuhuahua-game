@@ -1,0 +1,31 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--text-xs);
+  padding: 2px var(--gap-sm);
+  min-height: 22px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-ink-base);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.default {
+  background: var(--color-chip-default-bg);
+  color: var(--color-chip-default-text);
+}
+
+.disabled {
+  background: var(--color-chip-disabled-bg);
+  color: var(--color-chip-disabled-text);
+  border-color: var(--color-chip-disabled-text);
+}
+
+.danger {
+  background: var(--color-chip-danger-bg);
+  color: var(--color-chip-danger-text);
+}

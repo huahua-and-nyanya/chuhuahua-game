@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { PixelButton } from '@/ui/PixelButton'
 import { PixelCard } from '@/ui/PixelCard'
+import { PixelChip } from '@/ui/PixelChip'
 
 export const Route = createFileRoute('/dev/ui-preview')({
   component: UiPreviewPage,
@@ -65,6 +66,15 @@ function UiPreviewPage() {
             본문 영역에 점선 보더 + 그림자가 적용된 카드.
           </PixelCard>
         </div>
+      </PreviewSection>
+
+      <PreviewSection title="PixelChip">
+        <PreviewRow label="variants">
+          <PixelChip>default</PixelChip>
+          <PixelChip variant="disabled">disabled</PixelChip>
+          <PixelChip variant="danger">danger</PixelChip>
+          <PixelChip>준비 중</PixelChip>
+        </PreviewRow>
       </PreviewSection>
     </main>
   )
