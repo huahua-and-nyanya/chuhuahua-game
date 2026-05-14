@@ -2,11 +2,36 @@
 
 @import './tokens.css';
 
+@font-face {
+  font-family: 'Moneygraphy Pixel';
+  src: url('/fonts/Moneygraphy-Pixel.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Moneygraphy Rounded';
+  src: url('/fonts/Moneygraphy-Rounded.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /*
  * @theme — Tailwind v4 디자인 토큰 진입점
- * 실제 색상/간격/폰트 값은 다음 사이클에서 디자인 확정 후 채움
+ * 실제 색상/간격 값은 다음 사이클에서 디자인 확정 후 채움
  * 토큰 이름은 의미 기반 (--color-bg-primary 등)
  */
 @theme {
-  /* 다음 사이클: --color-bg-primary, --color-text-primary, --font-display 등 */
+  --font-display:
+    'Moneygraphy Pixel', 'Pretendard', 'Apple SD Gothic Neo', system-ui,
+    sans-serif;
+  --font-body:
+    'Moneygraphy Rounded', 'Pretendard', 'Apple SD Gothic Neo', system-ui,
+    sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
 }
