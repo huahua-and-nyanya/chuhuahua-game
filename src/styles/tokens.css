@@ -147,3 +147,10 @@
   --transition-fast: 120ms ease-out;
   --transition-base: 180ms ease-out;
 }
+
+@media (max-width: 768px) {
+  :root {
+    --nav-button-height: 32px;
+    --nav-button-width: 80px;
+  }
+}

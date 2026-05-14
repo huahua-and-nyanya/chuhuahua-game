@@ -45,4 +45,9 @@
   .root {
     max-width: 95vw;
   }
+
+  .sideMenu,
+  .cornerActions {
+    display: none;
+  }
 }

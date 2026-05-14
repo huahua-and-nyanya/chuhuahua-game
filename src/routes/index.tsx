@@ -6,6 +6,7 @@ import { NavButton } from '@/ui/NavButton'
 import { IconNavButton } from '@/ui/IconNavButton'
 import { CenterModal } from '@/ui/CenterModal'
 import { MultiplayerSelectModal } from './-components/MultiplayerSelectModal'
+import styles from './-styles/HomePage.module.css'
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -17,65 +18,44 @@ function HomePage() {
   const [guideOpen, setGuideOpen] = useState(false)
   const [rankingOpen, setRankingOpen] = useState(false)
 
-  return (
-    <main
-      style={{
-        position: 'relative',
-        minHeight: '100dvh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'var(--gap-lg)',
-      }}
-    >
-      <img
-        src={TITLE_LOGO}
-        alt="츄와와 뽀뽀 돌격"
-        style={{
-          position: 'absolute',
-          top: 'var(--gap-lg)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 'min(360px, 50vw)',
-          height: 'auto',
-          objectFit: 'contain',
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
+  const cornerActions = (
+    <>
+      <IconNavButton
+        icon={ICON_ASSETS.ranking}
+        alt="랭킹"
+        onClick={() => setRankingOpen(true)}
       />
+      <IconNavButton
+        icon={ICON_ASSETS.help}
+        alt="게임 방법"
+        onClick={() => setGuideOpen(true)}
+      />
+    </>
+  )
+
+  const sideMenu = (
+    <>
+      <NavButton label="혼자서" onClick={() => navigate({ to: '/solo' })} />
+      <NavButton label="둘이서" onClick={() => setMultiOpen(true)} />
+      <NavButton label="옷장" onClick={() => navigate({ to: '/wardrobe' })} />
+    </>
+  )
+
+  return (
+    <main className={styles.page}>
+      <img src={TITLE_LOGO} alt="츄와와 뽀뽀 돌격" className={styles.title} />
+
+      <div className={styles.mobileCornerActions}>{cornerActions}</div>
 
       <GameFrame
         background={`url(${MAIN_HERO}) center / cover no-repeat`}
-        cornerActions={
-          <>
-            <IconNavButton
-              icon={ICON_ASSETS.ranking}
-              alt="랭킹"
-              onClick={() => setRankingOpen(true)}
-            />
-            <IconNavButton
-              icon={ICON_ASSETS.help}
-              alt="게임 방법"
-              onClick={() => setGuideOpen(true)}
-            />
-          </>
-        }
-        sideMenu={
-          <>
-            <NavButton
-              label="혼자서"
-              onClick={() => navigate({ to: '/solo' })}
-            />
-            <NavButton label="둘이서" onClick={() => setMultiOpen(true)} />
-            <NavButton
-              label="옷장"
-              onClick={() => navigate({ to: '/wardrobe' })}
-            />
-          </>
-        }
+        cornerActions={cornerActions}
+        sideMenu={sideMenu}
       >
         <div aria-hidden style={{ width: '100%', height: '100%' }} />
       </GameFrame>
+
+      <div className={styles.mobileNav}>{sideMenu}</div>
 
       <MultiplayerSelectModal
         open={multiOpen}
