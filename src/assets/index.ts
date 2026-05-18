@@ -8,3 +8,9 @@ export {
   GAME_BGS,
   SPACE_BG,
 } from './backgrounds'
+export {
+  clothPath,
+  COIN_ICON_PATH,
+  CAPSULE_ICON_PATH,
+  FITTING_ROOM_BG_PATH,
+} from './clothes'

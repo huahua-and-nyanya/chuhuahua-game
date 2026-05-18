@@ -293,6 +293,18 @@ type InputState = {
 
 ---
 
+## 옷장 시스템 작업 시 참조 문서
+
+옷장 관련 모든 작업(자산 추가, UI, 가챠, 효과 적용 등)은 작업 전 다음 문서 확인 필수:
+
+- `docs/wardrobe_spec.md` — 옷장 시스템 풀 명세 (등급 B/A/S/S+, 페어, 적용 범위, S+ 게임 변형)
+- `docs/wardrobe-extension.md` — 옷 추가 워크플로우 (설계 → 자산 → 메타 등록 → 검증)
+- `docs/assets-mapping.md` 섹션 8 — 옷장 자산 경로 / 헬퍼
+
+새 옷 추가 시 `wardrobe-extension.md` 단계를 그대로 따른다. 시스템 명세 변경이 필요하면 `wardrobe_spec.md`도 함께 갱신하되, AI는 명세를 직접 수정하지 말고 휘게에게 보고.
+
+---
+
 ## 백엔드 (Supabase) 정책
 
 - **익명 로그인 자동** — 첫 진입 시 백그라운드 처리, 사용자 인지 없음
