@@ -6,17 +6,17 @@
 
 ## 개요
 
-| 카테고리            | 개수          | 위치                                            |
-| ------------------- | ------------- | ----------------------------------------------- |
-| 캐릭터              | 13            | `public/assets/characters/`                     |
-| 아이템              | 4             | `public/assets/items/`                          |
-| 아이콘              | 2             | `public/assets/icons/`                          |
-| 메인 자산           | 2             | `public/assets/`                                |
-| 페이지 배경 (4계절) | 4             | `public/assets/page-bgs/`                       |
-| 게임 배경           | 11            | `public/assets/backgrounds/` (지구 10 + 우주 1) |
-| 폰트                | 2             | `public/fonts/`                                 |
-| 옷장 (옷 + UI)      | 가변          | `public/assets/clothes/` + `ui/` + `backgrounds/fitting-room.jpg` |
-| **합계**            | **38개 파일 + 옷장 자산** |                                     |
+| 카테고리            | 개수                      | 위치                                                              |
+| ------------------- | ------------------------- | ----------------------------------------------------------------- |
+| 캐릭터              | 13                        | `public/assets/characters/`                                       |
+| 아이템              | 4                         | `public/assets/items/`                                            |
+| 아이콘              | 2                         | `public/assets/icons/`                                            |
+| 메인 자산           | 2                         | `public/assets/`                                                  |
+| 페이지 배경 (4계절) | 4                         | `public/assets/page-bgs/`                                         |
+| 게임 배경           | 11                        | `public/assets/backgrounds/` (지구 10 + 우주 1)                   |
+| 폰트                | 2                         | `public/fonts/`                                                   |
+| 옷장 (옷 + UI)      | 가변                      | `public/assets/clothes/` + `ui/` + `backgrounds/fitting-room.jpg` |
+| **합계**            | **38개 파일 + 옷장 자산** |                                                                   |
 
 효과(쉴드 버블)는 PNG 자산이 아닌 **CSS 컴포넌트(`ShieldBubble`)**로 구현 — 게임 코어 사이클에서 작성.
 
@@ -272,12 +272,12 @@ body {
 
 위치: `public/assets/clothes/` (평면, 등급별 폴더 없음)
 
-| 파일명                | 사양                  | 용도                              |
-| --------------------- | --------------------- | --------------------------------- |
-| `chi-{id}-full.png`   | 256×256 PNG letterbox | 츄 풀바디 (피팅룸 + 게임 내)      |
-| `chi-{id}-object.png` | 128×128 PNG           | 옷장 그리드 아이콘                |
-| `cat-{id}-full.png`   | 256×256 PNG letterbox | 페어 옷 — 냐냐 풀바디             |
-| `cat-{id}-object.png` | 128×128 PNG           | 페어 옷 — 냐냐 그리드 아이콘      |
+| 파일명                | 사양                  | 용도                         |
+| --------------------- | --------------------- | ---------------------------- |
+| `chi-{id}-full.png`   | 256×256 PNG letterbox | 츄 풀바디 (피팅룸 + 게임 내) |
+| `chi-{id}-object.png` | 128×128 PNG           | 옷장 그리드 아이콘           |
+| `cat-{id}-full.png`   | 256×256 PNG letterbox | 페어 옷 — 냐냐 풀바디        |
+| `cat-{id}-object.png` | 128×128 PNG           | 페어 옷 — 냐냐 그리드 아이콘 |
 
 - 파일명: `{character}-{id}-{kind}.png`, `id`는 kebab-case
 - 페어 옷은 `cat-*` 두 장 추가
@@ -287,17 +287,17 @@ body {
 
 위치: `public/assets/ui/`
 
-| 파일 경로          | 상수                | 사양        | 용도                  |
-| ------------------ | ------------------- | ----------- | --------------------- |
-| `coin-icon.png`    | `COIN_ICON_PATH`    | 64×64 PNG   | 코인 표시 (메인/옷장) |
-| `capsule-icon.png` | `CAPSULE_ICON_PATH` | 64×64 PNG   | 가챠 버튼 아이콘      |
+| 파일 경로          | 상수                | 사양      | 용도                  |
+| ------------------ | ------------------- | --------- | --------------------- |
+| `coin-icon.png`    | `COIN_ICON_PATH`    | 64×64 PNG | 코인 표시 (메인/옷장) |
+| `capsule-icon.png` | `CAPSULE_ICON_PATH` | 64×64 PNG | 가챠 버튼 아이콘      |
 
 ### 8.3 피팅룸 배경
 
 위치: `public/assets/backgrounds/fitting-room.jpg`
 
-| 상수                   | 사양                | 용도            |
-| ---------------------- | ------------------- | --------------- |
+| 상수                   | 사양                | 용도           |
+| ---------------------- | ------------------- | -------------- |
 | `FITTING_ROOM_BG_PATH` | JPEG q78, ~700px 폭 | 옷장 화면 배경 |
 
 ### 8.4 경로 헬퍼

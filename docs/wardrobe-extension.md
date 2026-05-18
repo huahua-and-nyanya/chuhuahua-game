@@ -20,12 +20,12 @@
 
 ## 단계 2: 자산 준비
 
-| 자산 | 사양 | 처리 |
-| --- | --- | --- |
-| `chi-{id}-full.png` | 256×256 PNG letterbox | 풀바디, 흰배경 flood-fill |
-| `chi-{id}-object.png` | 128×128 PNG | 옷장 그리드 아이콘 |
-| `cat-{id}-full.png` | 256×256 PNG letterbox | 페어 옷일 때만 |
-| `cat-{id}-object.png` | 128×128 PNG | 페어 옷일 때만 |
+| 자산                  | 사양                  | 처리                      |
+| --------------------- | --------------------- | ------------------------- |
+| `chi-{id}-full.png`   | 256×256 PNG letterbox | 풀바디, 흰배경 flood-fill |
+| `chi-{id}-object.png` | 128×128 PNG           | 옷장 그리드 아이콘        |
+| `cat-{id}-full.png`   | 256×256 PNG letterbox | 페어 옷일 때만            |
+| `cat-{id}-object.png` | 128×128 PNG           | 페어 옷일 때만            |
 
 처리 패턴(flood-fill threshold 등)은 `wardrobe_spec.md` 섹션 6.3 참조.
 
@@ -105,12 +105,12 @@ pnpm build          # 빌드 통과
 
 ## 등급별 가이드
 
-| 등급 | effects | 적용 범위 | 비고 |
-| --- | --- | --- | --- |
-| B | 없음 (빈 객체도 X) | idle | 외형 장식만 |
-| A | 1개만 | idle | 능력치 1개 (chiSpeedMul / catSpeedMul / pigeonSpawnMul / itemSpawnMul) |
-| S | 여러 개 | all | 능력치 조합 자유 |
-| S+ | 여러 개 | all | 특수 필드 (pigeonDisabled / backgroundOverride / triggerEnding) 사용 가능. 단 사이클 W/E 이전엔 동작 안 함 |
+| 등급 | effects            | 적용 범위 | 비고                                                                                                       |
+| ---- | ------------------ | --------- | ---------------------------------------------------------------------------------------------------------- |
+| B    | 없음 (빈 객체도 X) | idle      | 외형 장식만                                                                                                |
+| A    | 1개만              | idle      | 능력치 1개 (chiSpeedMul / catSpeedMul / pigeonSpawnMul / itemSpawnMul)                                     |
+| S    | 여러 개            | all       | 능력치 조합 자유                                                                                           |
+| S+   | 여러 개            | all       | 특수 필드 (pigeonDisabled / backgroundOverride / triggerEnding) 사용 가능. 단 사이클 W/E 이전엔 동작 안 함 |
 
 ---
 
