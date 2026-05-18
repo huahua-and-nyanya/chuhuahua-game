@@ -16,32 +16,32 @@
 
 옷은 네 등급으로 나뉜다. 등급은 효과의 **종류**와 **개수**를 제약한다.
 
-| 등급 | 라벨 | 효과 범위 | 효과 개수 | 적용 범위 |
-|---|---|---|---|---|
-| **B** | Common | 외형만 (cosmetic) | 0 | idle 스프라이트만 |
-| **A** | Rare | 작은 능력치 1개 | 1 | idle 스프라이트만 |
-| **S** | Epic | 다양한 능력치 | 무제한 | 모든 모션 |
-| **S+** | Legendary | 게임 자체 변형 | 무제한 | 모든 모션 |
+| 등급   | 라벨      | 효과 범위         | 효과 개수 | 적용 범위         |
+| ------ | --------- | ----------------- | --------- | ----------------- |
+| **B**  | Common    | 외형만 (cosmetic) | 0         | idle 스프라이트만 |
+| **A**  | Rare      | 작은 능력치 1개   | 1         | idle 스프라이트만 |
+| **S**  | Epic      | 다양한 능력치     | 무제한    | 모든 모션         |
+| **S+** | Legendary | 게임 자체 변형    | 무제한    | 모든 모션         |
 
 ### 1.1 등급별 효과 예시
 
-| 등급 | 예시 |
-|---|---|
-| B | "새싹" — 외형 장식. 능력 변화 없음 |
-| A | "스피드 부츠" — `chiSpeedMul: 1.15` |
-| S | "스피드 + 행운의 부적" — `chiSpeedMul: 1.2` + `itemSpawnMul: 0.7` |
-| S+ | "웨딩 코스튬" — `pigeonDisabled: true` + `backgroundOverride: 'wedding-bg'` + `triggerEnding: 'wedding-ending'` |
+| 등급 | 예시                                                                                                            |
+| ---- | --------------------------------------------------------------------------------------------------------------- |
+| B    | "새싹" — 외형 장식. 능력 변화 없음                                                                              |
+| A    | "스피드 부츠" — `chiSpeedMul: 1.15`                                                                             |
+| S    | "스피드 + 행운의 부적" — `chiSpeedMul: 1.2` + `itemSpawnMul: 0.7`                                               |
+| S+   | "웨딩 코스튬" — `pigeonDisabled: true` + `backgroundOverride: 'wedding-bg'` + `triggerEnding: 'wedding-ending'` |
 
 ### 1.2 가챠 등장 비율
 
 기본 비율 (페어 보정 적용 전):
 
 | 등급 | 비율 |
-|---|---|
-| B | 60% |
-| A | 30% |
-| S | 9% |
-| S+ | 1% |
+| ---- | ---- |
+| B    | 60%  |
+| A    | 30%  |
+| S    | 9%   |
+| S+   | 1%   |
 
 페어 옷은 sub-grade로 분류되어 등장 확률 **×0.7** (= -30%). 사용자에겐 동일 등급으로 노출.
 
@@ -73,10 +73,10 @@
 
 옷이 캐릭터의 어떤 모션에 적용되는지를 결정.
 
-| 값 | 의미 |
-|---|---|
+| 값       | 의미                                                                         |
+| -------- | ---------------------------------------------------------------------------- |
 | `'idle'` | 기본 스프라이트에만 적용. 모션(kissing/sad/slowed/scared 등)에서는 본래 모습 |
-| `'all'` | 모든 모션에 적용 |
+| `'all'`  | 모든 모션에 적용                                                             |
 
 ### 3.1 등급별 기본값
 
@@ -108,26 +108,26 @@
 ```ts
 export type ClothEffects = {
   // A, S 등급 — 능력치 변화 (게임 루프에서 곱연산 적용)
-  chiSpeedMul?: number       // 츄 속도 배수 (>1.0 = ↑)
-  catSpeedMul?: number       // 냐 속도 배수 (페어 옷에서만 의미)
-  pigeonSpawnMul?: number    // 비둘기 스폰 간격 배수 (>1.0 = 빈도 ↓)
-  itemSpawnMul?: number      // 아이템 스폰 간격 배수 (<1.0 = 빈도 ↑)
+  chiSpeedMul?: number // 츄 속도 배수 (>1.0 = ↑)
+  catSpeedMul?: number // 냐 속도 배수 (페어 옷에서만 의미)
+  pigeonSpawnMul?: number // 비둘기 스폰 간격 배수 (>1.0 = 빈도 ↓)
+  itemSpawnMul?: number // 아이템 스폰 간격 배수 (<1.0 = 빈도 ↑)
 
   // S+ 전용 — 게임 변형
-  pigeonDisabled?: boolean       // 비둘기 출현 무효
-  backgroundOverride?: string    // 배경 자산 키 (예: 'wedding-bg')
-  triggerEnding?: string         // 이벤트 ID, 11레벨 도달 시 발동
+  pigeonDisabled?: boolean // 비둘기 출현 무효
+  backgroundOverride?: string // 배경 자산 키 (예: 'wedding-bg')
+  triggerEnding?: string // 이벤트 ID, 11레벨 도달 시 발동
 }
 ```
 
 ### 4.1 등급별 허용 필드 (GRADE_POLICY)
 
-| 등급 | maxEffects | allowedFields |
-|---|---|---|
-| B | 0 | (없음) |
-| A | 1 | chiSpeedMul, catSpeedMul, pigeonSpawnMul, itemSpawnMul |
-| S | ∞ | chiSpeedMul, catSpeedMul, pigeonSpawnMul, itemSpawnMul |
-| S+ | ∞ | chiSpeedMul, catSpeedMul, pigeonDisabled, backgroundOverride, triggerEnding |
+| 등급 | maxEffects | allowedFields                                                               |
+| ---- | ---------- | --------------------------------------------------------------------------- |
+| B    | 0          | (없음)                                                                      |
+| A    | 1          | chiSpeedMul, catSpeedMul, pigeonSpawnMul, itemSpawnMul                      |
+| S    | ∞          | chiSpeedMul, catSpeedMul, pigeonSpawnMul, itemSpawnMul                      |
+| S+   | ∞          | chiSpeedMul, catSpeedMul, pigeonDisabled, backgroundOverride, triggerEnding |
 
 ### 4.2 검증 함수
 
@@ -137,18 +137,25 @@ validateClothEffects(grade, effects): string[]
 
 런타임에 호출. 빌드는 안 깸. 위반 사항을 문자열 배열로 반환. 사이클 W에서 옷 등록 시 콘솔 경고 출력.
 
+**동작 명세**: 두 가지 독립 검사를 모두 수행하고 위반 메시지를 누적한다.
+
+1. 효과 개수 검사 (maxEffects 초과 시 위반)
+2. 효과 필드 종류 검사 (allowedFields에 없는 키마다 개별 위반)
+   같은 효과가 두 검사 모두 위반하면 두 메시지가 모두 반환된다.
+
 ---
 
 ## 5. 메타 인터페이스 (ClothEntry)
 
 ```ts
 export type ClothEntry = {
-  id: string         // kebab-case
-  name: string       // UI 노출명 (한국어 가능)
+  id: string
+  name: string
   grade: Grade
-  pair: boolean      // true면 츄+냐 동시 외형
-  applyTo: ApplyTo   // 'idle' | 'all' (등급별 강제값 권장)
+  pair: boolean
+  applyTo: ApplyTo
   effects?: ClothEffects
+  description?: string // ← 추가, 가챠 결과 모달 등에서 표시 (선택)
 }
 ```
 
@@ -164,20 +171,20 @@ export type ClothEntry = {
 
 위치: `public/assets/clothes/`
 
-| 파일명 | 사양 | 용도 |
-|---|---|---|
-| `chi-{id}-full.png` | 256×256 PNG letterbox | 츄와와 풀바디 (피팅룸 + 게임 내) |
-| `chi-{id}-object.png` | 128×128 PNG | 옷장 그리드 카드 아이콘 (츄와와 기준) |
-| `cat-{id}-full.png` | 256×256 PNG letterbox | 페어 옷 — 냐냐 풀바디 |
-| `cat-{id}-object.png` | 128×128 PNG | 페어 옷 — 냐냐 그리드 카드 |
+| 파일명                | 사양                  | 용도                                  |
+| --------------------- | --------------------- | ------------------------------------- |
+| `chi-{id}-full.png`   | 256×256 PNG letterbox | 츄와와 풀바디 (피팅룸 + 게임 내)      |
+| `chi-{id}-object.png` | 128×128 PNG           | 옷장 그리드 카드 아이콘 (츄와와 기준) |
+| `cat-{id}-full.png`   | 256×256 PNG letterbox | 페어 옷 — 냐냐 풀바디                 |
+| `cat-{id}-object.png` | 128×128 PNG           | 페어 옷 — 냐냐 그리드 카드            |
 
 ### 6.2 보조 자산
 
-| 파일 경로 | 사양 | 용도 |
-|---|---|---|
-| `public/assets/ui/coin-icon.png` | 64×64 PNG | 메인/게임오버/옷장 코인 표시 |
-| `public/assets/ui/capsule-icon.png` | 64×64 PNG | 가챠 버튼 |
-| `public/assets/backgrounds/fitting-room.jpg` | JPEG q78, ~700px 폭 | 옷장 화면 피팅룸 배경 |
+| 파일 경로                                    | 사양                | 용도                         |
+| -------------------------------------------- | ------------------- | ---------------------------- |
+| `public/assets/ui/coin-icon.png`             | 64×64 PNG           | 메인/게임오버/옷장 코인 표시 |
+| `public/assets/ui/capsule-icon.png`          | 64×64 PNG           | 가챠 버튼                    |
+| `public/assets/backgrounds/fitting-room.jpg` | JPEG q78, ~700px 폭 | 옷장 화면 피팅룸 배경        |
 
 ### 6.3 자산 처리 패턴 (휘게 PIL 작업)
 
@@ -216,11 +223,11 @@ FITTING_ROOM_BG_PATH  // '/assets/backgrounds/fitting-room.jpg'
 
 ## 8. 저장소 키 (localStorage)
 
-| 키 | 데이터 |
-|---|---|
-| `chuhuahua:coins` | 누적 코인 (number) |
-| `chuhuahua:wardrobe` | `{ owned: string[], equipped: string \| null }` |
-| `chuhuahua:gacha-pity` | 가챠 천장 카운터 (number) |
+| 키                     | 데이터                                          |
+| ---------------------- | ----------------------------------------------- |
+| `chuhuahua:coins`      | 누적 코인 (number)                              |
+| `chuhuahua:wardrobe`   | `{ owned: string[], equipped: string \| null }` |
+| `chuhuahua:gacha-pity` | 가챠 천장 카운터 (number)                       |
 
 > 사이클 W 진입 시 Supabase 연동 검토. 현재는 로컬만.
 
@@ -278,14 +285,14 @@ S+ 등급은 게임 루프에 깊게 통합되므로 별도 명세 필요.
 
 ## 11. 사이클 매핑
 
-| 사이클 | 옷장 관련 작업 |
-|---|---|
-| **2.5** (현재) | 등급 정책, 메타 인터페이스, 경로 헬퍼, 시스템/워크플로우 문서 |
-| **B** | Chihuahua/Cat 컴포넌트에 `equippedSrc?: string` prop 정의. 옷 로직은 안 만짐 |
-| **C** (솔로 엔드리스) | 게임 루프에 옷 효과 훅 자리 마련 (chiSpeedMul, pigeonSpawnMul 적용 지점) |
-| **F** (로컬 PvP) | 동일하게 효과 훅 자리 (PvP 가드 포함) |
-| **W** (옷장 features) | 옷장 UI, 가챠 추첨 로직, 효과 실제 동작, 천장 시스템, localStorage 연동 |
-| **E** (S+ 이벤트) | 11레벨 엔딩 이벤트, S+ 옷 자산, 배경 override 로직 |
+| 사이클                | 옷장 관련 작업                                                               |
+| --------------------- | ---------------------------------------------------------------------------- |
+| **2.5** (현재)        | 등급 정책, 메타 인터페이스, 경로 헬퍼, 시스템/워크플로우 문서                |
+| **B**                 | Chihuahua/Cat 컴포넌트에 `equippedSrc?: string` prop 정의. 옷 로직은 안 만짐 |
+| **C** (솔로 엔드리스) | 게임 루프에 옷 효과 훅 자리 마련 (chiSpeedMul, pigeonSpawnMul 적용 지점)     |
+| **F** (로컬 PvP)      | 동일하게 효과 훅 자리 (PvP 가드 포함)                                        |
+| **W** (옷장 features) | 옷장 UI, 가챠 추첨 로직, 효과 실제 동작, 천장 시스템, localStorage 연동      |
+| **E** (S+ 이벤트)     | 11레벨 엔딩 이벤트, S+ 옷 자산, 배경 override 로직                           |
 
 각 사이클 진입 시 이 문서 섹션 11을 참조해서 작업 범위 확인.
 
@@ -293,27 +300,52 @@ S+ 등급은 게임 루프에 깊게 통합되므로 별도 명세 필요.
 
 ## 12. 미결정 / 향후 결정
 
-| 항목 | 결정 시점 |
-|---|---|
-| `PAIR_WEIGHT_MULTIPLIER` 정확한 값 (현재 0.7) | 사이클 W 테스트 후 |
-| 천장 시스템 수치 (몇 회 안 뽑히면 S+ 보장?) | 사이클 W |
-| 옷장 안내 메시지 정확한 문구 | 사이클 W |
-| 그리드 카드 등급 배지 디자인 | 사이클 W |
-| 미보유 옷 표시 방식 (그레이스케일 vs ??) | 사이클 W |
-| 가챠 연출 (회전, 광선 등) | 사이클 W |
-| S+ 엔딩 이벤트 시나리오 | 사이클 E |
-| 페어 옷에서 한쪽만 입었을 때 처리 | 사이클 W 진입 시 결정 |
-| Supabase 옷장 데이터 동기화 | 사이클 W 이후 별도 |
+| 항목                                          | 결정 시점             |
+| --------------------------------------------- | --------------------- |
+| `PAIR_WEIGHT_MULTIPLIER` 정확한 값 (현재 0.7) | 사이클 W 테스트 후    |
+| 천장 시스템 수치 (몇 회 안 뽑히면 S+ 보장?)   | 사이클 W              |
+| 옷장 안내 메시지 정확한 문구                  | 사이클 W              |
+| 그리드 카드 등급 배지 디자인                  | 사이클 W              |
+| 미보유 옷 표시 방식 (그레이스케일 vs ??)      | 사이클 W              |
+| 가챠 연출 (회전, 광선 등)                     | 사이클 W              |
+| S+ 엔딩 이벤트 시나리오                       | 사이클 E              |
+| 페어 옷에서 한쪽만 입었을 때 처리             | 사이클 W 진입 시 결정 |
+| Supabase 옷장 데이터 동기화                   | 사이클 W 이후 별도    |
+| 연속 뽑기 (10연차) 도입 정책                  | 사이클 W              |
+| 카테고리 가챠 — 카테고리 정의 + 픽업 확률     | 사이클 W              |
+| 한정 옷 시스템 운영 여부                      | 사이클 W              |
 
 ---
 
-## 13. 폐기된 항목 (v1 → v2)
+## 13. 가챠 정책
 
-- **N 등급** → B로 명칭 변경
-- **기존 옷 3종** (sprout/wings/angry) → 새 등급 정책에 맞춰 재정의 또는 폐기. 사이클 2.5 시점엔 메타에 등록 안 함
-- **단일 옷 명명** (`cloth-{id}-*.png`) → `chi-{id}-*.png` / `cat-{id}-*.png`로 변경 (캐릭터 prefix 일관화)
-- **GACHA_COST = 1** (데모 테스트값) → 정식 값은 사이클 W에서 결정
-- **CLOTHES_BY_GRADE 정적 객체** → `clothesByGrade(grade)` 헬퍼 함수로 동적 계산
+### 13.1 비용
+
+- 1회 가챠: **15코인**
+
+### 13.2 중복 환불
+
+중복 옷 획득 시 등급별 코인 환불:
+
+| 등급 | 환불                       |
+| ---- | -------------------------- |
+| B    | 1코인                      |
+| A    | 3코인                      |
+| S    | 5코인                      |
+| S+   | 해당 없음 (섹션 13.3 참조) |
+
+### 13.3 S+ 단발 규칙
+
+S+ 등급 옷은 한 번 획득하면 가챠 풀에서 영구 제외. 가챠 추첨 로직은 보유 옷 ID 리스트를 확인해 S+ 풀을 동적으로 필터링한다. 즉 S+ 중복은 발생하지 않는다.
+**S+ 풀이 비었을 때 처리**: 사이클 W에서 결정 (옵션: 1%를 S로 흡수 / B+A+S 비율 재계산 / 한 단계 아래 폴백).
+
+### 13.4 가챠 결과 모달 표시
+
+- 뽑은 옷을 착용한 츄와와 풀바디 이미지 (256×256, 페어 옷은 츄+냐 동시)
+- 옷 이름 + 등급 배지
+- 옷 설명 (선택)
+- 중복 시: 환불 코인 수 표시 ("이미 보유 — N코인 환불!")
+- 신규 획득 시: "획득!" 표시
 
 ---
 
