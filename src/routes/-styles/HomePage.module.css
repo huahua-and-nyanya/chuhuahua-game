@@ -1,22 +1,19 @@
 .page {
-  position: relative;
   min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--gap-md);
   padding: var(--gap-lg);
 }
 
 .title {
-  position: absolute;
-  top: var(--gap-lg);
-  left: 50%;
-  transform: translateX(-50%);
   width: min(360px, 50vw);
   height: auto;
   object-fit: contain;
   pointer-events: none;
-  z-index: 1;
+  flex-shrink: 0;
 }
 
 .frameStack {
