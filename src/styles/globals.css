@@ -143,6 +143,21 @@
   /* === GameFrame radius/aspect === */
   --radius-frame: var(--frame-radius);
   --aspect-frame: var(--frame-aspect-ratio);
+
+  /* === CenterModal 색상 === */
+  --color-bg-modal-backdrop: rgba(45, 27, 61, 0.45);
+
+  /* === CenterModal drop-shadow === */
+  --drop-shadow-modal: 6px 6px 0 var(--color-ink-base);
+
+  /* === CenterModal close 버튼 그림자 진행 === */
+  --shadow-close-rest: 2px 2px 0 var(--color-ink-base);
+  --shadow-close-hover: 3px 3px 0 var(--color-ink-base);
+  --shadow-close-pressed: 1px 1px 0 var(--color-ink-base);
+
+  /* === CenterModal 애니메이션 (keyframes는 animations.css) === */
+  --animate-backdrop-in: backdrop-in 180ms ease-out;
+  --animate-card-in: card-in 220ms ease-out;
 }
 
 body {
