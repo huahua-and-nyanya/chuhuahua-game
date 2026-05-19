@@ -59,6 +59,26 @@ export type ToastRef = {
 export type GameMode = 'solo' | 'pvp'
 export type GameState = 'idle' | 'playing' | 'gameover'
 
+// === 효과 상태 ===
+// PvP에서 어느 쪽이 아이템을 픽업했는지
+export type PickerSide = 'chi' | 'cat'
+
+// 효과 만료 타임스탬프 (Date.now() 기준). null이면 비활성.
+// 활성 판정은 `effect && effect.until > now`.
+export interface TimedEffect {
+  until: number
+}
+
+// 게임 루프가 보유하는 전역 효과 트래커 (effects.ts가 mutate)
+export interface EffectState {
+  chiBoost: TimedEffect | null
+  chiSlow: TimedEffect | null
+  catSpeedup: TimedEffect | null
+  catSlow: TimedEffect | null
+  chiShield: TimedEffect | null
+  catShield: TimedEffect | null
+}
+
 // === 히스토리 항목 ===
 export type SoloHistoryEntry = {
   id: string
