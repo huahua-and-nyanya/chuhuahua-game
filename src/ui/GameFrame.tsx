@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import styles from './GameFrame.module.css'
+import clsx from 'clsx'
 
 interface GameFrameProps {
   children: ReactNode
@@ -9,6 +9,26 @@ interface GameFrameProps {
   className?: string
 }
 
+const ROOT_CLASSES =
+  'relative w-full mx-auto overflow-hidden ' +
+  'max-w-[var(--frame-max-width)] max-md:max-w-[95vw] ' +
+  'aspect-[var(--frame-aspect-ratio)] ' +
+  'rounded-[var(--frame-radius)] ' +
+  'border-[length:var(--frame-border-width)] border-solid border-[color:var(--color-border-frame)] ' +
+  'bg-[image:var(--gradient-frame-bg)] ' +
+  'shadow-[inset_0_0_0_var(--frame-inset-width)_var(--color-border-frame-inset)]'
+
+const CONTENT_CLASSES =
+  'absolute inset-0 flex items-center justify-center p-[var(--frame-inner-padding)]'
+
+const SIDE_MENU_CLASSES =
+  'absolute right-[var(--frame-inner-padding)] bottom-[var(--frame-inner-padding)] ' +
+  'flex flex-col gap-[var(--nav-button-gap)] z-[2] max-md:hidden'
+
+const CORNER_ACTIONS_CLASSES =
+  'absolute top-[var(--frame-inner-padding)] right-[var(--frame-inner-padding)] ' +
+  'flex flex-row gap-[var(--gap-sm)] z-[2] max-md:hidden'
+
 export function GameFrame({
   children,
   sideMenu,
@@ -16,15 +36,16 @@ export function GameFrame({
   background,
   className,
 }: GameFrameProps) {
-  const rootClass = [styles.root, className].filter(Boolean).join(' ')
-
   return (
-    <div className={rootClass} style={background ? { background } : undefined}>
-      <div className={styles.content}>{children}</div>
+    <div
+      className={clsx(ROOT_CLASSES, className)}
+      style={background ? { background } : undefined}
+    >
+      <div className={CONTENT_CLASSES}>{children}</div>
       {cornerActions && (
-        <div className={styles.cornerActions}>{cornerActions}</div>
+        <div className={CORNER_ACTIONS_CLASSES}>{cornerActions}</div>
       )}
-      {sideMenu && <div className={styles.sideMenu}>{sideMenu}</div>}
+      {sideMenu && <div className={SIDE_MENU_CLASSES}>{sideMenu}</div>}
     </div>
   )
 }
