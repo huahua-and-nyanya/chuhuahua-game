@@ -73,6 +73,27 @@
   --shadow-button-rest: 3px 3px 0 var(--color-ink-base);
   --shadow-button-hover: 4px 4px 0 var(--color-ink-base);
   --shadow-button-pressed: 1px 1px 0 var(--color-ink-base);
+
+  /* === 스페이싱 별칭 (tokens.css --gap-* 노출) === */
+  --spacing-xs: var(--gap-xs);
+  --spacing-sm: var(--gap-sm);
+  --spacing-md: var(--gap-md);
+  --spacing-lg: var(--gap-lg);
+  --spacing-xl: var(--gap-xl);
+
+  /* === PixelChip 색상 === */
+  --color-chip-default-bg: var(--color-pink-300);
+  --color-chip-default-text: var(--color-ink-base);
+  --color-chip-disabled-bg: #e8e0e8;
+  --color-chip-disabled-text: var(--color-ink-soft);
+  --color-chip-danger-bg: #d94747;
+  --color-chip-danger-text: #ffffff;
+
+  /* === text-xs 추가 === */
+  --text-xs: 12px;
+
+  /* === radius-pill === */
+  --radius-pill: 999px;
 }
 
 body {
