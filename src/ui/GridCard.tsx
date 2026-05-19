@@ -99,7 +99,7 @@ export function GridCard({
         </span>
         <div
           className={clsx(
-            'mt-[3px] text-[10px] leading-tight',
+            'text-[10px] leading-tight',
             owned ? 'text-ink-base' : 'text-stone-500',
           )}
         >
