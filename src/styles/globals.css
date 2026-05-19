@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 
 @import './tokens.css';
+@import './animations.css';
 
 @font-face {
   font-family: 'Moneygraphy Pixel';
@@ -42,6 +43,121 @@
 
   --color-ink-base: #2d1b3d;
   --color-ink-soft: #7a3a5a;
+
+  /* === PixelButton: 시맨틱 색상 (Tailwind utility 생성용) === */
+  --color-button-primary-bg: var(--color-pink-700);
+  --color-button-primary-text: #ffffff;
+  --color-button-secondary-bg: var(--color-pink-100);
+  --color-button-secondary-text: var(--color-pink-700);
+  --color-button-ghost-bg-hover: var(--color-pink-50);
+  --color-button-ghost-text: var(--color-pink-700);
+  --color-border-button: var(--color-ink-base);
+
+  /* === 폰트 사이즈 (Tailwind text-* utility) === */
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+
+  /* === 스페이싱 — PixelButton 사이즈 (h-*, w-*, p-*, m-* 자동 생성) === */
+  --spacing-button-sm: 32px;
+  --spacing-button-md: 40px;
+  --spacing-button-lg: 48px;
+  --spacing-button-px-sm: 12px;
+  --spacing-button-px-md: 16px;
+  --spacing-button-px-lg: 24px;
+
+  /* === radius (rounded-* utility) === */
+  --radius-md: 10px;
+
+  /* === 그림자 (PixelButton 인터랙티브 진행) === */
+  --shadow-button-rest: 3px 3px 0 var(--color-ink-base);
+  --shadow-button-hover: 4px 4px 0 var(--color-ink-base);
+  --shadow-button-pressed: 1px 1px 0 var(--color-ink-base);
+
+  /* === 스페이싱 별칭 (tokens.css --gap-* 노출) === */
+  --spacing-xs: var(--gap-xs);
+  --spacing-sm: var(--gap-sm);
+  --spacing-md: var(--gap-md);
+  --spacing-lg: var(--gap-lg);
+  --spacing-xl: var(--gap-xl);
+
+  /* === PixelChip 색상 === */
+  --color-chip-default-bg: var(--color-pink-300);
+  --color-chip-default-text: var(--color-ink-base);
+  --color-chip-disabled-bg: #e8e0e8;
+  --color-chip-disabled-text: var(--color-ink-soft);
+  --color-chip-danger-bg: #d94747;
+  --color-chip-danger-text: #ffffff;
+
+  /* === text-xs 추가 === */
+  --text-xs: 12px;
+
+  /* === radius-pill === */
+  --radius-pill: 999px;
+
+  /* === PixelCard 색상 === */
+  --color-bg-card: #ffffff;
+  --color-border-card: var(--color-pink-300);
+  --color-text-primary: var(--color-ink-base);
+
+  /* === PixelCard 그림자 === */
+  --shadow-card: 3px 3px 0 var(--color-ink-base);
+
+  /* === NavButton (사이드 탭) 색상 === */
+  --color-tab-default: var(--color-pink-600);
+  --color-tab-hover: var(--color-pink-700);
+  --color-tab-disabled: #c7b8c5;
+  --color-tab-text: #ffffff;
+  --color-text-on-pink: #ffffff;
+
+  /* === NavButton 스페이싱 (tokens.css 반응형 토큰 노출) === */
+  --spacing-nav-button-h: var(--nav-button-height);
+  --spacing-nav-button-w: var(--nav-button-width);
+
+  /* === NavButton 그림자 === */
+  --shadow-nav-rest: 3px 3px 0 var(--color-ink-base);
+  --shadow-nav-hover: 4px 4px 0 var(--color-ink-base);
+
+  /* === IconNavButton 색상 === */
+  --color-bg-icon-button: #ffffff;
+  --color-border-icon-button: var(--color-pink-700);
+
+  /* === IconNavButton 스페이싱 === */
+  --spacing-icon-button: var(--icon-button-size);
+  --spacing-icon-content: calc(
+    var(--icon-button-size) * var(--icon-content-ratio)
+  );
+
+  /* === IconNavButton 그림자 === */
+  --shadow-icon-button-rest: 2px 2px 0 var(--color-ink-base);
+
+  /* === GameFrame 색상 === */
+  --color-border-frame: var(--color-ink-base);
+  --color-border-frame-inset: #ffffff;
+
+  /* === GameFrame 스페이싱 === */
+  --spacing-frame: var(--frame-max-width);
+  --spacing-frame-inner: var(--frame-inner-padding);
+  --spacing-nav-button-gap: var(--nav-button-gap);
+
+  /* === GameFrame radius/aspect === */
+  --radius-frame: var(--frame-radius);
+  --aspect-frame: var(--frame-aspect-ratio);
+
+  /* === CenterModal 색상 === */
+  --color-bg-modal-backdrop: rgba(45, 27, 61, 0.45);
+
+  /* === CenterModal drop-shadow === */
+  --drop-shadow-modal: 6px 6px 0 var(--color-ink-base);
+
+  /* === CenterModal close 버튼 그림자 진행 === */
+  --shadow-close-rest: 2px 2px 0 var(--color-ink-base);
+  --shadow-close-hover: 3px 3px 0 var(--color-ink-base);
+  --shadow-close-pressed: 1px 1px 0 var(--color-ink-base);
+
+  /* === CenterModal 애니메이션 (keyframes는 animations.css) === */
+  --animate-backdrop-in: backdrop-in 180ms ease-out;
+  --animate-card-in: card-in 220ms ease-out;
 }
 
 body {

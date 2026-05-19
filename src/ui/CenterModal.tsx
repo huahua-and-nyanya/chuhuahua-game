@@ -1,6 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
 import { PixelCard } from './PixelCard'
-import styles from './CenterModal.module.css'
 
 interface CenterModalProps {
   open: boolean
@@ -10,6 +9,25 @@ interface CenterModalProps {
   closeOnBackdropClick?: boolean
   closeOnEscape?: boolean
 }
+
+const BACKDROP_CLASSES =
+  'fixed inset-0 flex items-center justify-center z-[100] ' +
+  'p-lg bg-bg-modal-backdrop animate-backdrop-in'
+
+const WRAPPER_CLASSES =
+  'relative w-full max-w-[480px] animate-card-in drop-shadow-modal'
+
+const CLOSE_CLASSES =
+  'absolute -top-[18px] -right-[18px] z-[1] cursor-pointer ' +
+  'inline-flex items-center justify-center leading-none ' +
+  'w-[40px] h-[40px] rounded-full ' +
+  'bg-pink-700 text-text-on-pink ' +
+  'border-[3px] border-solid border-ink-base ' +
+  'font-body font-bold text-md ' +
+  'shadow-close-rest ' +
+  'transition-[transform,box-shadow] duration-[var(--transition-fast)] ' +
+  'hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-close-hover ' +
+  'active:translate-x-[1px] active:translate-y-[1px] active:shadow-close-pressed'
 
 export function CenterModal({
   open,
@@ -40,12 +58,12 @@ export function CenterModal({
 
   return (
     <div
-      className={styles.backdrop}
+      className={BACKDROP_CLASSES}
       onClick={closeOnBackdropClick ? onClose : undefined}
       role="presentation"
     >
       <div
-        className={styles.wrapper}
+        className={WRAPPER_CLASSES}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -53,7 +71,7 @@ export function CenterModal({
       >
         <button
           type="button"
-          className={styles.close}
+          className={CLOSE_CLASSES}
           onClick={onClose}
           aria-label="닫기"
         >

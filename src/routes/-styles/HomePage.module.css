@@ -1,5 +1,4 @@
 .page {
-  position: relative;
   min-height: 100dvh;
   display: flex;
   align-items: center;
@@ -7,19 +6,8 @@
   padding: var(--gap-lg);
 }
 
-.title {
-  position: absolute;
-  top: var(--gap-lg);
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(360px, 50vw);
-  height: auto;
-  object-fit: contain;
-  pointer-events: none;
-  z-index: 1;
-}
-
 .frameStack {
+  position: relative;
   width: 100%;
   max-width: var(--frame-max-width);
   display: flex;
@@ -27,9 +15,26 @@
   align-items: center;
 }
 
+.title {
+  position: absolute;
+  bottom: calc(100% + var(--gap-md));
+  left: 50%;
+  /* X 정렬은 framer-motion style.x로 위임 (rotate 합성 호환). 2번째 항(50vw)·3번째 항(35dvh)으로 vw/vh 양쪽 시각 반응 보장, 4번째 항은 클리핑 방지 상한 (frame.h 480 + 2*gap 24 = 504, img 비율 522/700) */
+  width: min(360px, 50vw, 35dvh, calc((100dvh - 504px) / 1.4914));
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+}
+
 .mobileCornerActions,
 .mobileNav {
   display: none;
+}
+
+@media (max-height: 720px) {
+  .title {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
