@@ -1,5 +1,4 @@
 import { useEffect, type ReactNode } from 'react'
-import clsx from 'clsx'
 import { PixelCard } from './PixelCard'
 
 interface CenterModalProps {
@@ -63,12 +62,12 @@ export function CenterModal({
 
   return (
     <div
-      className={clsx(BACKDROP_CLASSES)}
+      className={BACKDROP_CLASSES}
       onClick={closeOnBackdropClick ? onClose : undefined}
       role="presentation"
     >
       <div
-        className={clsx(WRAPPER_CLASSES)}
+        className={WRAPPER_CLASSES}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -76,7 +75,7 @@ export function CenterModal({
       >
         <button
           type="button"
-          className={clsx(CLOSE_CLASSES)}
+          className={CLOSE_CLASSES}
           onClick={onClose}
           aria-label="닫기"
         >
