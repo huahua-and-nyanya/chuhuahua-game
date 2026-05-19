@@ -60,7 +60,12 @@ function HomePage() {
 
         <GameFrame
           background={`url(${MAIN_HERO}) center / cover no-repeat`}
-          topLeftSlot={<CoinChip amount={coins} size="md" />}
+          topLeftSlot={
+            <>
+              <CoinChip amount={coins} size="md" className="max-md:hidden" />
+              <CoinChip amount={coins} size="sm" className="md:hidden" />
+            </>
+          }
           cornerActions={cornerActions}
           sideMenu={sideMenu}
         >
