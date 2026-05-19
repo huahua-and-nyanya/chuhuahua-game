@@ -20,8 +20,8 @@
   bottom: calc(100% + var(--gap-md));
   left: 50%;
   transform: translateX(-50%);
-  /* 3번째 항: 프레임 중앙 정렬 시 타이틀이 뷰포트 상단을 안 넘는 최대 폭 (frame.h 480 + 2*gap 24 = 504, img 비율 522/700) */
-  width: min(360px, 50vw, calc((100vh - 504px) / 1.4914));
+  /* 2번째 항(50vw)·3번째 항(35dvh)으로 vw/vh 양쪽 시각 반응 보장, 4번째 항은 클리핑 방지 상한 (frame.h 480 + 2*gap 24 = 504, img 비율 522/700) */
+  width: min(360px, 50vw, 35dvh, calc((100dvh - 504px) / 1.4914));
   height: auto;
   object-fit: contain;
   pointer-events: none;
