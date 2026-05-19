@@ -12,26 +12,22 @@ interface CenterModalProps {
 
 const BACKDROP_CLASSES =
   'fixed inset-0 flex items-center justify-center z-[100] ' +
-  'p-[var(--gap-lg)] ' +
-  'bg-[color:var(--color-bg-modal-backdrop)] ' +
-  'animate-[backdrop-in_180ms_ease-out]'
+  'p-lg bg-bg-modal-backdrop animate-backdrop-in'
 
 const WRAPPER_CLASSES =
-  'relative w-full max-w-[480px] ' +
-  'animate-[card-in_220ms_ease-out] ' +
-  '[filter:drop-shadow(var(--shadow-modal))]'
+  'relative w-full max-w-[480px] animate-card-in drop-shadow-modal'
 
 const CLOSE_CLASSES =
   'absolute -top-[18px] -right-[18px] z-[1] cursor-pointer ' +
   'inline-flex items-center justify-center leading-none ' +
-  'w-[40px] h-[40px] rounded-[var(--radius-circle)] ' +
-  'bg-[color:var(--color-pink-700)] text-[color:var(--color-text-on-pink)] ' +
-  'border-[length:3px] border-solid border-[color:var(--color-ink-base)] ' +
-  'font-[family-name:var(--font-body)] font-bold text-[length:var(--text-md)] ' +
-  'shadow-[2px_2px_0_var(--color-ink-base)] ' +
+  'w-[40px] h-[40px] rounded-full ' +
+  'bg-pink-700 text-text-on-pink ' +
+  'border-[3px] border-solid border-ink-base ' +
+  'font-body font-bold text-md ' +
+  'shadow-close-rest ' +
   'transition-[transform,box-shadow] duration-[var(--transition-fast)] ' +
-  'hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_var(--color-ink-base)] ' +
-  'active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_var(--color-ink-base)]'
+  'hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-close-hover ' +
+  'active:translate-x-[1px] active:translate-y-[1px] active:shadow-close-pressed'
 
 export function CenterModal({
   open,
