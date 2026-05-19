@@ -94,6 +94,14 @@
 
   /* === radius-pill === */
   --radius-pill: 999px;
+
+  /* === PixelCard 색상 === */
+  --color-bg-card: #ffffff;
+  --color-border-card: var(--color-pink-300);
+  --color-text-primary: var(--color-ink-base);
+
+  /* === PixelCard 그림자 === */
+  --shadow-card: 3px 3px 0 var(--color-ink-base);
 }
 
 body {
