@@ -5,7 +5,9 @@ import { MAIN_HERO, TITLE_LOGO, ICON_ASSETS } from '@/assets'
 import { GameFrame } from '@/ui/GameFrame'
 import { NavButton } from '@/ui/NavButton'
 import { IconNavButton } from '@/ui/IconNavButton'
+import { CoinChip } from '@/ui/CoinChip'
 import { CenterModal } from '@/ui/CenterModal'
+import { useCoins } from '@/features/coins/useCoins'
 import { MultiplayerSelectModal } from './-components/MultiplayerSelectModal'
 import styles from './-styles/HomePage.module.css'
 
@@ -15,6 +17,7 @@ export const Route = createFileRoute('/')({
 
 function HomePage() {
   const navigate = useNavigate()
+  const { coins } = useCoins()
   const [multiOpen, setMultiOpen] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
   const [rankingOpen, setRankingOpen] = useState(false)
@@ -57,6 +60,7 @@ function HomePage() {
 
         <GameFrame
           background={`url(${MAIN_HERO}) center / cover no-repeat`}
+          topLeftSlot={<CoinChip amount={coins} size="md" />}
           cornerActions={cornerActions}
           sideMenu={sideMenu}
         >
