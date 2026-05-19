@@ -20,7 +20,8 @@
   bottom: calc(100% + var(--gap-md));
   left: 50%;
   transform: translateX(-50%);
-  width: min(360px, 50vw);
+  /* 3번째 항: 프레임 중앙 정렬 시 타이틀이 뷰포트 상단을 안 넘는 최대 폭 (frame.h 480 + 2*gap 24 = 504, img 비율 522/700) */
+  width: min(360px, 50vw, calc((100vh - 504px) / 1.4914));
   height: auto;
   object-fit: contain;
   pointer-events: none;
@@ -29,6 +30,12 @@
 .mobileCornerActions,
 .mobileNav {
   display: none;
+}
+
+@media (max-height: 720px) {
+  .title {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
