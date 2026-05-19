@@ -5,6 +5,7 @@ interface GameFrameProps {
   children: ReactNode
   sideMenu?: ReactNode
   cornerActions?: ReactNode
+  topLeftSlot?: ReactNode
   background?: string
   className?: string
 }
@@ -29,10 +30,14 @@ const CORNER_ACTIONS_CLASSES =
   'absolute top-frame-inner right-frame-inner ' +
   'flex flex-row gap-sm z-[2] max-md:hidden'
 
+const TOP_LEFT_SLOT_CLASSES =
+  'absolute top-frame-inner left-frame-inner ' + 'flex flex-row gap-sm z-[2]'
+
 export function GameFrame({
   children,
   sideMenu,
   cornerActions,
+  topLeftSlot,
   background,
   className,
 }: GameFrameProps) {
@@ -44,6 +49,9 @@ export function GameFrame({
       }
     >
       <div className={CONTENT_CLASSES}>{children}</div>
+      {topLeftSlot && (
+        <div className={TOP_LEFT_SLOT_CLASSES}>{topLeftSlot}</div>
+      )}
       {cornerActions && (
         <div className={CORNER_ACTIONS_CLASSES}>{cornerActions}</div>
       )}

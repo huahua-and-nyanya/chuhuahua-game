@@ -4,13 +4,14 @@ import { PixelButton } from '@/ui/PixelButton'
 import { PixelCard } from '@/ui/PixelCard'
 import { PixelChip } from '@/ui/PixelChip'
 import { CoinChip } from '@/ui/CoinChip'
+import { IconCostButton } from '@/ui/IconCostButton'
 import { GridCard } from '@/ui/GridCard'
 import { CenterModal } from '@/ui/CenterModal'
 import { GameFrame } from '@/ui/GameFrame'
 import { NavButton } from '@/ui/NavButton'
 import { IconNavButton } from '@/ui/IconNavButton'
 import type { ClothEntry } from '@/features/wardrobe/clothes'
-import { COIN_ICON_PATH } from '@/assets/clothes'
+import { COIN_ICON_PATH, CAPSULE_ICON_PATH } from '@/assets/clothes'
 import { ICON_ASSETS, MAIN_HERO } from '@/assets'
 import { MultiplayerSelectModal } from '../-components/MultiplayerSelectModal'
 import { PreviewSection, PreviewRow } from './-components/PreviewLayout'
@@ -177,6 +178,41 @@ function UiPreviewPage() {
             <CoinChip amount={150} size="sm" floating />
             <CoinChip amount={150} size="md" floating />
           </div>
+        </PreviewRow>
+      </PreviewSection>
+
+      <PreviewSection title="IconCostButton">
+        <PreviewRow label="md (가챠 버튼 가정 — enabled / disabled)">
+          <IconCostButton
+            iconSrc={CAPSULE_ICON_PATH}
+            label="가챠"
+            cost={15}
+            onClick={() => undefined}
+          />
+          <IconCostButton
+            iconSrc={CAPSULE_ICON_PATH}
+            label="가챠"
+            cost={15}
+            disabled
+            onClick={() => undefined}
+          />
+        </PreviewRow>
+        <PreviewRow label="sm (옷장 내 액션 가정 — enabled / disabled)">
+          <IconCostButton
+            iconSrc={CAPSULE_ICON_PATH}
+            label="가챠"
+            cost={15}
+            size="sm"
+            onClick={() => undefined}
+          />
+          <IconCostButton
+            iconSrc={CAPSULE_ICON_PATH}
+            label="가챠"
+            cost={15}
+            size="sm"
+            disabled
+            onClick={() => undefined}
+          />
         </PreviewRow>
       </PreviewSection>
 
