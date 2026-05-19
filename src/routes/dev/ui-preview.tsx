@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { PixelButton } from '@/ui/PixelButton'
 import { PixelCard } from '@/ui/PixelCard'
 import { PixelChip } from '@/ui/PixelChip'
+import { CoinChip } from '@/ui/CoinChip'
 import { CenterModal } from '@/ui/CenterModal'
 import { GameFrame } from '@/ui/GameFrame'
 import { NavButton } from '@/ui/NavButton'
@@ -79,6 +80,30 @@ function UiPreviewPage() {
           <PixelChip variant="disabled">disabled</PixelChip>
           <PixelChip variant="danger">danger</PixelChip>
           <PixelChip>준비 중</PixelChip>
+        </PreviewRow>
+      </PreviewSection>
+
+      <PreviewSection title="CoinChip">
+        <PreviewRow label="solid (기본)">
+          <CoinChip amount={0} size="sm" />
+          <CoinChip amount={42} size="sm" />
+          <CoinChip amount={999} size="md" />
+          <CoinChip amount={9999} size="md" />
+        </PreviewRow>
+        <PreviewRow label="floating (반투명 — 게임 화면 위)">
+          <div
+            style={{
+              display: 'flex',
+              gap: 'var(--gap-md)',
+              alignItems: 'center',
+              padding: 'var(--gap-lg)',
+              background: 'var(--color-pink-100)',
+              borderRadius: 'var(--radius-md)',
+            }}
+          >
+            <CoinChip amount={150} size="sm" floating />
+            <CoinChip amount={150} size="md" floating />
+          </div>
         </PreviewRow>
       </PreviewSection>
 
