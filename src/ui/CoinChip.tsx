@@ -21,7 +21,7 @@ const SOLID_BG = 'bg-bg-icon-button'
 const FLOATING_BG = 'bg-bg-icon-button/85'
 
 const SIZE_CLASSES: Record<Size, string> = {
-  sm: 'px-2.5 py-0.5 text-xs',
+  sm: 'px-2.5 py-[3px] text-xs',
   md: 'px-3.5 py-1 text-sm',
 }
 
