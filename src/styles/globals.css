@@ -130,6 +130,19 @@
 
   /* === IconNavButton 그림자 === */
   --shadow-icon-button-rest: 2px 2px 0 var(--color-ink-base);
+
+  /* === GameFrame 색상 === */
+  --color-border-frame: var(--color-ink-base);
+  --color-border-frame-inset: #ffffff;
+
+  /* === GameFrame 스페이싱 === */
+  --spacing-frame: var(--frame-max-width);
+  --spacing-frame-inner: var(--frame-inner-padding);
+  --spacing-nav-button-gap: var(--nav-button-gap);
+
+  /* === GameFrame radius/aspect === */
+  --radius-frame: var(--frame-radius);
+  --aspect-frame: var(--frame-aspect-ratio);
 }
 
 body {
