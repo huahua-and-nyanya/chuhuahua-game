@@ -11,15 +11,14 @@ interface IconNavButtonProps {
 
 const ROOT_CLASSES =
   'inline-flex items-center justify-center cursor-pointer shrink-0 p-0 ' +
-  'w-[var(--icon-button-size)] h-[var(--icon-button-size)] ' +
-  'bg-[color:var(--color-bg-icon-button)] ' +
-  'border-[length:var(--icon-button-border-width)] border-solid border-[color:var(--color-border-icon-button)] ' +
-  'rounded-[var(--radius-circle)] shadow-[var(--shadow-icon-button-rest)] ' +
+  'w-icon-button h-icon-button ' +
+  'bg-bg-icon-button ' +
+  'border-[length:var(--icon-button-border-width)] border-solid border-border-icon-button ' +
+  'rounded-full shadow-icon-button-rest ' +
   'disabled:opacity-50 disabled:cursor-not-allowed'
 
 const ICON_CLASSES =
-  'w-[calc(var(--icon-button-size)*var(--icon-content-ratio))] ' +
-  'h-[calc(var(--icon-button-size)*var(--icon-content-ratio))] ' +
+  'w-icon-content h-icon-content ' +
   'object-contain pointer-events-none [image-rendering:pixelated]'
 
 export function IconNavButton({
