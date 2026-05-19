@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import clsx from 'clsx'
 
 interface GameFrameProps {
@@ -9,13 +9,14 @@ interface GameFrameProps {
   className?: string
 }
 
+/* --frame-bg는 props.background 전달용 CSS 변수. 미설정 시 fallback으로 기본 그래디언트 사용 */
 const ROOT_CLASSES =
   'relative w-full mx-auto overflow-hidden ' +
   'max-w-[var(--frame-max-width)] max-md:max-w-[95vw] ' +
   'aspect-[var(--frame-aspect-ratio)] ' +
   'rounded-[var(--frame-radius)] ' +
   'border-[length:var(--frame-border-width)] border-solid border-[color:var(--color-border-frame)] ' +
-  'bg-[image:var(--gradient-frame-bg)] ' +
+  '[background:var(--frame-bg,var(--gradient-frame-bg))] ' +
   'shadow-[inset_0_0_0_var(--frame-inset-width)_var(--color-border-frame-inset)]'
 
 const CONTENT_CLASSES =
@@ -39,7 +40,9 @@ export function GameFrame({
   return (
     <div
       className={clsx(ROOT_CLASSES, className)}
-      style={background ? { background } : undefined}
+      style={
+        background ? ({ '--frame-bg': background } as CSSProperties) : undefined
+      }
     >
       <div className={CONTENT_CLASSES}>{children}</div>
       {cornerActions && (
