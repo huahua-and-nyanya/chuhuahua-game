@@ -43,6 +43,36 @@
 
   --color-ink-base: #2d1b3d;
   --color-ink-soft: #7a3a5a;
+
+  /* === PixelButton: 시맨틱 색상 (Tailwind utility 생성용) === */
+  --color-button-primary-bg: var(--color-pink-700);
+  --color-button-primary-text: #ffffff;
+  --color-button-secondary-bg: var(--color-pink-100);
+  --color-button-secondary-text: var(--color-pink-700);
+  --color-button-ghost-bg-hover: var(--color-pink-50);
+  --color-button-ghost-text: var(--color-pink-700);
+  --color-border-button: var(--color-ink-base);
+
+  /* === 폰트 사이즈 (Tailwind text-* utility) === */
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+
+  /* === 스페이싱 — PixelButton 사이즈 (h-*, w-*, p-*, m-* 자동 생성) === */
+  --spacing-button-sm: 32px;
+  --spacing-button-md: 40px;
+  --spacing-button-lg: 48px;
+  --spacing-button-px-sm: 12px;
+  --spacing-button-px-md: 16px;
+  --spacing-button-px-lg: 24px;
+
+  /* === radius (rounded-* utility) === */
+  --radius-md: 10px;
+
+  /* === 그림자 (PixelButton 인터랙티브 진행) === */
+  --shadow-button-rest: 3px 3px 0 var(--color-ink-base);
+  --shadow-button-hover: 4px 4px 0 var(--color-ink-base);
+  --shadow-button-pressed: 1px 1px 0 var(--color-ink-base);
 }
 
 body {
