@@ -165,6 +165,15 @@ body {
   color: var(--color-text-primary);
 }
 
+/*
+ * 폰트의 ascent/descent extra space 제거 — 텍스트가 라인 박스 정중앙에 오도록
+ * Chrome 133+, Safari 18.2+, Firefox 133+ 지원 (2024 말~2025 초)
+ * 미지원 브라우저에선 무시되고 기존 동작 (graceful fallback)
+ */
+* {
+  text-box: trim-both cap alphabetic;
+}
+
 .page-bg {
   background-color: var(--color-bg-letterbox);
   background-position: center;

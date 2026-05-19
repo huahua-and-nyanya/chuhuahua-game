@@ -53,6 +53,20 @@ export const GRADE_WEIGHT = {
   'S+': 1,
 } as const
 
+export const GRADE_TOKENS: Record<
+  Grade,
+  { bg: string; border: string; text: string }
+> = {
+  B: { bg: 'bg-stone-100', border: 'border-stone-400', text: 'text-stone-700' },
+  A: { bg: 'bg-sky-100', border: 'border-sky-400', text: 'text-sky-800' },
+  S: { bg: 'bg-amber-100', border: 'border-amber-500', text: 'text-amber-800' },
+  'S+': {
+    bg: 'bg-fuchsia-100',
+    border: 'border-fuchsia-500',
+    text: 'text-fuchsia-800',
+  },
+}
+
 export const PAIR_WEIGHT_MULTIPLIER = 0.7
 
 export function validateClothEffects(
