@@ -117,6 +117,19 @@
   /* === NavButton 그림자 === */
   --shadow-nav-rest: 3px 3px 0 var(--color-ink-base);
   --shadow-nav-hover: 4px 4px 0 var(--color-ink-base);
+
+  /* === IconNavButton 색상 === */
+  --color-bg-icon-button: #ffffff;
+  --color-border-icon-button: var(--color-pink-700);
+
+  /* === IconNavButton 스페이싱 === */
+  --spacing-icon-button: var(--icon-button-size);
+  --spacing-icon-content: calc(
+    var(--icon-button-size) * var(--icon-content-ratio)
+  );
+
+  /* === IconNavButton 그림자 === */
+  --shadow-icon-button-rest: 2px 2px 0 var(--color-ink-base);
 }
 
 body {
