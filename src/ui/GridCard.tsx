@@ -35,7 +35,7 @@ const PAIR_SLOT_CLASSES =
 const GRADE_CHIP_BASE =
   'flex items-center justify-center ' +
   'w-9 py-[3px] rounded-full border-[2px] border-solid ' +
-  'text-[10px] font-bold leading-none'
+  'text-[8px] font-bold leading-none'
 
 const GRADE_CHIP_MUTED = 'bg-stone-100 border-stone-300 text-stone-500'
 
