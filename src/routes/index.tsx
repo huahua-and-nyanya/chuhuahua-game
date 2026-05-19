@@ -43,9 +43,8 @@ function HomePage() {
 
   return (
     <main className={styles.page}>
-      <img src={TITLE_LOGO} alt="츄와와 뽀뽀 돌격" className={styles.title} />
-
       <div className={styles.frameStack}>
+        <img src={TITLE_LOGO} alt="츄와와 뽀뽀 돌격" className={styles.title} />
         <div className={styles.mobileCornerActions}>{cornerActions}</div>
 
         <GameFrame
