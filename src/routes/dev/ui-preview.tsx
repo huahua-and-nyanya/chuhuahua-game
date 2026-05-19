@@ -4,10 +4,13 @@ import { PixelButton } from '@/ui/PixelButton'
 import { PixelCard } from '@/ui/PixelCard'
 import { PixelChip } from '@/ui/PixelChip'
 import { CoinChip } from '@/ui/CoinChip'
+import { GridCard } from '@/ui/GridCard'
 import { CenterModal } from '@/ui/CenterModal'
 import { GameFrame } from '@/ui/GameFrame'
 import { NavButton } from '@/ui/NavButton'
 import { IconNavButton } from '@/ui/IconNavButton'
+import type { ClothEntry } from '@/features/wardrobe/clothes'
+import { COIN_ICON_PATH } from '@/assets/clothes'
 import { ICON_ASSETS, MAIN_HERO } from '@/assets'
 import { MultiplayerSelectModal } from '../-components/MultiplayerSelectModal'
 import { PreviewSection, PreviewRow } from './-components/PreviewLayout'
@@ -18,6 +21,37 @@ export const Route = createFileRoute('/dev/ui-preview')({
 
 const VARIANTS = ['primary', 'secondary', 'ghost'] as const
 const SIZES = ['sm', 'md', 'lg'] as const
+
+const DEMO_CLOTHES = {
+  bUnowned: {
+    id: 'demo-b',
+    name: '평범한 모자',
+    grade: 'B',
+    pair: false,
+    applyTo: 'idle',
+  },
+  aOwned: {
+    id: 'demo-a',
+    name: '천사 날개',
+    grade: 'A',
+    pair: false,
+    applyTo: 'idle',
+  },
+  sEquipped: {
+    id: 'demo-s',
+    name: '분노 츄와와',
+    grade: 'S',
+    pair: false,
+    applyTo: 'idle',
+  },
+  splusPairEquipped: {
+    id: 'demo-splus',
+    name: '커플 후드',
+    grade: 'S+',
+    pair: true,
+    applyTo: 'all',
+  },
+} as const satisfies Record<string, ClothEntry>
 
 function UiPreviewPage() {
   const [modalOpen, setModalOpen] = useState(false)
@@ -80,6 +114,45 @@ function UiPreviewPage() {
           <PixelChip variant="disabled">disabled</PixelChip>
           <PixelChip variant="danger">danger</PixelChip>
           <PixelChip>준비 중</PixelChip>
+        </PreviewRow>
+      </PreviewSection>
+
+      <PreviewSection title="GridCard">
+        <PreviewRow label="4분기 (B 미보유 / A 보유 / S 장착 / S+ 페어 장착)">
+          <div className="grid w-[360px] max-w-full grid-cols-3 gap-2">
+            <GridCard
+              cloth={DEMO_CLOTHES.bUnowned}
+              owned={false}
+              equipped={false}
+            />
+            <GridCard
+              cloth={DEMO_CLOTHES.aOwned}
+              owned={true}
+              equipped={false}
+              objectSrc={COIN_ICON_PATH}
+            />
+            <GridCard
+              cloth={DEMO_CLOTHES.sEquipped}
+              owned={true}
+              equipped={true}
+              objectSrc={COIN_ICON_PATH}
+            />
+            <GridCard
+              cloth={DEMO_CLOTHES.splusPairEquipped}
+              owned={true}
+              equipped={true}
+              objectSrc={COIN_ICON_PATH}
+            />
+          </div>
+        </PreviewRow>
+        <PreviewRow label="owned + no objectSrc (이미지 미준비 옷)">
+          <div className="grid w-[360px] max-w-full grid-cols-3 gap-2">
+            <GridCard
+              cloth={DEMO_CLOTHES.aOwned}
+              owned={true}
+              equipped={false}
+            />
+          </div>
         </PreviewRow>
       </PreviewSection>
 
