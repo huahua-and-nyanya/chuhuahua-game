@@ -60,7 +60,7 @@ function HomePage() {
           cornerActions={cornerActions}
           sideMenu={sideMenu}
         >
-          <div aria-hidden style={{ width: '100%', height: '100%' }} />
+          <div aria-hidden className="h-full w-full" />
         </GameFrame>
 
         <div className={styles.mobileNav}>{sideMenu}</div>
