@@ -9,18 +9,17 @@ interface PixelCardProps {
 
 const ROOT_CLASSES =
   'flex flex-col overflow-hidden ' +
-  'bg-[color:var(--color-bg-card)] ' +
-  'border-[length:2px] border-dashed border-[color:var(--color-border-card)] ' +
-  'rounded-[var(--radius-md)] shadow-[var(--shadow-card)]'
+  'bg-bg-card ' +
+  'border-2 border-dashed border-border-card ' +
+  'rounded-md shadow-card'
 
 const HEADER_CLASSES =
-  'bg-[color:var(--color-pink-300)] text-[color:var(--color-ink-base)] ' +
-  'font-[family-name:var(--font-display)] text-[length:var(--text-lg)] tracking-[0.04em] ' +
-  'py-[var(--gap-sm)] px-[var(--gap-lg)] ' +
-  'border-b-[length:2px] border-dashed border-b-[color:var(--color-border-card)]'
+  'bg-pink-300 text-ink-base ' +
+  'font-display text-lg tracking-[0.04em] ' +
+  'py-sm px-lg ' +
+  'border-b-2 border-dashed border-b-border-card'
 
-const BODY_CLASSES =
-  'p-[var(--gap-lg)] font-[family-name:var(--font-body)] text-[color:var(--color-text-primary)]'
+const BODY_CLASSES = 'p-lg font-body text-text-primary'
 
 export function PixelCard({ children, header, className }: PixelCardProps) {
   return (
