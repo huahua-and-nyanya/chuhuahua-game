@@ -102,6 +102,21 @@
 
   /* === PixelCard 그림자 === */
   --shadow-card: 3px 3px 0 var(--color-ink-base);
+
+  /* === NavButton (사이드 탭) 색상 === */
+  --color-tab-default: var(--color-pink-600);
+  --color-tab-hover: var(--color-pink-700);
+  --color-tab-disabled: #c7b8c5;
+  --color-tab-text: #ffffff;
+  --color-text-on-pink: #ffffff;
+
+  /* === NavButton 스페이싱 (tokens.css 반응형 토큰 노출) === */
+  --spacing-nav-button-h: var(--nav-button-height);
+  --spacing-nav-button-w: var(--nav-button-width);
+
+  /* === NavButton 그림자 === */
+  --shadow-nav-rest: 3px 3px 0 var(--color-ink-base);
+  --shadow-nav-hover: 4px 4px 0 var(--color-ink-base);
 }
 
 body {
