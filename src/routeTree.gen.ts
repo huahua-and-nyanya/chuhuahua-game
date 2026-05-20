@@ -20,6 +20,7 @@ import { Route as MultiRoomRouteImport } from './routes/multi/room'
 import { Route as MultiRandomRouteImport } from './routes/multi/random'
 import { Route as MultiLocalRouteImport } from './routes/multi/local'
 import { Route as DevUiPreviewRouteImport } from './routes/dev/ui-preview'
+import { Route as DevGamePreviewRouteImport } from './routes/dev/game-preview'
 
 const WardrobeRoute = WardrobeRouteImport.update({
   id: '/wardrobe',
@@ -76,6 +77,11 @@ const DevUiPreviewRoute = DevUiPreviewRouteImport.update({
   path: '/dev/ui-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevGamePreviewRoute = DevGamePreviewRouteImport.update({
+  id: '/dev/game-preview',
+  path: '/dev/game-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
+  '/dev/game-preview': typeof DevGamePreviewRoute
   '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
   '/multi/random': typeof MultiRandomRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
+  '/dev/game-preview': typeof DevGamePreviewRoute
   '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
   '/multi/random': typeof MultiRandomRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
+  '/dev/game-preview': typeof DevGamePreviewRoute
   '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
   '/multi/random': typeof MultiRandomRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/solo'
     | '/wardrobe'
+    | '/dev/game-preview'
     | '/dev/ui-preview'
     | '/multi/local'
     | '/multi/random'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/solo'
     | '/wardrobe'
+    | '/dev/game-preview'
     | '/dev/ui-preview'
     | '/multi/local'
     | '/multi/random'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/solo'
     | '/wardrobe'
+    | '/dev/game-preview'
     | '/dev/ui-preview'
     | '/multi/local'
     | '/multi/random'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   SoloRoute: typeof SoloRoute
   WardrobeRoute: typeof WardrobeRoute
+  DevGamePreviewRoute: typeof DevGamePreviewRoute
   DevUiPreviewRoute: typeof DevUiPreviewRoute
   MultiLocalRoute: typeof MultiLocalRoute
   MultiRandomRoute: typeof MultiRandomRoute
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevUiPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/game-preview': {
+      id: '/dev/game-preview'
+      path: '/dev/game-preview'
+      fullPath: '/dev/game-preview'
+      preLoaderRoute: typeof DevGamePreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   SoloRoute: SoloRoute,
   WardrobeRoute: WardrobeRoute,
+  DevGamePreviewRoute: DevGamePreviewRoute,
   DevUiPreviewRoute: DevUiPreviewRoute,
   MultiLocalRoute: MultiLocalRoute,
   MultiRandomRoute: MultiRandomRoute,
