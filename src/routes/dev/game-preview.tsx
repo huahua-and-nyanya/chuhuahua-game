@@ -12,7 +12,6 @@ import { Kibble } from '@/game/items/Kibble'
 import { Fish } from '@/game/items/Fish'
 import { Cucumber } from '@/game/items/Cucumber'
 import { SweetPotato } from '@/game/items/SweetPotato'
-import type { PickerSide } from '@/game/state'
 
 import { PreviewSection, PreviewRow } from './-components/PreviewLayout'
 
@@ -54,6 +53,7 @@ function GamePreview(): JSX.Element {
   const [chiMega, setChiMega] = useState(false)
   const [chiSlowed, setChiSlowed] = useState(false)
   const [chiSad, setChiSad] = useState(false)
+  const [chiShielded, setChiShielded] = useState(false)
 
   // Cat state
   const [catKissing, setCatKissing] = useState(false)
@@ -62,8 +62,6 @@ function GamePreview(): JSX.Element {
   const [catAngry, setCatAngry] = useState(false)
   const [catBoosted, setCatBoosted] = useState(false)
   const [catSlowed, setCatSlowed] = useState(false)
-  const [bubbleOn, setBubbleOn] = useState(false)
-  const [bubbleOwner, setBubbleOwner] = useState<PickerSide>('cat')
 
   // Pigeon
   const [pigeonFleeing, setPigeonFleeing] = useState(false)
@@ -100,6 +98,7 @@ function GamePreview(): JSX.Element {
               slowed={chiSlowed}
               sad={chiSad}
             />
+            {chiShielded && <ShieldBubble owner="chi" />}
           </StageBox>
           <div className="flex flex-col gap-2">
             <Toggle
@@ -119,6 +118,11 @@ function GamePreview(): JSX.Element {
               onChange={setChiSlowed}
             />
             <Toggle label="sad (67)" checked={chiSad} onChange={setChiSad} />
+            <Toggle
+              label="shielded (CSS 거품 84, 변신 자산 없음)"
+              checked={chiShielded}
+              onChange={setChiShielded}
+            />
           </div>
         </PreviewRow>
       </PreviewSection>
@@ -134,7 +138,7 @@ function GamePreview(): JSX.Element {
               boosted={catBoosted}
               slowed={catSlowed}
             />
-            {bubbleOn && <ShieldBubble owner={bubbleOwner} />}
+            {catShielded && <ShieldBubble owner="cat" />}
           </StageBox>
           <div className="flex flex-col gap-2">
             <Toggle
@@ -143,7 +147,7 @@ function GamePreview(): JSX.Element {
               onChange={setCatKissing}
             />
             <Toggle
-              label="shielded (변신, 88)"
+              label="shielded (변신 + CSS 거품 104)"
               checked={catShielded}
               onChange={setCatShielded}
             />
@@ -167,22 +171,6 @@ function GamePreview(): JSX.Element {
               checked={catSlowed}
               onChange={setCatSlowed}
             />
-            <Toggle
-              label="bubble on (chi 84 / cat 104, CSS 거품)"
-              checked={bubbleOn}
-              onChange={setBubbleOn}
-            />
-            <label className="inline-flex items-center gap-2 text-sm">
-              <span>bubble owner:</span>
-              <select
-                value={bubbleOwner}
-                onChange={(e) => setBubbleOwner(e.target.value as PickerSide)}
-                className="text-sm"
-              >
-                <option value="cat">cat</option>
-                <option value="chi">chi</option>
-              </select>
-            </label>
           </div>
         </PreviewRow>
       </PreviewSection>
