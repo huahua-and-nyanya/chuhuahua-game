@@ -22,11 +22,15 @@ function pickSrc(props: CatProps): string {
   return CHARACTER_ASSETS.cat
 }
 
+// 효과별 통일 비율: 약(kissing) ×1.05 / 강(slowed, angry) ×1.10
+const SIZE_BASE = 80
+const SIZE_SOFT = 84
+const SIZE_STRONG = 88
+
 function pickSize(props: CatProps): number {
-  if (props.kissing) return 80
-  if (props.slowed) return 87
-  if (props.angry) return 112
-  return 80
+  if (props.kissing) return SIZE_SOFT
+  if (props.slowed || props.angry) return SIZE_STRONG
+  return SIZE_BASE
 }
 
 function pickFilter(props: CatProps): string {
