@@ -161,7 +161,7 @@ function GamePreview(): JSX.Element {
               onChange={setCatSlowed}
             />
             <Toggle
-              label="shield on (100, bubble-pulse, 임시 PNG)"
+              label="shield on (chi 84 / cat 104, owner별 분기, 임시 PNG)"
               checked={shieldOn}
               onChange={setShieldOn}
             />
