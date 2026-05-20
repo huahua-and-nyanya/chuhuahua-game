@@ -5,15 +5,11 @@ export type Vec2 = {
 }
 
 // === 캐릭터 ===
-// 효과 만료 타임스탬프는 Date.now() 기준. 0이면 비활성.
+// 위치/속도/방향만 보유. 효과 시간은 EffectState로 일원화.
 export type CharacterRef = Vec2 & {
   vx: number
   vy: number
   facing: 'left' | 'right'
-  boostUntil: number
-  megaUntil: number
-  shieldUntil: number
-  slowUntil: number
 }
 
 // === 비둘기 ===
