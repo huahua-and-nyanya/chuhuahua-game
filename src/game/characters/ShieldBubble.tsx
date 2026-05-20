@@ -15,27 +15,39 @@ interface ShieldBubbleProps {
   owner: PickerSide
 }
 
+// 2층 구조: wrapper가 중앙정렬(translate -50%,-50%) 담당,
+// img가 펄스 애니메이션(scale + opacity) 담당.
+// keyframes가 transform을 덮어쓰는 문제 회피.
 export function ShieldBubble({ owner }: ShieldBubbleProps): JSX.Element {
   const size = owner === 'chi' ? BUBBLE_SIZE_CHI : BUBBLE_SIZE_CAT
   return (
-    <img
-      src={CHARACTER_ASSETS.catShield}
-      alt=""
+    <div
       aria-label={`${owner} shield`}
-      draggable={false}
       style={{
         position: 'absolute',
         left: '50%',
         top: '50%',
-        width: size,
-        height: size,
-        objectFit: 'contain',
-        filter: 'brightness(1.05) drop-shadow(0 0 8px rgba(93, 173, 226, 0.9))',
-        animation: 'bubble-pulse 1.2s ease-in-out infinite',
-        pointerEvents: 'none',
-        userSelect: 'none',
+        transform: 'translate(-50%, -50%)',
         zIndex: 4,
+        pointerEvents: 'none',
+        lineHeight: 0,
       }}
-    />
+    >
+      <img
+        src={CHARACTER_ASSETS.catShield}
+        alt=""
+        draggable={false}
+        style={{
+          display: 'block',
+          width: size,
+          height: size,
+          objectFit: 'contain',
+          filter:
+            'brightness(1.05) drop-shadow(0 0 8px rgba(93, 173, 226, 0.9))',
+          animation: 'bubble-pulse 1.2s ease-in-out infinite',
+          userSelect: 'none',
+        }}
+      />
+    </div>
   )
 }
