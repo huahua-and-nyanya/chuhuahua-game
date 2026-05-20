@@ -50,7 +50,6 @@ export const BOOST_MUL = 1.55
 export const MEGA_DURATION = 3000 // ms, 메가 부스트
 export const MEGA_MUL = 2.0
 export const SHIELD_DURATION = 5000 // ms, 실드
-export const SLOW_DURATION = 5000 // ms, 슬로우 디버프 (sweet potato) — 의미상 SWEETPOTATO_DURATION과 중복, B-1 호환 유지
 export const CUCUMBER_DURATION = 3000 // ms, 오이 픽업 시 고양이 가속 지속시간
 export const SWEETPOTATO_DURATION = 3000 // ms, 고구마 픽업 시 슬로우 지속시간
 export const SCORE_MULT_DURATION = 5000 // ms, 점수 ×2
