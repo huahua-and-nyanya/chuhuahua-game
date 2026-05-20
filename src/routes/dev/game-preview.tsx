@@ -168,7 +168,7 @@ function GamePreview(): JSX.Element {
               onChange={setCatSlowed}
             />
             <Toggle
-              label="bubble on (chi 84 / cat 104, 임시 PNG)"
+              label="bubble on (chi 84 / cat 104, CSS 거품)"
               checked={bubbleOn}
               onChange={setBubbleOn}
             />
