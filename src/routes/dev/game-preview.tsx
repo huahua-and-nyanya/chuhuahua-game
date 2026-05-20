@@ -102,7 +102,7 @@ function GamePreview(): JSX.Element {
           </StageBox>
           <div className="flex flex-col gap-2">
             <Toggle
-              label="kissing (77)"
+              label="kissing (67)"
               checked={chiKissing}
               onChange={setChiKissing}
             />
@@ -111,13 +111,13 @@ function GamePreview(): JSX.Element {
               checked={chiBoosted}
               onChange={setChiBoosted}
             />
-            <Toggle label="mega" checked={chiMega} onChange={setChiMega} />
+            <Toggle label="mega (70)" checked={chiMega} onChange={setChiMega} />
             <Toggle
-              label="slowed (98)"
+              label="slowed (70)"
               checked={chiSlowed}
               onChange={setChiSlowed}
             />
-            <Toggle label="sad (75)" checked={chiSad} onChange={setChiSad} />
+            <Toggle label="sad (67)" checked={chiSad} onChange={setChiSad} />
           </div>
         </PreviewRow>
       </PreviewSection>
@@ -136,7 +136,7 @@ function GamePreview(): JSX.Element {
           </StageBox>
           <div className="flex flex-col gap-2">
             <Toggle
-              label="kissing (80)"
+              label="kissing (84)"
               checked={catKissing}
               onChange={setCatKissing}
             />
@@ -146,7 +146,7 @@ function GamePreview(): JSX.Element {
               onChange={setCatScared}
             />
             <Toggle
-              label="angry (112)"
+              label="angry (88)"
               checked={catAngry}
               onChange={setCatAngry}
             />
@@ -156,7 +156,7 @@ function GamePreview(): JSX.Element {
               onChange={setCatBoosted}
             />
             <Toggle
-              label="slowed (87)"
+              label="slowed (88)"
               checked={catSlowed}
               onChange={setCatSlowed}
             />
