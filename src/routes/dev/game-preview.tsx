@@ -57,12 +57,13 @@ function GamePreview(): JSX.Element {
 
   // Cat state
   const [catKissing, setCatKissing] = useState(false)
+  const [catShielded, setCatShielded] = useState(false)
   const [catScared, setCatScared] = useState(false)
   const [catAngry, setCatAngry] = useState(false)
   const [catBoosted, setCatBoosted] = useState(false)
   const [catSlowed, setCatSlowed] = useState(false)
-  const [shieldOn, setShieldOn] = useState(false)
-  const [shieldOwner, setShieldOwner] = useState<PickerSide>('cat')
+  const [bubbleOn, setBubbleOn] = useState(false)
+  const [bubbleOwner, setBubbleOwner] = useState<PickerSide>('cat')
 
   // Pigeon
   const [pigeonFleeing, setPigeonFleeing] = useState(false)
@@ -127,18 +128,24 @@ function GamePreview(): JSX.Element {
           <StageBox>
             <Cat
               kissing={catKissing}
+              shielded={catShielded}
               scared={catScared}
               angry={catAngry}
               boosted={catBoosted}
               slowed={catSlowed}
             />
-            {shieldOn && <ShieldBubble owner={shieldOwner} />}
+            {bubbleOn && <ShieldBubble owner={bubbleOwner} />}
           </StageBox>
           <div className="flex flex-col gap-2">
             <Toggle
               label="kissing (84)"
               checked={catKissing}
               onChange={setCatKissing}
+            />
+            <Toggle
+              label="shielded (변신, 88)"
+              checked={catShielded}
+              onChange={setCatShielded}
             />
             <Toggle
               label="scared"
@@ -161,15 +168,15 @@ function GamePreview(): JSX.Element {
               onChange={setCatSlowed}
             />
             <Toggle
-              label="shield on (chi 84 / cat 104, owner별 분기, 임시 PNG)"
-              checked={shieldOn}
-              onChange={setShieldOn}
+              label="bubble on (chi 84 / cat 104, 임시 PNG)"
+              checked={bubbleOn}
+              onChange={setBubbleOn}
             />
             <label className="inline-flex items-center gap-2 text-sm">
-              <span>owner:</span>
+              <span>bubble owner:</span>
               <select
-                value={shieldOwner}
-                onChange={(e) => setShieldOwner(e.target.value as PickerSide)}
+                value={bubbleOwner}
+                onChange={(e) => setBubbleOwner(e.target.value as PickerSide)}
                 className="text-sm"
               >
                 <option value="cat">cat</option>
