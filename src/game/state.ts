@@ -61,8 +61,10 @@ export type PickerSide = 'chi' | 'cat'
 
 // 효과 만료 타임스탬프 (Date.now() 기준). null이면 비활성.
 // 활성 판정은 `effect && effect.until > now`.
+// mega는 chiBoost에만 의미 있음 (메가 부스트 = 콤보 보상). 다른 effect는 무시.
 export interface TimedEffect {
   until: number
+  mega?: boolean
 }
 
 // 게임 루프가 보유하는 전역 효과 트래커 (effects.ts가 mutate)
