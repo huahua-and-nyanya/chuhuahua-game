@@ -37,6 +37,12 @@ export const KIBBLE_FIRST_DELAY = 6000 // ms
 export const FISH_FIRST_DELAY = 9000 // ms
 export const ITEM_RESPAWN_MIN = 8000 // ms
 export const ITEM_RESPAWN_MAX = 13000 // ms
+// 디버프 아이템 (솔로) — LV3 도달 시 활성. cucumber 먼저, sweetPotato는 추가 stagger 후.
+// 재스폰 간격은 kibble/fish보다 길다 (드물게 등장).
+export const DEBUFF_AFTER_LV3_FIRST = 8000 // ms, LV3 도달 후 첫 오이 등장까지
+export const DEBUFF_STAGGER = 12000 // ms, 오이 첫 등장 후 고구마 첫 등장까지 추가 딜레이
+export const DEBUFF_RESPAWN_MIN = 18000 // ms
+export const DEBUFF_RESPAWN_MAX = 30000 // ms
 
 // === 아이템 (PvP — 빈도 상향) ===
 export const PVP_KIBBLE_FIRST_DELAY = 1500 // ms

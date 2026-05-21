@@ -18,9 +18,15 @@ import { checkKiss } from '@/game/collision/kiss'
 import { checkPickups } from '@/game/collision/pickup'
 import { checkPigeonHits } from '@/game/collision/pigeon-hit'
 import { getBackgroundForLevel } from '@/game/backgrounds'
-import { MAX_TOASTS } from '@/game/constants'
+import {
+  DEBUFF_AFTER_LV3_FIRST,
+  DEBUFF_LEVEL_MIN,
+  DEBUFF_STAGGER,
+  MAX_TOASTS,
+} from '@/game/constants'
 import { spawnPigeon, spawnItem } from '@/game/loop/factories'
 import {
+  scheduleDebuffFirstSpawn,
   scheduleItemRespawn,
   startSpawnScheduler,
   stopSpawnScheduler,
@@ -208,6 +214,15 @@ function SoloPage() {
       if (isMilestoneLevel(newLevel)) {
         showToast(`LV${newLevel} 마일스톤!`, 'var(--color-game-accent-gold)')
       }
+      // LV3 도달 시 디버프 아이템 활성화 (cucumber 먼저, sweetPotato는 +stagger 후).
+      // reference 985~988.
+      if (newLevel === DEBUFF_LEVEL_MIN) {
+        scheduleDebuffFirstSpawn('cucumber', DEBUFF_AFTER_LV3_FIRST)
+        scheduleDebuffFirstSpawn(
+          'sweetPotato',
+          DEBUFF_AFTER_LV3_FIRST + DEBUFF_STAGGER,
+        )
+      }
     },
     [showToast],
   )
@@ -246,6 +261,10 @@ function SoloPage() {
         showToast('부스트!', 'var(--color-game-warn)')
       } else if (kind === 'fish') {
         showToast('쉴드!', 'var(--color-game-shield-blue)')
+      } else if (kind === 'cucumber') {
+        showToast('고양이 빨라짐!', 'var(--color-danger)')
+      } else if (kind === 'sweetPotato') {
+        showToast('느려졌어요!', 'var(--color-danger)')
       }
     },
     [showToast],

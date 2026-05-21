@@ -1,4 +1,6 @@
 import {
+  DEBUFF_RESPAWN_MAX,
+  DEBUFF_RESPAWN_MIN,
   FISH_FIRST_DELAY,
   ITEM_RESPAWN_MAX,
   ITEM_RESPAWN_MIN,
@@ -11,7 +13,13 @@ import { clearAllTrackedTimeouts, trackedTimeout } from '@/hooks/trackedTimeout'
 
 import type { GameRefs } from './state'
 
-export type SoloSpawnKind = 'kibble' | 'fish'
+// 솔로 스폰 가능 아이템 — 부스트(kibble)/쉴드(fish) + LV3+ 디버프(cucumber/sweetPotato).
+export type SoloSpawnKind = 'kibble' | 'fish' | 'cucumber' | 'sweetPotato'
+
+const DEBUFF_KINDS: ReadonlySet<SoloSpawnKind> = new Set([
+  'cucumber',
+  'sweetPotato',
+])
 
 export type SpawnDeps = {
   refs: GameRefs
@@ -54,12 +62,31 @@ export function stopSpawnScheduler(): void {
   currentDeps = null
 }
 
-// 픽업 후 외부에서 호출 — 아이템 1개를 ITEM_RESPAWN_MIN ~ MAX 사이 랜덤 딜레이로 재스폰.
+// LV3 도달 시 외부(solo.tsx onLevelUp)에서 호출 — 디버프 아이템 첫 등장 예약.
+// reference 985~988: cucumber = +8s, sweetPotato = +20s (8 + 12 stagger).
+// 픽업 처리는 scheduleItemRespawn으로 재등장 연쇄.
+export function scheduleDebuffFirstSpawn(
+  kind: 'cucumber' | 'sweetPotato',
+  delay: number,
+): void {
+  const deps = currentDeps
+  if (!deps) return
+  trackedTimeout(() => {
+    if (currentDeps !== deps) return
+    deps.spawnItem(kind)
+  }, delay * ITEM_SPAWN_MUL)
+}
+
+// 픽업 후 외부에서 호출 — 아이템 1개를 재스폰. kind에 따라 범위 분기:
+//   kibble/fish: ITEM_RESPAWN_MIN~MAX (8~13s)
+//   cucumber/sweetPotato: DEBUFF_RESPAWN_MIN~MAX (18~30s, 더 드물게)
 export function scheduleItemRespawn(kind: SoloSpawnKind): void {
   const deps = currentDeps
   if (!deps) return
-  const range = ITEM_RESPAWN_MAX - ITEM_RESPAWN_MIN
-  const delay = (ITEM_RESPAWN_MIN + Math.random() * range) * ITEM_SPAWN_MUL
+  const isDebuff = DEBUFF_KINDS.has(kind)
+  const min = isDebuff ? DEBUFF_RESPAWN_MIN : ITEM_RESPAWN_MIN
+  const max = isDebuff ? DEBUFF_RESPAWN_MAX : ITEM_RESPAWN_MAX
+  const delay = (min + Math.random() * (max - min)) * ITEM_SPAWN_MUL
   trackedTimeout(() => {
     if (currentDeps !== deps) return
     deps.spawnItem(kind)

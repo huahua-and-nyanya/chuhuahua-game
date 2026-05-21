@@ -11,9 +11,14 @@ import type { PickerSide } from './state'
 
 // === 속도 곱셈 헬퍼 (chi-input / cat-flee에서 매 프레임 호출) ===
 
-// chi 측 속도 배율 — chiBoost 활성 시 1.55 (mega는 2.0). 비활성이면 1.
+// reference 1623/1656: 디버프 속도 배율.
+const CUCUMBER_CAT_LERP_MULT = 1.85 // cucumber → cat 도망 1.85배
+const SWEETPOTATO_CHI_SLOW_MULT = 0.55 // sweetPotato → 슬로우 측 속도 55%
+
+// chi 측 속도 배율 — chiSlow가 우선(고구마 디버프 0.55), chiBoost(1.55/mega 2.0), 그 외 1.
 // (옷 효과 chiSpeedMul은 사이클 W에서 추가.)
 export function getChiSpeedMul(refs: GameRefs, now: number): number {
+  if (refs.effects.chiSlow.until > now) return SWEETPOTATO_CHI_SLOW_MULT
   const boost = refs.effects.chiBoost
   if (boost.until > now) {
     return boost.mega ? MEGA_MUL : BOOST_MUL
@@ -21,13 +26,10 @@ export function getChiSpeedMul(refs: GameRefs, now: number): number {
   return 1
 }
 
-// cat 측 lerp 배율 — catSlow가 우선, 없으면 catSpeedup, 둘 다 없으면 1.
-// 솔로엔 catSlow/catSpeedup 자체가 안 발동(PvP 분기). 호환성을 위해 분기 보존.
-const CUCUMBER_CAT_LERP_MULT = 1.85
-const SWEETPOTATO_CAT_SLOW_MULT = 0.55
+// cat 측 lerp 배율 — catSlow가 우선(고구마 PvP), 없으면 catSpeedup(오이 1.85), 둘 다 없으면 1.
 
 export function getCatSpeedMul(refs: GameRefs, now: number): number {
-  if (refs.effects.catSlow.until > now) return SWEETPOTATO_CAT_SLOW_MULT
+  if (refs.effects.catSlow.until > now) return SWEETPOTATO_CHI_SLOW_MULT
   if (refs.effects.catSpeedup.until > now) return CUCUMBER_CAT_LERP_MULT
   return 1
 }

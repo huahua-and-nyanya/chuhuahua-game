@@ -9,8 +9,9 @@ import type { GameRefs } from '@/game/loop/state'
 import type { SoloSpawnKind } from '@/game/loop/spawn'
 import type { ItemKind } from '@/game/state'
 
-// reference 1901~2020 솔로 분기 이식. 솔로엔 chi만 픽업 (cucumber/sweetPotato 자체 안 스폰).
-// PvP picker 분기는 사이클 F. 본 모듈은 솔로 단일.
+// reference 1901~2020 솔로 분기 이식. 솔로 단일 (chi만 픽업).
+// kibble/fish는 항상 등장, cucumber/sweetPotato는 LV3+ 활성 (spawn.ts).
+// PvP picker 분기는 사이클 F.
 
 export type PickupDeps = {
   refs: GameRefs
@@ -36,17 +37,14 @@ export function checkPickups(deps: PickupDeps): void {
     } else if (item.kind === 'fish') {
       applyFishEffect(refs, now, 'chi')
     } else if (item.kind === 'cucumber') {
-      // 솔로에선 스폰되지 않지만 PvP F 분기 자리만 마련.
       applyCucumberEffect(refs, now)
     } else if (item.kind === 'sweetPotato') {
-      // 솔로에선 스폰되지 않지만 PvP F 분기 자리만 마련.
       applySweetPotatoEffect(refs, now, 'chi')
     }
 
     refs.items.splice(i, 1)
-    if (item.kind === 'kibble' || item.kind === 'fish') {
-      scheduleRespawn(item.kind)
-    }
+    // 모든 솔로 아이템 재스폰 (디버프는 spawn.ts에서 더 긴 범위로 분기).
+    scheduleRespawn(item.kind)
     onPickup(item.kind, 'chi')
   }
 }
