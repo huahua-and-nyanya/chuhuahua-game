@@ -27,8 +27,7 @@ export type GameOverModalProps = {
 const NICKNAME_MAX = 12
 
 // 시안 확정 헥스값. 기존 tokens.css와 매칭되지 않아 인라인 사용.
-const COLOR_PRIMARY = '#D4537E' // 진한 핑크 — GAME OVER 제목/다시하기 버튼
-const COLOR_BUTTON_PINK = '#ED93B1' // 등록 버튼 (X 닫기 버튼과 동일 색)
+const COLOR_PRIMARY = '#D4537E' // 진한 핑크 — GAME OVER 제목/다시하기/등록 버튼
 const COLOR_PINK_SOFT = '#FBEAF0' // 등록 후 영역 배경
 const COLOR_DASH = '#F4C0D1' // 결과 영역 위/아래 점선
 const COLOR_LABEL = '#888780' // 회색 라벨 / 부제
@@ -136,7 +135,7 @@ export function GameOverModal(props: GameOverModalProps) {
                   onClick={handleSubmit}
                   disabled={nickname.trim().length === 0}
                   className="font-body h-10.5 rounded-xl px-5 text-sm font-medium whitespace-nowrap text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                  style={{ background: COLOR_BUTTON_PINK }}
+                  style={{ background: COLOR_PRIMARY }}
                 >
                   등록
                 </button>
