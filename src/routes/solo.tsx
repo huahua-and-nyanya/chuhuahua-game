@@ -42,7 +42,6 @@ import { FloatTexts } from '@/game/ui/FloatText'
 import { GameOverModal, type GameOverInfo } from '@/game/ui/GameOverModal'
 import { HUD } from '@/game/ui/HUD'
 import { LevelUpOverlay } from '@/game/ui/LevelUpOverlay'
-import { Toasts } from '@/game/ui/Toast'
 
 import { useHistory } from '@/features/history/useHistory'
 
@@ -447,14 +446,19 @@ function SoloPage() {
           </div>
         )}
 
-        {/* HUD / 콤보 라벨 / 오버레이 / 토스트 / 플로트 텍스트 */}
-        <HUD score={sm.score} level={sm.level} effects={effects} now={now} />
+        {/* HUD (좌상단 점수 + 우상단 LV/효과 게이지/토스트 stack) / 콤보 라벨 / 오버레이 / 플로트 텍스트 */}
+        <HUD
+          score={sm.score}
+          level={sm.level}
+          effects={effects}
+          now={now}
+          toasts={toasts}
+        />
         <ComboLabel combo={sm.combo} visible={gameState === 'playing'} />
         <LevelUpOverlay
           active={r.levelUpEffect.active && r.levelUpEffect.until > now}
           level={r.levelUpEffect.level}
         />
-        <Toasts toasts={toasts} />
         <FloatTexts items={r.floatTexts} now={now} />
       </div>
 

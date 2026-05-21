@@ -1,7 +1,8 @@
 import type { ToastRef } from '@/game/state'
 
-// 우측 위→아래 스택. 라우트의 showToast가 항목을 push하고 until 만료 시 splice.
-// MAX_TOASTS는 라우트 측에서 적용 (최신 N개만 push). 본 컴포넌트는 받은 그대로 표시.
+// HUD 우상단 stack의 자식으로 렌더 — 위치/정렬은 부모(HUD) 책임.
+// 검정 배경 + 흰 글씨로 통일 (HUD 흰 칩과 영구/임시 위계 구분).
+// ToastRef.color는 호환성 위해 받지만 본 컴포넌트에선 무시.
 
 export type ToastsProps = {
   toasts: ToastRef[]
@@ -10,16 +11,15 @@ export type ToastsProps = {
 export function Toasts({ toasts }: ToastsProps) {
   if (toasts.length === 0) return null
   return (
-    <div className="pointer-events-none absolute top-2 right-2 flex flex-col items-end gap-1">
+    <>
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="border-ink-base font-display text-text-on-pink shadow-card rounded-md border-2 px-2 py-1 text-xs"
-          style={{ background: t.color }}
+          className="bg-ink-base text-text-on-pink rounded-pill px-md py-xs shadow-card text-sm font-medium whitespace-nowrap"
         >
           {t.text}
         </div>
       ))}
-    </div>
+    </>
   )
 }

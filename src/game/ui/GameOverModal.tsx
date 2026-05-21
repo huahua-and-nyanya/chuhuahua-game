@@ -46,9 +46,10 @@ function formatTime(ms: number): string {
 // title = "Top N 진입!" (rank 있을 때) / "GAME OVER" (그 외).
 // body 안: shake 애니메이션 GAME OVER 큰 텍스트 + 부제 + 결과 + 닉네임 + 액션.
 // 부모(라우트)가 게임오버 진입 시 mount, 다시하기/메인 시 unmount → useState 초기값 자동 reset.
+// nickname 초기값은 항상 빈 값. defaultName(이전 입력 캐시)은 placeholder로만 노출.
 export function GameOverModal(props: GameOverModalProps) {
   const { open, info, rank, defaultName, onSubmit, onRestart, onMain } = props
-  const [nickname, setNickname] = useState(defaultName)
+  const [nickname, setNickname] = useState('')
   const [registered, setRegistered] = useState(false)
 
   const canRegister = rank !== null
@@ -122,7 +123,11 @@ export function GameOverModal(props: GameOverModalProps) {
                     }
                   }}
                   maxLength={NICKNAME_MAX}
-                  placeholder={`닉네임 (최대 ${NICKNAME_MAX}자)`}
+                  placeholder={
+                    defaultName
+                      ? `${defaultName} (이전 닉네임)`
+                      : `닉네임 (최대 ${NICKNAME_MAX}자)`
+                  }
                   autoFocus
                   className="font-body h-10.5 flex-1 rounded-xl border-[1.5px] px-3.5 text-sm leading-relaxed"
                   style={{
