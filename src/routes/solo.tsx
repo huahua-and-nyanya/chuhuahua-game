@@ -18,7 +18,7 @@ import { checkKiss } from '@/game/collision/kiss'
 import { checkPickups } from '@/game/collision/pickup'
 import { checkPigeonHits } from '@/game/collision/pigeon-hit'
 import { getBackgroundForLevel } from '@/game/backgrounds'
-import { GAME_HEIGHT, GAME_WIDTH, MAX_TOASTS } from '@/game/constants'
+import { MAX_TOASTS } from '@/game/constants'
 import { spawnPigeon, spawnItem } from '@/game/loop/factories'
 import {
   scheduleItemRespawn,
@@ -44,7 +44,6 @@ import { LevelUpOverlay } from '@/game/ui/LevelUpOverlay'
 import { Toasts } from '@/game/ui/Toast'
 
 import { useHistory } from '@/features/history/useHistory'
-import { PixelButton } from '@/ui/PixelButton'
 
 import '@/game/keyframes.css'
 
@@ -330,22 +329,10 @@ function SoloPage() {
   const bgUrl = getBackgroundForLevel(Math.max(1, sm.level))
 
   return (
-    <main className="gap-md p-lg flex min-h-dvh flex-col items-center">
-      <div className="flex w-full max-w-160 justify-between">
-        <PixelButton
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate({ to: '/' })}
-        >
-          {'< 메인으로'}
-        </PixelButton>
-      </div>
-
+    <>
       <div
-        className="border-ink-base relative overflow-hidden rounded-lg border-4"
+        className="absolute inset-0 overflow-hidden"
         style={{
-          width: GAME_WIDTH,
-          height: GAME_HEIGHT,
           background: `url(${bgUrl}) center / cover no-repeat`,
           transition: 'background 0.6s ease',
         }}
@@ -472,6 +459,6 @@ function SoloPage() {
           onMain={() => navigate({ to: '/' })}
         />
       )}
-    </main>
+    </>
   )
 }
