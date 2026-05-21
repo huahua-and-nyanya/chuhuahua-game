@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   createRootRoute,
   Link,
@@ -45,6 +45,7 @@ const SIDE_MENU_SLOT_CLASSES =
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const isMain = pathname === '/'
+  const isSolo = pathname === '/solo'
   const navigate = useNavigate()
   const { coins } = useCoins()
   const [multiOpen, setMultiOpen] = useState(false)
@@ -105,13 +106,23 @@ function RootLayout() {
     </>
   )
 
-  // 모바일 메뉴 row — 메인 한정, 기존 NavButton 그대로 (위치만 DSFrame 안으로).
-  const mobileMenuRow =
-    isMain && isMobile ? (
-      <div className="gap-sm flex w-full flex-row justify-center">
-        {sideMenu}
-      </div>
-    ) : null
+  // DSFrame 안 메뉴 row 자리 — 모바일 한정.
+  //   - 메인: 기존 NavButton sideMenu
+  //   - /solo: 빈 slot div(#game-controls-slot) — solo.tsx의 SoloControlBar가 portal로 들어옴
+  //   - 그 외: null
+  // 데스크탑은 frameStack 안 GameFrameCard 다음에 동일 id의 slot 별도 mount.
+  let dsMenuRow: ReactNode = null
+  if (isMobile) {
+    if (isMain) {
+      dsMenuRow = (
+        <div className="gap-sm flex w-full flex-row justify-center">
+          {sideMenu}
+        </div>
+      )
+    } else if (isSolo) {
+      dsMenuRow = <div id="game-controls-slot" className="w-full" />
+    }
+  }
 
   return (
     <>
@@ -130,11 +141,19 @@ function RootLayout() {
             {isMobile ? (
               <DSFrame>
                 <GameFrameCard scale={scale}>{gameCardChildren}</GameFrameCard>
-                {mobileMenuRow}
+                {dsMenuRow}
                 <VirtualController />
               </DSFrame>
             ) : (
-              <GameFrameCard scale={scale}>{gameCardChildren}</GameFrameCard>
+              <>
+                <GameFrameCard scale={scale}>{gameCardChildren}</GameFrameCard>
+                {isSolo && (
+                  <div
+                    id="game-controls-slot"
+                    className="mt-md flex justify-center"
+                  />
+                )}
+              </>
             )}
           </div>
         </main>

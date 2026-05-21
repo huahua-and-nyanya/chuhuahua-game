@@ -42,6 +42,10 @@ import { FloatTexts } from '@/game/ui/FloatText'
 import { GameOverModal, type GameOverInfo } from '@/game/ui/GameOverModal'
 import { HUD } from '@/game/ui/HUD'
 import { LevelUpOverlay } from '@/game/ui/LevelUpOverlay'
+import { PauseModal } from '@/game/ui/PauseModal'
+import { QuitConfirmModal } from '@/game/ui/QuitConfirmModal'
+import { SoloControlBar } from '@/game/ui/SoloControlBar'
+import { adjustTimersByPauseDuration } from '@/game/loop/pause'
 
 import { useHistory } from '@/features/history/useHistory'
 
@@ -56,7 +60,7 @@ const FLOAT_DURATION = 800 // ms — FloatText 기준 잔여시간 (FloatText.ts
 const TOAST_DURATION = 1800 // ms
 const CHARACTER_BOX = 100 // px — 캐릭터 wrapper 정사각
 
-type GameState = 'playing' | 'gameover'
+type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover'
 
 function SoloPage() {
   const navigate = useNavigate()
@@ -71,6 +75,10 @@ function SoloPage() {
   const [gameState, setGameState] = useState<GameState>('playing')
   const [gameOverInfo, setGameOverInfo] = useState<GameOverInfo | null>(null)
   const [toasts, setToasts] = useState<ToastRef[]>([])
+  // 일시정지 관리: paused 진입 시각 + 그만두기 확인 진입 직전 상태(복귀용).
+  // confirmQuit 진입은 playing/paused 둘 다 가능 — 취소 시 원 상태로 복귀해야 함.
+  const pausedAtRef = useRef<number>(0)
+  const preQuitStateRef = useRef<'playing' | 'paused'>('playing')
 
   // 스케줄러 콜백이 stale state를 안 보게 ref 미러.
   const gameStateRef = useRef<GameState>(gameState)
@@ -130,8 +138,63 @@ function SoloPage() {
     gameStartRef.current = performance.now()
     setGameOverInfo(null)
     setToasts([])
+    pausedAtRef.current = 0
+    preQuitStateRef.current = 'playing'
     setGameState('playing')
   }, [])
+
+  // 일시정지 토글 — playing ↔ paused. resume 시 pausedDuration만큼 모든 timed 값 보정.
+  const togglePause = useCallback(() => {
+    setGameState((prev) => {
+      if (prev === 'playing') {
+        pausedAtRef.current = performance.now()
+        return 'paused'
+      }
+      if (prev === 'paused') {
+        const pausedDuration = performance.now() - pausedAtRef.current
+        adjustTimersByPauseDuration(refs.current, pausedDuration)
+        pausedAtRef.current = 0
+        return 'playing'
+      }
+      return prev
+    })
+  }, [])
+
+  // 그만두기 확인 모달 열기 — 게임 시간은 멈춤. 이전 상태(playing/paused) 기억해 취소 시 복귀.
+  // playing에서 진입 시 paused와 동일하게 pausedAt 기록 → 취소 복귀 시 동일한 보정 적용.
+  const openQuitConfirm = useCallback(() => {
+    setGameState((prev) => {
+      if (prev === 'playing') {
+        pausedAtRef.current = performance.now()
+        preQuitStateRef.current = 'playing'
+        return 'confirmQuit'
+      }
+      if (prev === 'paused') {
+        preQuitStateRef.current = 'paused'
+        return 'confirmQuit'
+      }
+      return prev
+    })
+  }, [])
+
+  // 그만두기 취소 — 이전 상태로 복귀. playing 복귀면 pausedDuration 보정.
+  const cancelQuit = useCallback(() => {
+    setGameState((prev) => {
+      if (prev !== 'confirmQuit') return prev
+      const target = preQuitStateRef.current
+      if (target === 'playing') {
+        const pausedDuration = performance.now() - pausedAtRef.current
+        adjustTimersByPauseDuration(refs.current, pausedDuration)
+        pausedAtRef.current = 0
+      }
+      return target
+    })
+  }, [])
+
+  // 그만두기 확정 — 현재 점수 그대로 게임오버. pausedDuration 보정 X (게임 종료).
+  const confirmQuitGame = useCallback(() => {
+    triggerGameOver('quit')
+  }, [triggerGameOver])
 
   // 마운트 1회 — gameStart 타임스탬프만 갱신 (state 변경 X).
   // 초기 gameState='playing' + refs.current=createInitialState로 이미 게임 즉시 진입 상태.
@@ -227,6 +290,31 @@ function SoloPage() {
   // ── 입력 ───────────────────────────────────────────────────────────
   const isPlaying = useCallback(() => gameStateRef.current === 'playing', [])
   useChiInput({ refs: refs.current, enabled: isPlaying })
+
+  // ESC 키 — playing↔paused 토글, confirmQuit 시 취소(=더 놀래).
+  // gameover에선 무시. input/textarea 포커스 중엔 무시 (다른 모달의 닉네임 입력 등).
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      const target = e.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
+      ) {
+        return
+      }
+      const prev = gameStateRef.current
+      if (prev === 'playing' || prev === 'paused') {
+        e.preventDefault()
+        togglePause()
+      } else if (prev === 'confirmQuit') {
+        e.preventDefault()
+        cancelQuit()
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [togglePause, cancelQuit])
 
   // ── 스폰 + cat-target 스케줄러 (gameState 토글에 묶음) ──────────────
   useEffect(() => {
@@ -471,6 +559,24 @@ function SoloPage() {
           onSubmit={handleGameOverSubmit}
           onRestart={startGame}
           onMain={() => navigate({ to: '/' })}
+        />
+      )}
+
+      {/* 일시정지/그만두기 모달 (gameover와 동일하게 라우트 레벨 portal/overlay) */}
+      <PauseModal open={gameState === 'paused'} onResume={togglePause} />
+      <QuitConfirmModal
+        open={gameState === 'confirmQuit'}
+        onCancel={cancelQuit}
+        onConfirm={confirmQuitGame}
+      />
+
+      {/* DSFrame/GameFrameCard 외부 컨트롤 바 — root layout의 #game-controls-slot에 portal.
+          playing/paused 동안만 표시 (confirmQuit/gameover는 모달이 입력 차단). */}
+      {(gameState === 'playing' || gameState === 'paused') && (
+        <SoloControlBar
+          paused={gameState === 'paused'}
+          onTogglePause={togglePause}
+          onQuit={openQuitConfirm}
         />
       )}
     </>

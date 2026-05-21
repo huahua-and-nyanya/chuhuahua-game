@@ -74,7 +74,12 @@ export type AIState = {
 
 // === 게임 모드 / 상태 ===
 export type GameMode = 'solo' | 'pvp'
-export type GameState = 'idle' | 'playing' | 'gameover'
+export type GameState =
+  | 'idle'
+  | 'playing'
+  | 'paused'
+  | 'confirmQuit'
+  | 'gameover'
 
 // === 효과 상태 ===
 // PvP에서 어느 쪽이 아이템을 픽업했는지

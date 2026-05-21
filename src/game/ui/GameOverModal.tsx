@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { CenterModal } from '@/ui/CenterModal'
 import { PixelButton } from '@/ui/PixelButton'
 
-export type GameOverCause = 'pigeon-hit'
+export type GameOverCause = 'pigeon-hit' | 'quit'
 
 export type GameOverInfo = {
   finalScore: number
@@ -83,7 +83,9 @@ export function GameOverModal(props: GameOverModalProps) {
             GAME OVER
           </h2>
           <p className="font-body mt-3 text-xs" style={{ color: COLOR_LABEL }}>
-            비둘기가 고양이를 잡았어요
+            {info.cause === 'quit'
+              ? '그만뒀어요'
+              : '비둘기가 고양이를 잡았어요'}
           </p>
         </div>
 
