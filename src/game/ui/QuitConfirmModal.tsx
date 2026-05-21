@@ -1,3 +1,4 @@
+import { CHARACTER_ASSETS } from '@/assets'
 import { CenterModal } from '@/ui/CenterModal'
 import { PixelButton } from '@/ui/PixelButton'
 
@@ -25,6 +26,13 @@ export function QuitConfirmModal({
       closeOnEscape={false}
     >
       <div className="gap-md p-md flex flex-col items-center text-center">
+        <div className="relative mx-auto h-40 w-40 overflow-hidden">
+          <img
+            src={CHARACTER_ASSETS.chihuahuaSad}
+            alt="슬픈 츄와와"
+            className="h-full w-full object-contain"
+          />
+        </div>
         <p className="text-text-primary font-body text-sm leading-relaxed">
           지금 그만두면
           <br />
