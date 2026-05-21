@@ -37,6 +37,9 @@ export type TransientFlag = {
   until: number
 }
 
+// mwah("쪽!") 텍스트는 위치 정보를 함께 보유 — chi/cat 중점에서 표시한다.
+export type MwahFlag = TransientFlag & Vec2
+
 export type LevelUpEffect = TransientFlag & {
   level: number
 }
@@ -54,7 +57,7 @@ export type GameRefs = {
   floatTexts: FloatTextRef[]
   particles: ParticleRef[]
   bgHearts: BgHeart[]
-  mwah: TransientFlag
+  mwah: MwahFlag
   kissing: TransientFlag
   flash: { until: number }
   levelUpEffect: LevelUpEffect
@@ -68,12 +71,12 @@ export function createInitialState(): GameRefs {
     pigeons: [],
     items: [],
     effects: {
-      chiBoost: null,
-      chiSlow: null,
-      catSpeedup: null,
-      catSlow: null,
-      chiShield: null,
-      catShield: null,
+      chiBoost: { until: 0 },
+      chiSlow: { until: 0 },
+      catSpeedup: { until: 0 },
+      catSlow: { until: 0 },
+      catShield: { until: 0 },
+      scoreMult: { value: 1, until: 0 },
     },
     ai: {
       cat: { lastDashAt: 0 },
@@ -83,7 +86,7 @@ export function createInitialState(): GameRefs {
     floatTexts: [],
     particles: [],
     bgHearts: [],
-    mwah: { active: false, until: 0 },
+    mwah: { active: false, until: 0, x: 0, y: 0 },
     kissing: { active: false, until: 0 },
     flash: { until: 0 },
     levelUpEffect: { active: false, until: 0, level: 0 },

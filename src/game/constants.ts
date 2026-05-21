@@ -5,6 +5,9 @@ export const RENDER_FPS = 30 // React 렌더 주기 (RAF는 60fps)
 
 // === 캐릭터 ===
 export const KISS_DIST = 42 // px, 츄와 ↔ 고양이 뽀뽀 판정 거리
+export const KISS_DURATION = 380 // ms, 뽀뽀 무적 / 재트리거 가드 시간
+export const MWAH_DURATION = 700 // ms, "쪽!" 텍스트 표시 시간
+export const KISS_PUSH = 25 // px, 뽀뽀 직후 cat을 chi 반대로 밀어내는 거리 (재트리거 방지)
 export const MAX_SPEED = 3.4 // px/frame
 export const ACCEL = 0.2 // px/frame²
 

@@ -10,6 +10,7 @@ import {
   GAME_WIDTH,
   KISS_DIST,
 } from '@/game/constants'
+import { getCatSpeedMul } from '@/game/effects'
 import type { GameRefs } from '@/game/loop/state'
 import { clamp } from '@/game/physics'
 
@@ -103,8 +104,9 @@ export function updateCatFlee(
     }
   }
 
-  // TODO C-3': cucumber 가속 / sweetPotato 슬로우 곱셈을 effects에서 읽어 적용.
-  const speedMul = 1
+  // cucumber 가속 / sweetPotato 슬로우 곱셈을 effects에서 읽어 적용.
+  // 솔로엔 둘 다 안 스폰되므로 PvP F에서만 실제 영향.
+  const speedMul = getCatSpeedMul(refs, now)
   cat.x += (target.x - cat.x) * activeLerp * speedMul
   cat.y += (target.y - cat.y) * activeLerp * speedMul
 

@@ -72,22 +72,29 @@ export type GameState = 'idle' | 'playing' | 'gameover'
 // PvP에서 어느 쪽이 아이템을 픽업했는지
 export type PickerSide = 'chi' | 'cat'
 
-// 효과 만료 타임스탬프 (Date.now() 기준). null이면 비활성.
-// 활성 판정은 `effect && effect.until > now`.
+// 효과 만료 타임스탬프 (Date.now() 기준). until 항상 number, 비활성은 `until: 0`.
+// 활성 판정은 `effect.until > now`.
 // mega는 chiBoost에만 의미 있음 (메가 부스트 = 콤보 보상). 다른 effect는 무시.
 export interface TimedEffect {
   until: number
   mega?: boolean
 }
 
+// 점수 ×N 도장. value는 활성 배율. until=0이면 1x로 fallback (호출 측 책임).
+export interface ScoreMultEffect {
+  value: number
+  until: number
+}
+
 // 게임 루프가 보유하는 전역 효과 트래커 (effects.ts가 mutate)
+// chiShield는 PvP F에서 분기 추가. 솔로 단일 동작에 필요한 6개만 유지.
 export interface EffectState {
-  chiBoost: TimedEffect | null
-  chiSlow: TimedEffect | null
-  catSpeedup: TimedEffect | null
-  catSlow: TimedEffect | null
-  chiShield: TimedEffect | null
-  catShield: TimedEffect | null
+  chiBoost: TimedEffect
+  chiSlow: TimedEffect
+  catSpeedup: TimedEffect
+  catSlow: TimedEffect
+  catShield: TimedEffect
+  scoreMult: ScoreMultEffect
 }
 
 // === 히스토리 항목 ===

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 import { ACCEL, GAME_HEIGHT, GAME_WIDTH, MAX_SPEED } from '@/game/constants'
+import { getChiSpeedMul } from '@/game/effects'
 import type { GameRefs } from '@/game/loop/state'
 import { clamp } from '@/game/physics'
 
@@ -10,8 +11,8 @@ import { clamp } from '@/game/physics'
 const keysRef = { current: {} as Record<string, boolean> }
 
 // 마진 — slow 활성 시 큰 캐릭터 크기 대응 (reference 1633: slow ? 65 : 50).
-// slow 효과 읽기는 C-3'에서 effects 통합 시 추가. 현재는 평소값 50 하드코딩.
 const CHI_MARGIN_NORMAL = 50
+const CHI_MARGIN_SLOW = 65
 // 캐릭터가 좌측을 기본으로 그려져있어 facing='right'면 horizontal flip이 필요.
 const FACING_DEADZONE = 0
 
@@ -74,9 +75,10 @@ export function useChiInput(deps: ChiInputDeps): void {
 }
 
 // reference 1599~1636 정확 이식. dt 인자는 호환용으로만 받고 본문에선 미사용
-// (RAF 60fps 가정으로 위치 += vx 그대로 더한다). getLevel도 C-3'에서 effects 통합 시 사용.
+// (RAF 60fps 가정으로 위치 += vx 그대로 더한다). getLevel도 호환용 (옷 효과 사이클 W).
 export function applyChiPhysics(
   refs: GameRefs,
+  now: number,
   dt: number,
   getLevel: () => number,
 ): void {
@@ -97,9 +99,8 @@ export function applyChiPhysics(
   if (tvx > FACING_DEADZONE) chi.facing = 'right'
   else if (tvx < -FACING_DEADZONE) chi.facing = 'left'
 
-  // TODO C-3': boost/slow를 effects에서 읽어 boostMul/slowMul 적용.
-  const boostMul = 1
-  const speed = MAX_SPEED * boostMul
+  // boost/mega는 effects에서 (chiBoost.until > now 시 1.55 또는 2.0).
+  const speed = MAX_SPEED * getChiSpeedMul(refs, now)
 
   const len = Math.hypot(tvx, tvy)
   if (len > 0) {
@@ -115,8 +116,9 @@ export function applyChiPhysics(
   if (Math.abs(chi.vx) < 0.05) chi.vx = 0
   if (Math.abs(chi.vy) < 0.05) chi.vy = 0
 
-  // 위치 갱신 + 동적 clamp. slow 분기는 C-3'에서.
-  const margin = CHI_MARGIN_NORMAL
+  // 위치 갱신 + 동적 clamp (reference 1633: slow=65, 평소=50).
+  const isSlow = refs.effects.chiSlow.until > now
+  const margin = isSlow ? CHI_MARGIN_SLOW : CHI_MARGIN_NORMAL
   let nx = chi.x + chi.vx
   let ny = chi.y + chi.vy
   if (nx < margin || nx > GAME_WIDTH - margin) {
