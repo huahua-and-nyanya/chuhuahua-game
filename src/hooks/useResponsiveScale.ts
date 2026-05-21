@@ -12,16 +12,16 @@ import { GAME_HEIGHT, GAME_WIDTH } from '@/game/constants'
 //     padding 24 + gap 12 × 2 + 메뉴 row 36 + 컨트롤러 100 + border 4 = 188
 // 가용 가로 = viewport width − page padding × 2 − (모바일: DSFRAME_HORIZONTAL_OVERHEAD)
 //   DSFRAME_HORIZONTAL_OVERHEAD = padding 24 + border 4 = 28
-//   모바일 DSFrame은 max-w 360px cap, 그 안 카드가 들어가도록 availW 조정.
+//   DSFrame은 viewport 가로 한계치(- page padding 32)까지 꽉 채움. cap 없음.
+//   카드는 그 안 폭(DSFrame width - overhead) 또는 vh 한계 중 작은 값.
 //
-// 모바일(viewport 375×667): vw 가용 → min(343, 360) − 28 = 315, vh 가용 = 419, 카드 315 (scale ~0.492)
+// 모바일(viewport 375×667): DSFrame 343 → 안 폭 315, vh 가용 447, 카드 315 (scale ~0.492)
+// 모바일(viewport 414×600 가로 큰 작은 폰): DSFrame 382 → 안 폭 354, vh 가용 380, widthByH 507 → 카드 354
 // 데스크탑(viewport 1920×1080): 가용 1888 × 948 → 카드 960 (MAX_SCALE 1.5)
 //
 // 좌표계는 항상 640×480 — 게임 로직/충돌은 0% 영향.
 const PAGE_PADDING = 16
 const MOBILE_BREAKPOINT = 768
-// DS 프레임 cap (DSFrame.tsx max-w-[360px]와 동기)
-const DSFRAME_MAX_WIDTH = 360
 // DS 프레임 좌우 overhead — p-md 24 + border 2 × 2 = 28
 const DSFRAME_HORIZONTAL_OVERHEAD = 28
 // DS 프레임 안 vertical overhead — p-md 24 + gap-md 12 × 2 + 메뉴 row 36 + 컨트롤러 100 + border 4
@@ -43,11 +43,11 @@ function compute(): ResponsiveLayout {
   const vh = window.innerHeight
   const isMobile = vw < MOBILE_BREAKPOINT
 
-  // 모바일은 DSFrame width = min(viewport - padding, DSFRAME_MAX_WIDTH).
-  // 그 안 폭 = dsFrameWidth - overhead. 카드는 이 안 폭 안에 정확히 들어가야 함.
+  // 모바일은 DSFrame이 viewport - page padding 한계치까지 꽉 채움 (cap 없음).
+  // 카드는 그 안 폭 = DSFrame width - overhead 안에 정확히 들어가야 함.
   const horizontalRaw = vw - PAGE_PADDING * 2
   const availW = isMobile
-    ? Math.min(horizontalRaw, DSFRAME_MAX_WIDTH) - DSFRAME_HORIZONTAL_OVERHEAD
+    ? horizontalRaw - DSFRAME_HORIZONTAL_OVERHEAD
     : horizontalRaw
   const availH =
     vh -

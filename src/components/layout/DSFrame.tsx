@@ -4,10 +4,10 @@ import type { ReactNode } from 'react'
 // 진한 분홍(pink-500) 외곽 + 검정 ink border + 둥근 모서리.
 // 자식: GameFrameCard(상단 화면) + [메뉴 row, 메인 한정] + VirtualController.
 //
-// width: viewport 100% + max-w 360px (cap). p-md(12px) 내부 padding.
-// 자식 사이 gap-md(12px). column flex로 정렬.
+// width: viewport 100% (page padding 16 × 2 이미 main에서 빠짐). cap 없음 — 한계치까지 가로 사용.
+// p-md(12px) 내부 padding. 자식 사이 gap-md(12px). column flex로 정렬.
 const CLASSES =
-  'mx-auto w-full max-w-[360px] ' +
+  'mx-auto w-full ' +
   'bg-pink-500 ' +
   'border-2 border-ink-base ' +
   'rounded-3xl ' +
