@@ -181,9 +181,11 @@ body {
   text-box: trim-both cap alphabetic;
 }
 
-/* input/textarea는 사용자 입력 텍스트가 ascent/descent까지 정상 표시되어야 (받침/디센더 잘림 방지). */
+/* input/textarea/button은 사용자 입력 텍스트가 ascent/descent까지 정상 표시되어야 (받침/디센더 잘림 방지).
+ * button: trim이 적용되면 inline-flex 안 텍스트의 vertical baseline이 미세하게 어긋남 → 영역 안 중앙 정렬이 깨짐. */
 input,
-textarea {
+textarea,
+button {
   text-box: normal;
 }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { CenterModal } from '@/ui/CenterModal'
+import { PixelButton } from '@/ui/PixelButton'
 
 export type GameOverCause = 'pigeon-hit'
 
@@ -173,14 +174,14 @@ export function GameOverModal(props: GameOverModalProps) {
           >
             메인으로
           </button>
-          <button
-            type="button"
+          <PixelButton
+            variant="primary"
+            size="lg"
             onClick={onRestart}
-            className="font-body h-button-md max-w-55 flex-1 rounded-xl text-base font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: COLOR_PRIMARY }}
+            className="max-w-55 flex-1"
           >
             다시하기
-          </button>
+          </PixelButton>
         </div>
       </div>
     </CenterModal>
