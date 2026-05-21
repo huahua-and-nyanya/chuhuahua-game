@@ -2,7 +2,9 @@ import { CHARACTER_ASSETS } from '@/assets'
 import { CenterModal } from '@/ui/CenterModal'
 import { PixelButton } from '@/ui/PixelButton'
 
-// 일시정지 모달 — 자는 츄와와 + "잠깐 쉬는 중" + ▶ 다시 놀기.
+import '@/game/keyframes.css'
+
+// 일시정지 모달 — 자는 츄와와 + Z 버블 stagger + ▶ 다시 놀기 (PixelButton primary).
 // ESC/배경 클릭으로 닫기 → onResume (solo.tsx가 resume 처리).
 // CenterModal의 closeOnEscape는 false (solo.tsx의 ESC 키 핸들러가 통합 토글 책임).
 
@@ -16,28 +18,35 @@ export function PauseModal({ open, onResume }: PauseModalProps) {
     <CenterModal
       open={open}
       onClose={onResume}
-      title="잠깐 쉬는 중"
+      title="잠깐 쉬는 중..."
       closeOnBackdropClick={false}
       closeOnEscape={false}
     >
       <div className="gap-md p-md flex flex-col items-center text-center">
-        <img
-          src={CHARACTER_ASSETS.chihuahuaSleep}
-          alt="자는 츄와와"
-          className="h-32 w-32 object-contain"
-        />
+        <div className="relative mx-auto h-32 w-32">
+          <img
+            src={CHARACTER_ASSETS.chihuahuaSleep}
+            alt="자는 츄와와"
+            className="h-full w-full object-contain"
+          />
+          {/* Z 버블 — 3개가 0.8s 간격 stagger로 위로 올라가며 커지고 사라짐 */}
+          <span className="z-bubble z-bubble-1" aria-hidden>
+            Z
+          </span>
+          <span className="z-bubble z-bubble-2" aria-hidden>
+            Z
+          </span>
+          <span className="z-bubble z-bubble-3" aria-hidden>
+            Z
+          </span>
+        </div>
         <p className="text-text-muted font-body text-sm">
           츄와와도 한숨 돌리고 있어요
         </p>
-        <PixelButton
-          variant="arcade"
-          size="lg"
-          glowColor="#33ff66"
-          onClick={onResume}
-        >
+        <PixelButton variant="primary" size="lg" onClick={onResume}>
           ▶ 다시 놀기
         </PixelButton>
-        <p className="text-text-muted font-body mt-sm text-xs">
+        <p className="text-text-muted/60 mt-xs font-body text-[10px]">
           ESC 키로도 다시 시작
         </p>
       </div>

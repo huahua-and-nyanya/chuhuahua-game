@@ -3,7 +3,7 @@ import { PixelButton } from '@/ui/PixelButton'
 
 // 그만두기 확인 모달 — "정말 그만둘래?" + 더 놀래 / 그만 둘래.
 // ESC = 취소(=더 놀래)는 solo.tsx의 통합 키 핸들러가 처리. 본 모달의 closeOnEscape는 false.
-// "그만 둘래"는 arcade variant + 빨간 glow (danger variant 미존재 — arcade로 대체).
+// 두 버튼 모두 PixelButton 기본 variant 사용 (secondary / primary).
 
 export type QuitConfirmModalProps = {
   open: boolean
@@ -34,7 +34,7 @@ export function QuitConfirmModal({
           <PixelButton variant="secondary" onClick={onCancel}>
             더 놀래
           </PixelButton>
-          <PixelButton variant="arcade" glowColor="#ff3344" onClick={onConfirm}>
+          <PixelButton variant="primary" onClick={onConfirm}>
             그만 둘래
           </PixelButton>
         </div>
