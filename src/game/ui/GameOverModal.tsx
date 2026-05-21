@@ -134,7 +134,7 @@ export function GameOverModal(props: GameOverModalProps) {
                   type="button"
                   onClick={handleSubmit}
                   disabled={nickname.trim().length === 0}
-                  className="font-body h-10.5 rounded-xl bg-pink-500 px-5 text-sm font-medium whitespace-nowrap text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="font-body bg-button-primary-bg text-button-primary-text h-10.5 rounded-xl px-5 text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   등록
                 </button>
