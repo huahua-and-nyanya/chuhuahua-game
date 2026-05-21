@@ -64,7 +64,7 @@ export const Route = createFileRoute('/solo')({
 const NICKNAME_KEY = 'chuhuahua:nickname'
 const FLOAT_DURATION = 800 // ms — FloatText 기준 잔여시간 (FloatText.tsx FLOAT_LIFETIME과 일치)
 const TOAST_DURATION = 1800 // ms
-const CHARACTER_BOX = 100 // px — 캐릭터 wrapper 정사각
+const CHARACTER_BOX = 150 // px — 캐릭터 wrapper 정사각 (캐릭터/아이템 1.5배 시각)
 
 type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover'
 
@@ -430,6 +430,7 @@ function SoloPage() {
   const chiSlowed = effects.chiSlow.until > now
   const catKissing = chiKissing // 같은 플래그 공유 (둘이 같이 뽀뽀 중)
   const catShielded = effects.catShield.until > now
+  const catAngry = effects.catSpeedup.until > now // 오이 디버프 (cucumber)
 
   const chiFacing = chi.facing === 'right' ? -1 : 1
   const catFacing = cat.facing === 'right' ? -1 : 1
@@ -508,7 +509,7 @@ function SoloPage() {
               animation: catKissing ? 'kiss-bounce 500ms ease-out' : undefined,
             }}
           >
-            <Cat kissing={catKissing} shielded={catShielded} />
+            <Cat kissing={catKissing} shielded={catShielded} angry={catAngry} />
           </div>
         </div>
         {catShielded && (

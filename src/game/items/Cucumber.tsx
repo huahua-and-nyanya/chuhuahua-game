@@ -8,8 +8,8 @@ export function Cucumber(): JSX.Element {
       alt=""
       draggable={false}
       style={{
-        width: 56,
-        height: 18,
+        width: 84,
+        height: 27,
         objectFit: 'contain',
         filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.25))',
         pointerEvents: 'none',

@@ -12,8 +12,8 @@ export function Pigeon({ fleeing }: PigeonProps): JSX.Element {
       alt=""
       draggable={false}
       style={{
-        width: 70,
-        height: 60,
+        width: 105,
+        height: 90,
         objectFit: 'contain',
         flexShrink: 0,
         filter: fleeing

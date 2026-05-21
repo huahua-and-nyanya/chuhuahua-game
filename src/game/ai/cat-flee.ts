@@ -72,13 +72,55 @@ export function updateCatFlee(
       }
       activeLerp = baseLerp * CAT_FLEE_LERP_MUL
     }
-  } else if (level >= DASH_MIN_LEVEL) {
-    // 2. (cucumber dead branch는 C-3'에서)
-    // 3. LV2+ dash
+  } else {
+    const catSpedUp = refs.effects.catSpeedup.until > now
     const dxChi = cat.x - chi.x
     const dyChi = cat.y - chi.y
     const dChi = Math.hypot(dxChi, dyChi)
+
+    // 2. cucumber 효과: chi로부터 적극 도망 (chi 반대 180px target) + 벽 인식 회피.
+    //    reference 1693~1720.
+    if (catSpedUp && dChi < 280) {
+      const ll = dChi || 1
+      let tx = cat.x + (dxChi / ll) * 180
+      let ty = cat.y + (dyChi / ll) * 180
+      // 벽 인식: target이 영역 밖이면 chi-cat 벡터에 직각인 두 방향 중 더 안전한 쪽 선택.
+      const margin = SCREEN_MARGIN
+      if (
+        tx < margin ||
+        tx > GAME_WIDTH - margin ||
+        ty < margin ||
+        ty > GAME_HEIGHT - margin
+      ) {
+        const perpX = -dyChi / ll
+        const perpY = dxChi / ll
+        const optA = { x: cat.x + perpX * 200, y: cat.y + perpY * 200 }
+        const optB = { x: cat.x - perpX * 200, y: cat.y - perpY * 200 }
+        const safetyA = Math.min(
+          optA.x,
+          GAME_WIDTH - optA.x,
+          optA.y,
+          GAME_HEIGHT - optA.y,
+        )
+        const safetyB = Math.min(
+          optB.x,
+          GAME_WIDTH - optB.x,
+          optB.y,
+          GAME_HEIGHT - optB.y,
+        )
+        const safer = safetyA > safetyB ? optA : optB
+        tx = safer.x
+        ty = safer.y
+      }
+      target = {
+        x: clamp(tx, SCREEN_MARGIN, GAME_WIDTH - SCREEN_MARGIN),
+        y: clamp(ty, SCREEN_MARGIN, GAME_HEIGHT - SCREEN_MARGIN),
+      }
+    }
+
+    // 3. LV2+ dash (cucumber 활성 시에도 추가 발동 가능).
     if (
+      level >= DASH_MIN_LEVEL &&
       dChi < CAT_DASH_THRESHOLD &&
       dChi > DASH_MIN_CHI_DIST &&
       now > ai.cat.lastDashAt
@@ -96,10 +138,8 @@ export function updateCatFlee(
           GAME_HEIGHT - SCREEN_MARGIN,
         ),
       }
-      // catTarget도 dash 목표점으로 갱신 — 다음 wandering tick까지 그 위치 유지.
       ai.catTarget = dashTarget
       target = dashTarget
-      // "다음 dash 가능 시각"을 lastDashAt에 저장 (now > 비교 패턴).
       ai.cat.lastDashAt = now + CAT_DASH_COOLDOWN
     }
   }
