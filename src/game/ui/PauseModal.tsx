@@ -23,7 +23,7 @@ export function PauseModal({ open, onResume }: PauseModalProps) {
       closeOnEscape={false}
     >
       <div className="gap-md p-md flex flex-col items-center text-center">
-        <div className="relative mx-auto h-32 w-32">
+        <div className="relative mx-auto h-40 w-40 overflow-hidden">
           <img
             src={CHARACTER_ASSETS.chihuahuaSleep}
             alt="자는 츄와와"
@@ -43,12 +43,14 @@ export function PauseModal({ open, onResume }: PauseModalProps) {
         <p className="text-text-muted font-body text-sm">
           츄와와도 한숨 돌리고 있어요
         </p>
-        <PixelButton variant="primary" size="lg" onClick={onResume}>
-          ▶ 다시 놀기
-        </PixelButton>
-        <p className="text-text-muted/60 mt-xs font-body text-[10px]">
-          ESC 키로도 다시 시작
-        </p>
+        <div className="flex flex-col items-center gap-2">
+          <PixelButton variant="primary" size="lg" onClick={onResume}>
+            ▶ 다시 놀기
+          </PixelButton>
+          <p className="mt-xs font-body text-[8px] text-[#BFBFBF]">
+            ESC 키로도 다시 시작
+          </p>
+        </div>
       </div>
     </CenterModal>
   )
