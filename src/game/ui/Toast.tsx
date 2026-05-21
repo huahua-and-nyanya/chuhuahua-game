@@ -15,7 +15,7 @@ export function Toasts({ toasts }: ToastsProps) {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="bg-ink-base text-text-on-pink rounded-pill px-md py-xs shadow-card text-sm font-medium whitespace-nowrap"
+          className="bg-ink-base text-text-on-pink rounded-pill px-md py-xs text-sm font-medium whitespace-nowrap"
         >
           {t.text}
         </div>
