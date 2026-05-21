@@ -77,15 +77,34 @@ export function scheduleDebuffFirstSpawn(
   }, delay * ITEM_SPAWN_MUL)
 }
 
-// 픽업 후 외부에서 호출 — 아이템 1개를 재스폰. kind에 따라 범위 분기:
-//   kibble/fish: ITEM_RESPAWN_MIN~MAX (8~13s)
-//   cucumber/sweetPotato: DEBUFF_RESPAWN_MIN~MAX (18~30s, 더 드물게)
+// 픽업 후 외부에서 호출 — 아이템 1개를 재스폰. kind/level에 따라 분기:
+//   도움(kibble/fish): 레벨↑ → 쿨다운↑ (LV0 1.0배, LV10 1.7배). 도움이 점점 귀해짐.
+//   디버프(cucumber/sweetPotato): 레벨↑ → 쿨다운↓ (LV3 1.0배, LV10 0.45배). 함정 더 자주.
+// 레벨은 currentDeps.getLevel()에서 매 호출 시 최신 값을 읽음.
+const AID_FACTOR_PER_LEVEL = 0.07
+const AID_FACTOR_MAX = 1.7
+const DEBUFF_FACTOR_PER_LEVEL = 0.08
+const DEBUFF_FACTOR_MIN = 0.45
+
 export function scheduleItemRespawn(kind: SoloSpawnKind): void {
   const deps = currentDeps
   if (!deps) return
+  const level = deps.getLevel()
   const isDebuff = DEBUFF_KINDS.has(kind)
-  const min = isDebuff ? DEBUFF_RESPAWN_MIN : ITEM_RESPAWN_MIN
-  const max = isDebuff ? DEBUFF_RESPAWN_MAX : ITEM_RESPAWN_MAX
+  let min: number
+  let max: number
+  if (isDebuff) {
+    const factor = Math.max(
+      DEBUFF_FACTOR_MIN,
+      1 - Math.max(0, level - 3) * DEBUFF_FACTOR_PER_LEVEL,
+    )
+    min = DEBUFF_RESPAWN_MIN * factor
+    max = DEBUFF_RESPAWN_MAX * factor
+  } else {
+    const factor = Math.min(AID_FACTOR_MAX, 1 + level * AID_FACTOR_PER_LEVEL)
+    min = ITEM_RESPAWN_MIN * factor
+    max = ITEM_RESPAWN_MAX * factor
+  }
   const delay = (min + Math.random() * (max - min)) * ITEM_SPAWN_MUL
   trackedTimeout(() => {
     if (currentDeps !== deps) return

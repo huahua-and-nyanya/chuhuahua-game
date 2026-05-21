@@ -24,9 +24,9 @@ export const CAT_DASH_COOLDOWN = 1200 // ms
 // === 비둘기 ===
 export const PIGEON_SPEED_BASE = 1.6 // px/frame
 export const PIGEON_SPEED_PER_LEVEL = 0.25
-export const PIGEON_SPAWN_MIN = 5000 // ms, 최소 스폰 간격
-export const PIGEON_SPAWN_BASE = 13000 // ms, 기준 스폰 간격
-export const PIGEON_SPAWN_PER_LEVEL = 1200 // ms, 레벨당 간격 단축량
+export const PIGEON_SPAWN_MIN = 3500 // ms, 최소 스폰 간격 (LV9+ cap)
+export const PIGEON_SPAWN_BASE = 13000 // ms, LV0 기준 스폰 간격
+export const PIGEON_SPAWN_PER_LEVEL = 2000 // ms, 레벨당 간격 단축량 (체감 ↑)
 export const PIGEON_SCARE_DIST = 60 // px, 츄와의 접근 시 도망 거리
 export const PIGEON_HIT_DIST = 30 // px, 피격 판정 거리
 
