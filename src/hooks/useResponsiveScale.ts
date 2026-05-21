@@ -24,8 +24,15 @@ const MOBILE_HEADER_RESERVED = 120
 const DESKTOP_HEADER_RESERVED = 100
 const MAX_SCALE = 1.5
 
-function computeScale(): number {
-  if (typeof window === 'undefined') return 1
+export type ResponsiveLayout = {
+  scale: number
+  isMobile: boolean
+}
+
+const DESKTOP_DEFAULT: ResponsiveLayout = { scale: 1, isMobile: false }
+
+function compute(): ResponsiveLayout {
+  if (typeof window === 'undefined') return DESKTOP_DEFAULT
   const vw = window.innerWidth
   const vh = window.innerHeight
   const isMobile = vw < MOBILE_BREAKPOINT
@@ -37,16 +44,16 @@ function computeScale(): number {
   // aspect 4:3 → 카드 width = 가용 height × 4/3
   const widthByHeight = (availH * GAME_WIDTH) / GAME_HEIGHT
   const cardWidth = Math.min(availW, widthByHeight, GAME_WIDTH * MAX_SCALE)
-  return cardWidth / GAME_WIDTH
+  return { scale: cardWidth / GAME_WIDTH, isMobile }
 }
 
-export function useResponsiveScale(): number {
-  const [scale, setScale] = useState(1)
+export function useResponsiveScale(): ResponsiveLayout {
+  const [layout, setLayout] = useState<ResponsiveLayout>(DESKTOP_DEFAULT)
   useEffect(() => {
-    const update = () => setScale(computeScale())
+    const update = () => setLayout(compute())
     update()
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
   }, [])
-  return scale
+  return layout
 }

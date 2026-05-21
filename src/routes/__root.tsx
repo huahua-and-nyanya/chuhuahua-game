@@ -59,7 +59,7 @@ function RootLayout() {
   const [multiOpen, setMultiOpen] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
   const [rankingOpen, setRankingOpen] = useState(false)
-  const scale = useResponsiveScale()
+  const { scale } = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
 
   // /dev/* 는 개발자 라우트 — AppFrame(분홍 배경/카드/슬롯) 안 입히고 Outlet만 그림.

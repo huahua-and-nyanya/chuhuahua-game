@@ -16,6 +16,15 @@ const CHI_MARGIN_SLOW = 65
 // 캐릭터가 좌측을 기본으로 그려져있어 facing='right'면 horizontal flip이 필요.
 const FACING_DEADZONE = 0
 
+// 모바일 가상 컨트롤러가 매 프레임 주입하는 4방향 boolean 묶음.
+// 키보드 keysRef와 OR 결합 — 둘 다 같은 방향 신호 동등.
+export type VirtualInputState = {
+  up: boolean
+  down: boolean
+  left: boolean
+  right: boolean
+}
+
 export type ChiInputDeps = {
   refs: GameRefs
   enabled: () => boolean
@@ -76,24 +85,27 @@ export function useChiInput(deps: ChiInputDeps): void {
 
 // reference 1599~1636 정확 이식. dt 인자는 호환용으로만 받고 본문에선 미사용
 // (RAF 60fps 가정으로 위치 += vx 그대로 더한다). getLevel도 호환용 (옷 효과 사이클 W).
+// virtualInput: 모바일 가상 컨트롤러 4방향. 키보드와 OR 결합 (같은 방향 신호).
 export function applyChiPhysics(
   refs: GameRefs,
   now: number,
   dt: number,
   getLevel: () => number,
+  virtualInput?: VirtualInputState,
 ): void {
   void dt
   void getLevel
   const k = keysRef.current
+  const v = virtualInput
   const chi = refs.chi
 
-  // 솔로 = WASD + 방향키 OR. PvP에선 chi가 WASD 전용이지만 사이클 F 책임.
+  // 솔로 = WASD + 방향키 + 가상 컨트롤러 OR. PvP에선 chi가 WASD 전용이지만 사이클 F 책임.
   let tvx = 0
   let tvy = 0
-  if (k['a'] || k['arrowleft']) tvx -= 1
-  if (k['d'] || k['arrowright']) tvx += 1
-  if (k['w'] || k['arrowup']) tvy -= 1
-  if (k['s'] || k['arrowdown']) tvy += 1
+  if (k['a'] || k['arrowleft'] || v?.left) tvx -= 1
+  if (k['d'] || k['arrowright'] || v?.right) tvx += 1
+  if (k['w'] || k['arrowup'] || v?.up) tvy -= 1
+  if (k['s'] || k['arrowdown'] || v?.down) tvy += 1
 
   // facing — 좌우 입력만 기준 (수직 입력은 방향 안 바꿈).
   if (tvx > FACING_DEADZONE) chi.facing = 'right'
