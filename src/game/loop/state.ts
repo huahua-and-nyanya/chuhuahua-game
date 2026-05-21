@@ -23,11 +23,13 @@ export type BgHeart = Vec2 & {
 // === 점수 미러 ===
 // React state는 30fps 렌더 게이트에 묶이므로,
 // 게임 로직은 본 ref 미러에 즉시 반영한 뒤 다음 forceRender에 보여준다.
+// lastKissAt은 kiss 디바운스(KISS_DEBOUNCE=600)와 C-4' 콤보 윈도우(2400)에서 공용.
 export type ScoreMirror = {
   score: number
   combo: number
   maxCombo: number
   level: number
+  lastKissAt: number
 }
 
 // === 트랜지언트 플래그 ===
@@ -82,7 +84,13 @@ export function createInitialState(): GameRefs {
       cat: { lastDashAt: 0 },
       catTarget: { x: 500, y: 240 },
     },
-    scoreMirror: { score: 0, combo: 0, maxCombo: 0, level: 0 },
+    scoreMirror: {
+      score: 0,
+      combo: 0,
+      maxCombo: 0,
+      level: 0,
+      lastKissAt: 0,
+    },
     floatTexts: [],
     particles: [],
     bgHearts: [],
