@@ -25,12 +25,15 @@ export type PigeonRef = Vec2 & {
 }
 
 // === 아이템 ===
-// 솔로/PvP 모두 동일 타입, 모드별 효과 분기는 사용 측 책임
+// 솔로/PvP 모두 동일 타입, 모드별 효과 분기는 사용 측 책임.
+// id는 React key용 unique string. expireAt 만료 처리는 expireTransients(C-5')에서.
 export type ItemKind = 'kibble' | 'fish' | 'cucumber' | 'sweetPotato'
 
 export type ItemRef = Vec2 & {
+  id: string
   kind: ItemKind
   spawnedAt: number
+  expireAt: number
 }
 
 // === 파티클 / 부유 텍스트 ===
@@ -42,18 +45,22 @@ export type ParticleRef = Vec2 & {
   size: number
 }
 
+// "+1" 같은 짧은 텍스트가 좌표 위로 떠오르며 페이드아웃.
+// 만료 처리는 `until <= now` 시 expireTransients(C-5')에서 splice.
 export type FloatTextRef = Vec2 & {
+  id: number
   text: string
-  life: number
   color: string
+  until: number
 }
 
 // === 토스트 ===
+// 우측 상단 max 3개 스택. 라우트 state로 관리하지만 UI 컴포넌트와 같은 타입을 공유.
 export type ToastRef = {
-  id: string
-  msg: string
+  id: number
+  text: string
   color: string
-  expireAt: number
+  until: number
 }
 
 // === 고양이 AI 상태 ===

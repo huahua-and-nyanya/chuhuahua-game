@@ -58,7 +58,9 @@ export const SWEETPOTATO_DURATION = 3000 // ms, 고구마 픽업 시 슬로우 �
 export const SCORE_MULT_DURATION = 5000 // ms, 점수 ×2
 export const SCORE_MULT = 2
 
-// === 레벨 시스템 ===
+// === 콤보 / 레벨 시스템 ===
+export const COMBO_WINDOW = 2400 // ms, 다음 뽀뽀까지 콤보 유지 윈도우 (reference 1827)
+export const LEVEL_UP_DURATION = 1800 // ms, LEVEL UP! 오버레이 표시 시간
 export const LEVEL_THRESHOLDS = [
   0, 10, 25, 45, 70, 100, 135, 175, 220, 270, 325,
 ] as const

@@ -10,10 +10,13 @@ import type { GameRefs } from '@/game/loop/state'
 // 재트리거 가드는 reference 1776의 600ms 디바운스 — scoreMirror.lastKissAt 비교.
 // 솔로엔 catShield가 fish로만 부여되고 그 동안 뽀뽀 차단 X (reference 1779의 PvP 한정 분기 패턴).
 
+// onKiss는 갱신 직전의 lastKissAt 값을 받는다 — applyScore가 콤보 윈도우 계산에 사용.
+// kiss.ts에서 lastKissAt을 먼저 갱신해버리면 score.ts에서 항상 `now - now = 0 < 2400`이 돼
+// 콤보가 영원히 끊기지 않는 버그가 나므로, prev 값을 콜백에 명시 전달한다.
 export type KissDeps = {
   refs: GameRefs
   now: number
-  onKiss: () => void
+  onKiss: (prevLastKissAt: number) => void
 }
 
 export function checkKiss(deps: KissDeps): void {
@@ -33,8 +36,10 @@ export function checkKiss(deps: KissDeps): void {
   const cx = (chi.x + cat.x) / 2
   const cy = (chi.y + cat.y) / 2 - 16
   refs.mwah = { active: true, until: now + MWAH_DURATION, x: cx, y: cy - 12 }
-  // 디바운스 + C-4' 콤보 윈도우(2400ms) 공용 타임스탬프.
+
+  // 갱신 직전 값을 콜백에 넘긴 뒤 디바운스용 타임스탬프 즉시 갱신.
+  const prevLastKissAt = refs.scoreMirror.lastKissAt
   refs.scoreMirror.lastKissAt = now
 
-  onKiss()
+  onKiss(prevLastKissAt)
 }

@@ -158,6 +158,13 @@
   /* === CenterModal 애니메이션 (keyframes는 animations.css) === */
   --animate-backdrop-in: backdrop-in 180ms ease-out;
   --animate-card-in: card-in 220ms ease-out;
+
+  /* === 게임 시각 토큰 (Tailwind utility 생성용 — bg-game-accent-gold 등) === */
+  --color-game-accent-gold: #fbbf24;
+  --color-game-warn: #f59e0b;
+  --color-game-shield-blue: #3b82f6;
+  --color-game-success: #22c55e;
+  --color-game-mega: var(--color-pink-700);
 }
 
 body {
