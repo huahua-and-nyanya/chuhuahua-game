@@ -28,6 +28,33 @@
   }
 }
 
+/* GAME OVER 모달 헤더(제목 + 부제) 등장 시 좌우 + 약한 회전 흔들림.
+ * 마운트 시 1회 실행 (animation: gameover-shake 600ms ease-out). */
+@keyframes gameover-shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  15% {
+    transform: translateX(-4px) rotate(-1.2deg);
+  }
+  30% {
+    transform: translateX(4px) rotate(1.2deg);
+  }
+  45% {
+    transform: translateX(-3px) rotate(-0.8deg);
+  }
+  60% {
+    transform: translateX(3px) rotate(0.8deg);
+  }
+  75% {
+    transform: translateX(-2px) rotate(-0.4deg);
+  }
+  90% {
+    transform: translateX(2px) rotate(0.4deg);
+  }
+}
+
 /* 뽀뽀 직후 cat이 "통통" 2번 점프하며 도망. 위치 이동은 kiss.ts가 2단계로 직접 처리,
  * 본 keyframe은 시각 점프(translateY + 약간 scale) 두 번만 책임. KISS_DURATION(500ms) 매칭. */
 @keyframes kiss-bounce {

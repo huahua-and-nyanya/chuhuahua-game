@@ -334,7 +334,12 @@ function SoloPage() {
         className="absolute inset-0 overflow-hidden"
         style={{
           background: `url(${bgUrl}) center / cover no-repeat`,
-          transition: 'background 0.6s ease',
+          // 게임오버 시 카드 안쪽 가장자리에 빨간 글로우 (vignette). root 외곽 안 건드림.
+          boxShadow:
+            gameState === 'gameover'
+              ? 'inset 0 0 80px 30px rgba(220, 38, 38, 0.55)'
+              : undefined,
+          transition: 'background 0.6s ease, box-shadow 0.4s ease-out',
         }}
       >
         {/* 아이템 — 캐릭터/비둘기 아래 */}

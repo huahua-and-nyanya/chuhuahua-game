@@ -16,7 +16,7 @@ const ROOT_CLASSES =
 const HEADER_CLASSES =
   'bg-pink-300 text-ink-base ' +
   'font-display text-lg tracking-[0.04em] ' +
-  'py-sm px-lg ' +
+  'py-md px-lg ' +
   'border-b-2 border-dashed border-b-border-card'
 
 const BODY_CLASSES = 'p-lg font-body text-text-primary'

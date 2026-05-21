@@ -181,6 +181,12 @@ body {
   text-box: trim-both cap alphabetic;
 }
 
+/* input/textarea는 사용자 입력 텍스트가 ascent/descent까지 정상 표시되어야 (받침/디센더 잘림 방지). */
+input,
+textarea {
+  text-box: normal;
+}
+
 .page-bg {
   background-color: var(--color-bg-letterbox);
   background-position: center;

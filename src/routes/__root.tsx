@@ -62,6 +62,18 @@ function RootLayout() {
   const scale = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
 
+  // /dev/* 는 개발자 라우트 — AppFrame(분홍 배경/카드/슬롯) 안 입히고 Outlet만 그림.
+  if (pathname.startsWith('/dev')) {
+    return (
+      <>
+        <Outlet />
+        {import.meta.env.DEV && (
+          <TanStackRouterDevtools position="bottom-right" />
+        )}
+      </>
+    )
+  }
+
   const cornerActions = (
     <>
       <IconNavButton

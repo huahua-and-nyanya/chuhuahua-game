@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+
+import { CenterModal } from '@/ui/CenterModal'
 
 export type GameOverCause = 'pigeon-hit'
 
@@ -24,10 +26,9 @@ export type GameOverModalProps = {
 const NICKNAME_MAX = 12
 
 // 시안 확정 헥스값. 기존 tokens.css와 매칭되지 않아 인라인 사용.
-// (escalation 1: 추후 시각 시스템 정리 사이클에서 새 토큰으로 추출 권장)
-const COLOR_PRIMARY = '#D4537E' // 진한 핑크 — 제목/다시하기 버튼/등록 버튼
-const COLOR_CLOSE = '#ED93B1' // X 닫기 버튼 배경
-const COLOR_PINK_SOFT = '#FBEAF0' // 등록 후 영역 배경, Top 칩 배경
+const COLOR_PRIMARY = '#D4537E' // 진한 핑크 — GAME OVER 제목/다시하기 버튼
+const COLOR_BUTTON_PINK = '#ED93B1' // 등록 버튼 (X 닫기 버튼과 동일 색)
+const COLOR_PINK_SOFT = '#FBEAF0' // 등록 후 영역 배경
 const COLOR_DASH = '#F4C0D1' // 결과 영역 위/아래 점선
 const COLOR_LABEL = '#888780' // 회색 라벨 / 부제
 const COLOR_TEXT_DARK = '#5F5E5A' // 메인으로 텍스트
@@ -41,29 +42,14 @@ function formatTime(ms: number): string {
   return `${mm}:${ss}`
 }
 
-// 자체 backdrop + card. 부모(라우트)가 게임오버 진입 시 mount, 다시하기/메인 클릭 시 unmount.
-// nickname/registered는 useState 초기값에 의존 — mount/unmount 자연 reset.
-// body overflow 잠금 + Escape → onMain은 CenterModal 패턴 인라인.
+// CenterModal로 wrap → PixelCard 기본 헤더(분홍 바) + 외부 X 버튼 패턴 활용 (다른 모달과 일관성).
+// title = "Top N 진입!" (rank 있을 때) / "GAME OVER" (그 외).
+// body 안: shake 애니메이션 GAME OVER 큰 텍스트 + 부제 + 결과 + 닉네임 + 액션.
+// 부모(라우트)가 게임오버 진입 시 mount, 다시하기/메인 시 unmount → useState 초기값 자동 reset.
 export function GameOverModal(props: GameOverModalProps) {
   const { open, info, rank, defaultName, onSubmit, onRestart, onMain } = props
   const [nickname, setNickname] = useState(defaultName)
   const [registered, setRegistered] = useState(false)
-
-  useEffect(() => {
-    if (!open) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onMain()
-    }
-    document.addEventListener('keydown', handleKey)
-    return () => {
-      document.body.style.overflow = prev
-      document.removeEventListener('keydown', handleKey)
-    }
-  }, [open, onMain])
-
-  if (!open) return null
 
   const canRegister = rank !== null
   const handleSubmit = () => {
@@ -73,61 +59,36 @@ export function GameOverModal(props: GameOverModalProps) {
     setRegistered(true)
   }
 
-  return (
-    <div
-      className="bg-bg-modal-backdrop p-lg animate-backdrop-in fixed inset-0 z-[100] flex items-center justify-center"
-      onClick={onMain}
-      role="presentation"
-    >
-      <div
-        className="border-ink-base animate-card-in relative w-full max-w-[460px] rounded-2xl border-2 bg-white px-7 pt-7 pb-6"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-label="게임오버"
-      >
-        {/* 헤더 row — 좌측 Top N 칩 (rank가 있을 때만) + 우측 X 닫기 */}
-        <div className="mb-5 flex items-center justify-between">
-          {canRegister ? (
-            <span
-              className="font-body inline-flex items-center rounded-full px-3 py-1 text-xs font-bold"
-              style={{ background: COLOR_PINK_SOFT, color: COLOR_PRIMARY }}
-            >
-              Top {rank} 진입!
-            </span>
-          ) : (
-            <span aria-hidden />
-          )}
-          <button
-            type="button"
-            onClick={onMain}
-            aria-label="닫기"
-            className="border-ink-base inline-flex h-8 w-8 items-center justify-center rounded-full border-2 leading-none font-bold text-white"
-            style={{ background: COLOR_CLOSE }}
-          >
-            ×
-          </button>
-        </div>
+  const title = canRegister ? `Top ${rank} 진입!` : 'GAME OVER'
 
-        {/* 제목 + 부제 */}
-        <div className="mb-[22px] text-center">
+  return (
+    <CenterModal
+      open={open}
+      onClose={onMain}
+      title={title}
+      closeOnBackdropClick={false}
+      closeOnEscape={false}
+    >
+      <div className="flex flex-col">
+        {/* GAME OVER 큰 텍스트 + 부제 — 등장 시 흔들림 */}
+        <div
+          className="mb-5.5 text-center"
+          style={{ animation: 'gameover-shake 600ms ease-out' }}
+        >
           <h2
             className="font-display text-3xl leading-none tracking-wider"
             style={{ color: COLOR_PRIMARY }}
           >
             GAME OVER
           </h2>
-          <p
-            className="font-body mt-1.5 text-xs"
-            style={{ color: COLOR_LABEL }}
-          >
+          <p className="font-body mt-3 text-xs" style={{ color: COLOR_LABEL }}>
             비둘기가 고양이를 잡았어요
           </p>
         </div>
 
-        {/* 결과 — 위/아래 점선만, 카드 없음 */}
+        {/* 결과 — 위/아래 점선만 */}
         <div
-          className="mb-[22px] flex flex-col px-1 py-4"
+          className="mb-5.5 flex flex-col px-1 py-4"
           style={{
             borderTop: `1px dashed ${COLOR_DASH}`,
             borderBottom: `1px dashed ${COLOR_DASH}`,
@@ -139,9 +100,9 @@ export function GameOverModal(props: GameOverModalProps) {
           <ResultRow label="플레이 시간" value={formatTime(info.elapsedMs)} />
         </div>
 
-        {/* 닉네임 입력 / 등록 후 표시 — rank가 있을 때만 */}
+        {/* 닉네임 입력 / 등록 후 — rank가 있을 때만 */}
         {canRegister && (
-          <div className="mb-[22px]">
+          <div className="mb-5.5">
             <label
               className="font-body mb-2 block pl-1 text-xs font-medium"
               style={{ color: COLOR_LABEL }}
@@ -163,7 +124,7 @@ export function GameOverModal(props: GameOverModalProps) {
                   maxLength={NICKNAME_MAX}
                   placeholder={`닉네임 (최대 ${NICKNAME_MAX}자)`}
                   autoFocus
-                  className="font-body h-[42px] flex-1 rounded-xl border-[1.5px] px-3.5 text-sm"
+                  className="font-body h-10.5 flex-1 rounded-xl border-[1.5px] px-3.5 text-sm leading-relaxed"
                   style={{
                     borderColor: COLOR_INPUT_BORDER,
                     color: COLOR_VALUE,
@@ -173,15 +134,15 @@ export function GameOverModal(props: GameOverModalProps) {
                   type="button"
                   onClick={handleSubmit}
                   disabled={nickname.trim().length === 0}
-                  className="border-ink-base font-body h-[42px] rounded-xl border-2 px-5 text-sm font-medium whitespace-nowrap text-white disabled:cursor-not-allowed disabled:opacity-50"
-                  style={{ background: COLOR_PRIMARY }}
+                  className="font-body h-10.5 rounded-xl px-5 text-sm font-medium whitespace-nowrap text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  style={{ background: COLOR_BUTTON_PINK }}
                 >
                   등록
                 </button>
               </div>
             ) : (
               <div
-                className="flex h-[42px] items-center gap-2.5 rounded-xl px-3.5"
+                className="flex h-10.5 items-center gap-2.5 rounded-xl px-3.5"
                 style={{ background: COLOR_PINK_SOFT }}
               >
                 <span
@@ -202,12 +163,12 @@ export function GameOverModal(props: GameOverModalProps) {
           </div>
         )}
 
-        {/* 액션 — 메인으로(텍스트만) + 다시하기(primary 핑크) */}
+        {/* 액션 — 메인으로(텍스트 + 영역 지정) + 다시하기(핑크 primary) */}
         <div className="flex items-center justify-between gap-4">
           <button
             type="button"
             onClick={onMain}
-            className="font-body px-1 py-2 text-sm font-medium transition-opacity hover:opacity-70"
+            className="font-body h-button-md inline-flex w-24 items-center justify-center text-sm font-medium transition-opacity hover:opacity-70"
             style={{ color: COLOR_TEXT_DARK }}
           >
             메인으로
@@ -215,14 +176,14 @@ export function GameOverModal(props: GameOverModalProps) {
           <button
             type="button"
             onClick={onRestart}
-            className="border-ink-base font-body h-12 max-w-[220px] flex-1 rounded-xl border-2 text-base font-medium text-white transition-opacity hover:opacity-90"
+            className="font-body h-button-md max-w-55 flex-1 rounded-xl text-base font-medium text-white transition-opacity hover:opacity-90"
             style={{ background: COLOR_PRIMARY }}
           >
             다시하기
           </button>
         </div>
       </div>
-    </div>
+    </CenterModal>
   )
 }
 
