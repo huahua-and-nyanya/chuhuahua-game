@@ -27,3 +27,17 @@
     opacity: 0.9;
   }
 }
+
+/* 뽀뽀 직후 cat이 "통통" 2번 점프하며 도망. 위치 이동은 kiss.ts가 2단계로 직접 처리,
+ * 본 keyframe은 시각 점프(translateY + 약간 scale) 두 번만 책임. KISS_DURATION(500ms) 매칭. */
+@keyframes kiss-bounce {
+  0%,
+  50%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  25%,
+  75% {
+    transform: translateY(-14px) scale(1.1);
+  }
+}

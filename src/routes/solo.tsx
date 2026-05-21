@@ -387,7 +387,16 @@ function SoloPage() {
             transform: `translate(-50%, -50%) scaleX(${catFacing})`,
           }}
         >
-          <Cat kissing={catKissing} shielded={catShielded} />
+          {/* inner div — kiss 시 kiss-bounce keyframe(통통 2번 점프).
+              key=kissing.until → 매 kiss마다 inner remount → animation 재시작. */}
+          <div
+            key={`cat-bounce-${r.kissing.until}`}
+            style={{
+              animation: catKissing ? 'kiss-bounce 500ms ease-out' : undefined,
+            }}
+          >
+            <Cat kissing={catKissing} shielded={catShielded} />
+          </div>
         </div>
         {catShielded && (
           <div
