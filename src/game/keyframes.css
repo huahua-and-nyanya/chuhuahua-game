@@ -68,3 +68,26 @@
     transform: translateY(-14px) scale(1.1);
   }
 }
+
+/* 콤보 라벨 등장 — 0.4s ease-out bounce. key={combo} 재마운트마다 1회 실행.
+ * translateX(-50%)를 keyframes 안에 직접 둠 (Tailwind -translate-x-1/2와 충돌 방지). */
+@keyframes combo-bounce {
+  0% {
+    transform: translateX(-50%) scale(0.6);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-combo-bounce {
+  animation: combo-bounce 0.4s ease-out;
+  /* 애니메이션 종료 후에도 translateX(-50%) 유지 (left:1/2 중앙 정렬용). */
+  transform: translateX(-50%);
+}

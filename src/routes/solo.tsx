@@ -37,6 +37,7 @@ import { checkLevelUp, isMilestoneLevel } from '@/game/progression/level'
 import { applyScore, expireCombo } from '@/game/progression/score'
 import type { ItemKind, ToastRef } from '@/game/state'
 
+import { ComboLabel } from '@/game/ui/ComboLabel'
 import { FloatTexts } from '@/game/ui/FloatText'
 import { GameOverModal, type GameOverInfo } from '@/game/ui/GameOverModal'
 import { HUD } from '@/game/ui/HUD'
@@ -446,15 +447,9 @@ function SoloPage() {
           </div>
         )}
 
-        {/* HUD / 오버레이 / 토스트 / 플로트 텍스트 */}
-        <HUD
-          score={sm.score}
-          combo={sm.combo}
-          maxCombo={sm.maxCombo}
-          level={sm.level}
-          effects={effects}
-          now={now}
-        />
+        {/* HUD / 콤보 라벨 / 오버레이 / 토스트 / 플로트 텍스트 */}
+        <HUD score={sm.score} level={sm.level} effects={effects} now={now} />
+        <ComboLabel combo={sm.combo} visible={gameState === 'playing'} />
         <LevelUpOverlay
           active={r.levelUpEffect.active && r.levelUpEffect.until > now}
           level={r.levelUpEffect.level}
