@@ -5,8 +5,8 @@ import type { Direction } from './virtual-types'
 // 시각: pink-300 fill + ink-base border + ink-base text. (IconNavButton 패턴과 동일.)
 // onPress/onRelease는 부모(VirtualController)가 누적 state로 관리.
 
-const CONTAINER_SIZE = 132
-const BUTTON_SIZE = 44
+const CONTAINER_SIZE = 104
+const BUTTON_SIZE = 36
 
 // IconNavButton과 같은 진행 — rounded-full + border + ink-base 평면 그림자 톤.
 const BUTTON_CLASSES =
@@ -74,14 +74,10 @@ export function VirtualPad({ onPress, onRelease }: VirtualPadProps) {
             aria-label={p.label}
             className={BUTTON_CLASSES}
             style={{ ...positional, touchAction: 'none', userSelect: 'none' }}
-            onTouchStart={(e) => {
-              e.preventDefault()
-              onPress(p.dir)
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault()
-              onRelease(p.dir)
-            }}
+            // touchAction: 'none' CSS가 스크롤/줌 방지를 처리. React onTouch*가 passive라
+            // e.preventDefault() 호출 시 콘솔 경고 발생 → 호출 X.
+            onTouchStart={() => onPress(p.dir)}
+            onTouchEnd={() => onRelease(p.dir)}
             onTouchCancel={() => onRelease(p.dir)}
             onMouseDown={() => onPress(p.dir)}
             onMouseUp={() => onRelease(p.dir)}

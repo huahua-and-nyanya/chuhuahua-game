@@ -9,7 +9,7 @@
 .frameStack {
   position: relative;
   width: 100%;
-  /* 데스크탑 카드 max 960px (좌표계 640 × 1.5) 수용 — GameFrame의 --frame-max-width(640)는 그대로 두고 frameStack만 확장 */
+  /* 데스크탑 카드 max 960px (좌표계 640 × 1.5) 수용 */
   max-width: 960px;
   display: flex;
   flex-direction: column;
@@ -27,11 +27,6 @@
   pointer-events: none;
 }
 
-.mobileCornerActions,
-.mobileNav {
-  display: none;
-}
-
 @media (max-height: 720px) {
   .title {
     display: none;
@@ -43,23 +38,9 @@
     display: none;
   }
 
+  /* 모바일: page padding(16px)이 좌우 패딩 처리 + DS 두 카드 딱 붙음 (gap 0) */
   .frameStack {
-    /* 모바일: page padding(16px)이 좌우 패딩 처리 — frameStack은 viewport 100% 차지 */
     max-width: none;
-    gap: var(--gap-sm);
-  }
-
-  .mobileCornerActions {
-    display: flex;
-    flex-direction: row;
-    gap: var(--gap-sm);
-    align-self: flex-end;
-  }
-
-  .mobileNav {
-    display: flex;
-    flex-direction: row;
-    gap: var(--nav-button-gap);
-    align-self: center;
+    gap: 0;
   }
 }

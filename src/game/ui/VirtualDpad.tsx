@@ -5,14 +5,16 @@ import type { Direction } from './virtual-types'
 // 버튼은 SVG 위에 layer(z-1), 화살표 텍스트 흰색.
 // 화살표는 유니코드 트라이앵글(▲▼◀▶) — CLAUDE.md 이모지 금지 정책 안전(dingbat geometric shapes).
 
-const CONTAINER_SIZE = 132
-const BUTTON_SIZE = 44
+const CONTAINER_SIZE = 104
+const BUTTON_SIZE = 36
 
+// 십자 SVG path — 132×132 → 104×104 비율 축소 (132에서 모든 좌표 × 104/132 ≈ × 0.788).
+// 단순화 위해 새 좌표로 작성: 외곽 8px 안쪽, 십자 팔 width 36px.
 const CROSS_PATH =
-  'M 50 2 L 82 2 Q 88 2 88 8 L 88 44 L 124 44 Q 130 44 130 50 L 130 82 ' +
-  'Q 130 88 124 88 L 88 88 L 88 124 Q 88 130 82 130 L 50 130 ' +
-  'Q 44 130 44 124 L 44 88 L 8 88 Q 2 88 2 82 L 2 50 Q 2 44 8 44 ' +
-  'L 44 44 L 44 8 Q 44 2 50 2 Z'
+  'M 40 2 L 64 2 Q 70 2 70 8 L 70 34 L 96 34 Q 102 34 102 40 L 102 64 ' +
+  'Q 102 70 96 70 L 70 70 L 70 96 Q 70 102 64 102 L 40 102 ' +
+  'Q 34 102 34 96 L 34 70 L 8 70 Q 2 70 2 64 L 2 40 Q 2 34 8 34 ' +
+  'L 34 34 L 34 8 Q 34 2 40 2 Z'
 
 // IconNavButton 패턴과 동일한 border/그림자 토큰. 단 fill은 SVG가 그려서 button 자체는 투명.
 const BUTTON_CLASSES =
@@ -94,14 +96,10 @@ export function VirtualDpad({ onPress, onRelease }: VirtualDpadProps) {
             aria-label={p.dir}
             className={BUTTON_CLASSES}
             style={{ ...positional, touchAction: 'none', userSelect: 'none' }}
-            onTouchStart={(e) => {
-              e.preventDefault()
-              onPress(p.dir)
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault()
-              onRelease(p.dir)
-            }}
+            // touchAction: 'none' CSS가 스크롤/줌 방지를 처리. React onTouch*가 passive라
+            // e.preventDefault() 호출 시 콘솔 경고 발생 → 호출 X.
+            onTouchStart={() => onPress(p.dir)}
+            onTouchEnd={() => onRelease(p.dir)}
             onTouchCancel={() => onRelease(p.dir)}
             onMouseDown={() => onPress(p.dir)}
             onMouseUp={() => onRelease(p.dir)}

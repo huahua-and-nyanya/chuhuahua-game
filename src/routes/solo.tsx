@@ -10,11 +10,7 @@ import { Fish } from '@/game/items/Fish'
 import { Kibble } from '@/game/items/Kibble'
 import { SweetPotato } from '@/game/items/SweetPotato'
 
-import {
-  applyChiPhysics,
-  useChiInput,
-  type VirtualInputState,
-} from '@/game/ai/chi-input'
+import { applyChiPhysics, useChiInput } from '@/game/ai/chi-input'
 import { scheduleCatTarget, stopCatTargetScheduler } from '@/game/ai/cat-target'
 import { updateCatFlee } from '@/game/ai/cat-flee'
 import { updatePigeons } from '@/game/ai/pigeon-fly'
@@ -46,10 +42,8 @@ import { GameOverModal, type GameOverInfo } from '@/game/ui/GameOverModal'
 import { HUD } from '@/game/ui/HUD'
 import { LevelUpOverlay } from '@/game/ui/LevelUpOverlay'
 import { Toasts } from '@/game/ui/Toast'
-import { VirtualController } from '@/game/ui/VirtualController'
 
 import { useHistory } from '@/features/history/useHistory'
-import { useResponsiveScale } from '@/hooks/useResponsiveScale'
 
 import '@/game/keyframes.css'
 
@@ -72,14 +66,7 @@ function SoloPage() {
   // gameStartRef는 마운트 useEffect에서 performance.now()로 채움 (initializer 안에서 impure 함수 호출 금지).
   const refs = useRef<GameRefs>(createInitialState())
   const gameStartRef = useRef<number>(0)
-  // 가상 컨트롤러 입력 — VirtualController가 매 press/release마다 갱신, applyChiPhysics가 매 프레임 읽음.
-  const virtualInputRef = useRef<VirtualInputState>({
-    up: false,
-    down: false,
-    left: false,
-    right: false,
-  })
-  const { isMobile } = useResponsiveScale()
+  // 가상 컨트롤러는 root layout이 마운트, 입력은 chi-input.ts의 module-level virtualInputRef로 동기.
 
   const [gameState, setGameState] = useState<GameState>('playing')
   const [gameOverInfo, setGameOverInfo] = useState<GameOverInfo | null>(null)
@@ -241,11 +228,6 @@ function SoloPage() {
   const isPlaying = useCallback(() => gameStateRef.current === 'playing', [])
   useChiInput({ refs: refs.current, enabled: isPlaying })
 
-  // 가상 컨트롤러 입력 갱신 (mobile 한정).
-  const handleVirtualInput = useCallback((input: VirtualInputState) => {
-    virtualInputRef.current = input
-  }, [])
-
   // ── 스폰 + cat-target 스케줄러 (gameState 토글에 묶음) ──────────────
   useEffect(() => {
     if (gameState !== 'playing') return
@@ -278,7 +260,7 @@ function SoloPage() {
       const r = refs.current
       const level = r.scoreMirror.level
 
-      applyChiPhysics(r, now, dt, () => level, virtualInputRef.current)
+      applyChiPhysics(r, now, dt, () => level)
       updateCatFlee(r, level, now, dt)
       updatePigeons(r, level, dt)
 
@@ -492,9 +474,6 @@ function SoloPage() {
           onMain={() => navigate({ to: '/' })}
         />
       )}
-
-      {/* 모바일 가상 컨트롤러 — viewport 하단 fixed. 데스크탑은 mount X. */}
-      {isMobile && <VirtualController onInputChange={handleVirtualInput} />}
     </>
   )
 }

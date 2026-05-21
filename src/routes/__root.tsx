@@ -9,8 +9,10 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
 import { ICON_ASSETS, PAGE_BGS } from '@/assets'
+import { ControllerCard } from '@/components/layout/ControllerCard'
+import { GameFrameCard } from '@/components/layout/GameFrameCard'
 import { useCoins } from '@/features/coins/useCoins'
-import { GAME_HEIGHT, GAME_WIDTH } from '@/game/constants'
+import { GAME_WIDTH } from '@/game/constants'
 import { useResponsiveScale } from '@/hooks/useResponsiveScale'
 import { getCurrentSeason } from '@/lib/season'
 import { CenterModal } from '@/ui/CenterModal'
@@ -26,24 +28,15 @@ export const Route = createRootRoute({
   component: RootLayout,
 })
 
-// 모든 라우트가 공유하는 외곽 = 분홍/계절 배경 + 카드 외곽 + Outlet.
-// 메인 카드 내부 슬롯(CoinChip/트로피/?/메뉴) + 카드 외부 모바일 슬롯
-// (mobileNav/mobileCornerActions) + 모달들은 모두 root가 라우트 분기로 그린다.
-// (메인 외 라우트에서는 카드 내부 슬롯 X — 라우트별 자유 보장)
+// 모든 라우트가 공유하는 외곽 = 분홍/계절 배경 + DS 스타일 두 카드 묶음.
+//   - GameFrameCard (상단 스크린): 좌표계 640×480 + scale inner wrapper. Outlet이 들어감.
+//     메인 라우트 한정으로 카드 내부 슬롯(CoinChip/코너 액션/사이드 메뉴) 추가.
+//   - ControllerCard (하단 조작부, 모바일 한정): WASD + D-pad 영구 표시. 메뉴 row는 라우트 분기.
 //
-// 모달 state도 root가 관리해 라우트 이동에도 안정 + 메뉴 클릭 콜백을 카드 내부/외부 슬롯에서 공유.
+// 데스크탑은 ControllerCard 없음 (키보드로 충분) — GameFrameCard만 사방 둥근 모서리 단독.
+// 모바일에서는 두 카드가 위/아래 딱 붙고 경계선 1줄 (ControllerCard.border-top).
 //
-// 카드 width/height는 useResponsiveScale가 계산 — viewport 가용 영역 안에서 max(좌표계 × 1.5).
-// 카드 자체에 inline width/height + mx-auto로 가로 중앙, page flex centering로 세로 중앙.
-// 카드 내부 inner wrapper = 좌표계(640×480) 고정 + transform scale로 카드 외곽에 정확 일치.
-// → 캐릭터/HUD/좌표 사용처가 640×480 안에 그려지고 viewport 어디서든 카드 안에 머무름.
-const CARD_OUTER_CLASSES =
-  'relative mx-auto overflow-hidden ' +
-  'rounded-frame ' +
-  'border-[length:var(--frame-border-width)] border-solid border-border-frame ' +
-  '[background:var(--gradient-frame-bg)] ' +
-  'shadow-[inset_0_0_0_var(--frame-inset-width)_var(--color-border-frame-inset)]'
-
+// 모달 state는 root가 관리 → 라우트 이동에도 안정 + 카드 내부/외부 슬롯에서 콜백 공유.
 const TOP_LEFT_SLOT_CLASSES =
   'absolute top-frame-inner left-frame-inner flex flex-row gap-sm z-[2]'
 const CORNER_ACTIONS_SLOT_CLASSES =
@@ -59,10 +52,11 @@ function RootLayout() {
   const [multiOpen, setMultiOpen] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
   const [rankingOpen, setRankingOpen] = useState(false)
-  const { scale } = useResponsiveScale()
+  const { scale, isMobile } = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
+  const cardWidth = scale * GAME_WIDTH
 
-  // /dev/* 는 개발자 라우트 — AppFrame(분홍 배경/카드/슬롯) 안 입히고 Outlet만 그림.
+  // /dev/* 는 개발자 라우트 — DS layout 안 입히고 Outlet만 그림.
   if (pathname.startsWith('/dev')) {
     return (
       <>
@@ -97,6 +91,14 @@ function RootLayout() {
     </>
   )
 
+  // 모바일 ControllerCard의 메뉴 row — 메인 한정. /solo 등은 null (컨트롤러만 표시).
+  const controllerMenuSlot =
+    isMain && isMobile ? (
+      <div className="gap-sm flex w-full flex-row justify-center">
+        {sideMenu}
+      </div>
+    ) : null
+
   return (
     <>
       {/* 메인 외 라우트: 페이지 좌상단 fixed — 카드/frameStack 레이아웃에 영향 0. */}
@@ -111,56 +113,32 @@ function RootLayout() {
       <div className="page-bg" style={{ backgroundImage: `url(${seasonBg})` }}>
         <main className={styles.page}>
           <div className={styles.frameStack}>
-            {/* 모바일 카드 외부 코너 액션 (메인 한정, max-md만 표시) */}
-            {isMain && (
-              <div className={styles.mobileCornerActions}>{cornerActions}</div>
+            <GameFrameCard scale={scale} hasControllerBelow={isMobile}>
+              <Outlet />
+
+              {/* 메인 카드 내부 슬롯 — 메인 한정. /solo 등 다른 라우트는 자체 콘텐츠 */}
+              {isMain && (
+                <>
+                  <div className={TOP_LEFT_SLOT_CLASSES}>
+                    <CoinChip
+                      amount={coins}
+                      size="md"
+                      className="max-md:hidden"
+                    />
+                    <CoinChip amount={coins} size="sm" className="md:hidden" />
+                  </div>
+                  <div className={CORNER_ACTIONS_SLOT_CLASSES}>
+                    {cornerActions}
+                  </div>
+                  <div className={SIDE_MENU_SLOT_CLASSES}>{sideMenu}</div>
+                </>
+              )}
+            </GameFrameCard>
+
+            {/* DS 하단 조작부 (모바일 한정). 메뉴 row는 라우트별, 컨트롤러는 영구. */}
+            {isMobile && (
+              <ControllerCard width={cardWidth} menuSlot={controllerMenuSlot} />
             )}
-
-            <div
-              className={CARD_OUTER_CLASSES}
-              style={{
-                width: scale * GAME_WIDTH,
-                height: scale * GAME_HEIGHT,
-              }}
-            >
-              {/* inner wrapper: 좌표계 640×480 고정 + transform scale로 카드 외곽에 정확 일치 */}
-              <div
-                className="absolute top-0 left-0"
-                style={{
-                  width: GAME_WIDTH,
-                  height: GAME_HEIGHT,
-                  transform: `scale(${scale})`,
-                  transformOrigin: 'top left',
-                }}
-              >
-                <Outlet />
-
-                {/* 메인 카드 내부 슬롯 — 메인 한정. /solo 등 다른 라우트는 자체 콘텐츠 */}
-                {isMain && (
-                  <>
-                    <div className={TOP_LEFT_SLOT_CLASSES}>
-                      <CoinChip
-                        amount={coins}
-                        size="md"
-                        className="max-md:hidden"
-                      />
-                      <CoinChip
-                        amount={coins}
-                        size="sm"
-                        className="md:hidden"
-                      />
-                    </div>
-                    <div className={CORNER_ACTIONS_SLOT_CLASSES}>
-                      {cornerActions}
-                    </div>
-                    <div className={SIDE_MENU_SLOT_CLASSES}>{sideMenu}</div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* 모바일 카드 외부 메뉴 (메인 한정, max-md만 표시) */}
-            {isMain && <div className={styles.mobileNav}>{sideMenu}</div>}
           </div>
         </main>
       </div>

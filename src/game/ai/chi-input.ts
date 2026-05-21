@@ -25,6 +25,22 @@ export type VirtualInputState = {
   right: boolean
 }
 
+// 가상 컨트롤러 입력 — 모듈 스코프 단일 인스턴스 (keysRef와 같은 패턴).
+// VirtualController가 setVirtualInput으로 갱신, applyChiPhysics가 매 프레임 읽음.
+// solo.tsx 경유 없이 chi-input.ts가 직접 보유 → root 마운트된 컨트롤러도 동작.
+const virtualInputRef = {
+  current: {
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+  } as VirtualInputState,
+}
+
+export function setVirtualInput(state: VirtualInputState): void {
+  virtualInputRef.current = state
+}
+
 export type ChiInputDeps = {
   refs: GameRefs
   enabled: () => boolean
@@ -85,27 +101,26 @@ export function useChiInput(deps: ChiInputDeps): void {
 
 // reference 1599~1636 정확 이식. dt 인자는 호환용으로만 받고 본문에선 미사용
 // (RAF 60fps 가정으로 위치 += vx 그대로 더한다). getLevel도 호환용 (옷 효과 사이클 W).
-// virtualInput: 모바일 가상 컨트롤러 4방향. 키보드와 OR 결합 (같은 방향 신호).
+// 가상 컨트롤러 입력은 setVirtualInput으로 module-level virtualInputRef에 누적된 값을 매 프레임 OR로 읽음.
 export function applyChiPhysics(
   refs: GameRefs,
   now: number,
   dt: number,
   getLevel: () => number,
-  virtualInput?: VirtualInputState,
 ): void {
   void dt
   void getLevel
   const k = keysRef.current
-  const v = virtualInput
+  const v = virtualInputRef.current
   const chi = refs.chi
 
   // 솔로 = WASD + 방향키 + 가상 컨트롤러 OR. PvP에선 chi가 WASD 전용이지만 사이클 F 책임.
   let tvx = 0
   let tvy = 0
-  if (k['a'] || k['arrowleft'] || v?.left) tvx -= 1
-  if (k['d'] || k['arrowright'] || v?.right) tvx += 1
-  if (k['w'] || k['arrowup'] || v?.up) tvy -= 1
-  if (k['s'] || k['arrowdown'] || v?.down) tvy += 1
+  if (k['a'] || k['arrowleft'] || v.left) tvx -= 1
+  if (k['d'] || k['arrowright'] || v.right) tvx += 1
+  if (k['w'] || k['arrowup'] || v.up) tvy -= 1
+  if (k['s'] || k['arrowdown'] || v.down) tvy += 1
 
   // facing — 좌우 입력만 기준 (수직 입력은 방향 안 바꿈).
   if (tvx > FACING_DEADZONE) chi.facing = 'right'
