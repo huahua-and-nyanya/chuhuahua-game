@@ -8,11 +8,12 @@ import type { Direction } from './virtual-types'
 const CONTAINER_SIZE = 104
 const BUTTON_SIZE = 36
 
-// IconNavButton과 같은 진행 — rounded-full + border + ink-base 평면 그림자 톤.
+// DS 프레임(pink-500) 위에서 떠보이는 톤 — 흰 fill + pink-300 텍스트.
+// rounded-full + border + ink-base 평면 그림자 (IconNavButton 패턴).
 const BUTTON_CLASSES =
   'absolute inline-flex items-center justify-center select-none ' +
   'rounded-full border-2 border-ink-base ' +
-  'bg-pink-300 text-text-primary ' +
+  'bg-bg-card text-pink-300 ' +
   'font-body text-base font-medium ' +
   'shadow-icon-button-rest active:opacity-80'
 

@@ -38,9 +38,8 @@
     display: none;
   }
 
-  /* 모바일: page padding(16px)이 좌우 패딩 처리 + DS 두 카드 딱 붙음 (gap 0) */
+  /* 모바일: page padding(16px)이 좌우 패딩 처리. frameStack 안엔 DSFrame 하나만 — gap 무관. */
   .frameStack {
     max-width: none;
-    gap: 0;
   }
 }

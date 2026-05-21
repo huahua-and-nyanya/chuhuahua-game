@@ -9,10 +9,10 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
 import { ICON_ASSETS, PAGE_BGS } from '@/assets'
-import { ControllerCard } from '@/components/layout/ControllerCard'
+import { DSFrame } from '@/components/layout/DSFrame'
 import { GameFrameCard } from '@/components/layout/GameFrameCard'
 import { useCoins } from '@/features/coins/useCoins'
-import { GAME_WIDTH } from '@/game/constants'
+import { VirtualController } from '@/game/ui/VirtualController'
 import { useResponsiveScale } from '@/hooks/useResponsiveScale'
 import { getCurrentSeason } from '@/lib/season'
 import { CenterModal } from '@/ui/CenterModal'
@@ -28,13 +28,11 @@ export const Route = createRootRoute({
   component: RootLayout,
 })
 
-// 모든 라우트가 공유하는 외곽 = 분홍/계절 배경 + DS 스타일 두 카드 묶음.
-//   - GameFrameCard (상단 스크린): 좌표계 640×480 + scale inner wrapper. Outlet이 들어감.
-//     메인 라우트 한정으로 카드 내부 슬롯(CoinChip/코너 액션/사이드 메뉴) 추가.
-//   - ControllerCard (하단 조작부, 모바일 한정): WASD + D-pad 영구 표시. 메뉴 row는 라우트 분기.
-//
-// 데스크탑은 ControllerCard 없음 (키보드로 충분) — GameFrameCard만 사방 둥근 모서리 단독.
-// 모바일에서는 두 카드가 위/아래 딱 붙고 경계선 1줄 (ControllerCard.border-top).
+// 모든 라우트가 공유하는 외곽.
+// 모바일: 큰 분홍 DSFrame이 GameFrameCard + (메인 메뉴 row) + VirtualController를 감쌈.
+//         메뉴 row는 메인 한정 (기존 NavButton 그대로, 위치만 DSFrame 안으로 이동).
+//         WASD/D-pad는 항상 표시.
+// 데스크탑: DSFrame 없음, GameFrameCard 단독 (이전 동작 그대로).
 //
 // 모달 state는 root가 관리 → 라우트 이동에도 안정 + 카드 내부/외부 슬롯에서 콜백 공유.
 const TOP_LEFT_SLOT_CLASSES =
@@ -54,7 +52,6 @@ function RootLayout() {
   const [rankingOpen, setRankingOpen] = useState(false)
   const { scale, isMobile } = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
-  const cardWidth = scale * GAME_WIDTH
 
   // /dev/* 는 개발자 라우트 — DS layout 안 입히고 Outlet만 그림.
   if (pathname.startsWith('/dev')) {
@@ -91,8 +88,25 @@ function RootLayout() {
     </>
   )
 
-  // 모바일 ControllerCard의 메뉴 row — 메인 한정. /solo 등은 null (컨트롤러만 표시).
-  const controllerMenuSlot =
+  const gameCardChildren = (
+    <>
+      <Outlet />
+      {/* 메인 카드 내부 슬롯 — 메인 한정. /solo 등 다른 라우트는 자체 콘텐츠 */}
+      {isMain && (
+        <>
+          <div className={TOP_LEFT_SLOT_CLASSES}>
+            <CoinChip amount={coins} size="md" className="max-md:hidden" />
+            <CoinChip amount={coins} size="sm" className="md:hidden" />
+          </div>
+          <div className={CORNER_ACTIONS_SLOT_CLASSES}>{cornerActions}</div>
+          <div className={SIDE_MENU_SLOT_CLASSES}>{sideMenu}</div>
+        </>
+      )}
+    </>
+  )
+
+  // 모바일 메뉴 row — 메인 한정, 기존 NavButton 그대로 (위치만 DSFrame 안으로).
+  const mobileMenuRow =
     isMain && isMobile ? (
       <div className="gap-sm flex w-full flex-row justify-center">
         {sideMenu}
@@ -113,31 +127,14 @@ function RootLayout() {
       <div className="page-bg" style={{ backgroundImage: `url(${seasonBg})` }}>
         <main className={styles.page}>
           <div className={styles.frameStack}>
-            <GameFrameCard scale={scale} hasControllerBelow={isMobile}>
-              <Outlet />
-
-              {/* 메인 카드 내부 슬롯 — 메인 한정. /solo 등 다른 라우트는 자체 콘텐츠 */}
-              {isMain && (
-                <>
-                  <div className={TOP_LEFT_SLOT_CLASSES}>
-                    <CoinChip
-                      amount={coins}
-                      size="md"
-                      className="max-md:hidden"
-                    />
-                    <CoinChip amount={coins} size="sm" className="md:hidden" />
-                  </div>
-                  <div className={CORNER_ACTIONS_SLOT_CLASSES}>
-                    {cornerActions}
-                  </div>
-                  <div className={SIDE_MENU_SLOT_CLASSES}>{sideMenu}</div>
-                </>
-              )}
-            </GameFrameCard>
-
-            {/* DS 하단 조작부 (모바일 한정). 메뉴 row는 라우트별, 컨트롤러는 영구. */}
-            {isMobile && (
-              <ControllerCard width={cardWidth} menuSlot={controllerMenuSlot} />
+            {isMobile ? (
+              <DSFrame>
+                <GameFrameCard scale={scale}>{gameCardChildren}</GameFrameCard>
+                {mobileMenuRow}
+                <VirtualController />
+              </DSFrame>
+            ) : (
+              <GameFrameCard scale={scale}>{gameCardChildren}</GameFrameCard>
             )}
           </div>
         </main>

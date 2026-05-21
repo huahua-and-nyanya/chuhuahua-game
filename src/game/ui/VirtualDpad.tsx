@@ -16,11 +16,11 @@ const CROSS_PATH =
   'Q 34 102 34 96 L 34 70 L 8 70 Q 2 70 2 64 L 2 40 Q 2 34 8 34 ' +
   'L 34 34 L 34 8 Q 34 2 40 2 Z'
 
-// IconNavButton 패턴과 동일한 border/그림자 토큰. 단 fill은 SVG가 그려서 button 자체는 투명.
+// DS 프레임(pink-500) 위 흰 십자 + pink-300 화살표 — SVG가 흰 fill 그리고 button은 투명.
 const BUTTON_CLASSES =
   'absolute inline-flex items-center justify-center select-none ' +
   'bg-transparent border-none ' +
-  'text-text-on-pink font-body text-xl font-bold leading-none ' +
+  'text-pink-300 font-body text-xl font-bold leading-none ' +
   'active:opacity-80'
 
 type DpadEntry = {
@@ -59,7 +59,7 @@ export function VirtualDpad({ onPress, onRelease }: VirtualDpadProps) {
       >
         <path
           d={CROSS_PATH}
-          fill="var(--color-pink-400)"
+          fill="var(--color-bg-card)"
           stroke="var(--color-ink-base)"
           strokeWidth={2}
           strokeLinejoin="round"

@@ -8,20 +8,24 @@ import { GAME_HEIGHT, GAME_WIDTH } from '@/game/constants'
 // 카드 width = min(가용 가로, 가용 세로 × 4/3, 좌표계 × MAX_SCALE).
 // 가용 세로 = viewport height − page padding × 2 − 예약 영역.
 //   - 데스크탑: 메인으로 버튼 자리 + 위쪽 여유 (DESKTOP_HEADER_RESERVED)
-//   - 모바일: DS 하단 ControllerCard 영역 (CONTROLLER_HEIGHT)
-//     (메뉴 row + WASD/D-pad + padding 포함 안전값)
-// 위 예약으로 viewport 안에 스크롤 없이 다 들어감.
+//   - 모바일: DS 프레임 내부 overhead (DS_OVERHEAD_MOBILE)
+//     padding 24 + gap 12 × 2 + 메뉴 row 36 + 컨트롤러 100 + border 4 = 188
+// 가용 가로 = viewport width − page padding × 2 − (모바일: DSFRAME_HORIZONTAL_OVERHEAD)
+//   DSFRAME_HORIZONTAL_OVERHEAD = padding 24 + border 4 = 28
+//   모바일 DSFrame은 max-w 360px cap, 그 안 카드가 들어가도록 availW 조정.
 //
-// 데스크탑(viewport 1920×1080): 가용 ~1888 × ~948 → 카드 960 (MAX_SCALE 1.5)
-// 좁은 데스크탑(viewport 1280×800): 가용 ~1248 × ~668 → 카드 ~890 (height 한도)
-// 모바일(viewport 375×667): 가용 ~343 × ~455 → 카드 343 (width 한도, scale ~0.536)
+// 모바일(viewport 375×667): vw 가용 → min(343, 360) − 28 = 315, vh 가용 = 419, 카드 315 (scale ~0.492)
+// 데스크탑(viewport 1920×1080): 가용 1888 × 948 → 카드 960 (MAX_SCALE 1.5)
 //
 // 좌표계는 항상 640×480 — 게임 로직/충돌은 0% 영향.
 const PAGE_PADDING = 16
 const MOBILE_BREAKPOINT = 768
-// 모바일 ControllerCard 예약 — WASD/D-pad 104 + py-md 24 + 메뉴 row(NavButton 32) + gap-md 12 + border 8 = ~180.
-// 메뉴 row 없을 때(/solo 등)는 컨트롤러 카드가 자연스럽게 짧아져도 reservedH는 안전값으로 유지.
-const CONTROLLER_HEIGHT = 180
+// DS 프레임 cap (DSFrame.tsx max-w-[360px]와 동기)
+const DSFRAME_MAX_WIDTH = 360
+// DS 프레임 좌우 overhead — p-md 24 + border 2 × 2 = 28
+const DSFRAME_HORIZONTAL_OVERHEAD = 28
+// DS 프레임 안 vertical overhead — p-md 24 + gap-md 12 × 2 + 메뉴 row 36 + 컨트롤러 100 + border 4
+const DS_OVERHEAD_MOBILE = 24 + 12 + 12 + 36 + 100 + 4
 // 데스크탑 헤더 영역 예약 (메인으로 버튼 + 위쪽 여유, 스크롤 발생 방지)
 const DESKTOP_HEADER_RESERVED = 100
 const MAX_SCALE = 1.5
@@ -38,10 +42,17 @@ function compute(): ResponsiveLayout {
   const vw = window.innerWidth
   const vh = window.innerHeight
   const isMobile = vw < MOBILE_BREAKPOINT
-  const reservedH = isMobile ? CONTROLLER_HEIGHT : DESKTOP_HEADER_RESERVED
 
-  const availW = vw - PAGE_PADDING * 2
-  const availH = vh - PAGE_PADDING * 2 - reservedH
+  // 모바일은 DSFrame width = min(viewport - padding, DSFRAME_MAX_WIDTH).
+  // 그 안 폭 = dsFrameWidth - overhead. 카드는 이 안 폭 안에 정확히 들어가야 함.
+  const horizontalRaw = vw - PAGE_PADDING * 2
+  const availW = isMobile
+    ? Math.min(horizontalRaw, DSFRAME_MAX_WIDTH) - DSFRAME_HORIZONTAL_OVERHEAD
+    : horizontalRaw
+  const availH =
+    vh -
+    PAGE_PADDING * 2 -
+    (isMobile ? DS_OVERHEAD_MOBILE : DESKTOP_HEADER_RESERVED)
 
   // aspect 4:3 → 카드 width = 가용 height × 4/3
   const widthByHeight = (availH * GAME_WIDTH) / GAME_HEIGHT
