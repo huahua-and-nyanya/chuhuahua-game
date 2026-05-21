@@ -1,44 +1,89 @@
+import { useState } from 'react'
 import {
   createRootRoute,
   Link,
   Outlet,
+  useNavigate,
   useRouterState,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { motion } from 'framer-motion'
 
-import { PAGE_BGS, TITLE_LOGO } from '@/assets'
+import { ICON_ASSETS, PAGE_BGS } from '@/assets'
+import { useCoins } from '@/features/coins/useCoins'
+import { GAME_HEIGHT, GAME_WIDTH } from '@/game/constants'
+import { useResponsiveScale } from '@/hooks/useResponsiveScale'
 import { getCurrentSeason } from '@/lib/season'
+import { CenterModal } from '@/ui/CenterModal'
+import { CoinChip } from '@/ui/CoinChip'
+import { IconNavButton } from '@/ui/IconNavButton'
+import { NavButton } from '@/ui/NavButton'
 import { PixelButton } from '@/ui/PixelButton'
 
+import { MultiplayerSelectModal } from './-components/MultiplayerSelectModal'
 import styles from './-styles/HomePage.module.css'
 
 export const Route = createRootRoute({
   component: RootLayout,
 })
 
-// 모든 라우트가 공유하는 외곽 = 분홍/계절 배경 + 카드 외부 헤더 + 카드 외곽 + Outlet.
-// 카드 내부의 slot 시스템(CoinChip/트로피/?/메뉴/HUD 등)은 라우트가 100% 책임진다.
-// root는 카드 외곽 div + Outlet만 책임.
+// 모든 라우트가 공유하는 외곽 = 분홍/계절 배경 + 카드 외곽 + Outlet.
+// 메인 카드 내부 슬롯(CoinChip/트로피/?/메뉴) + 카드 외부 모바일 슬롯
+// (mobileNav/mobileCornerActions) + 모달들은 모두 root가 라우트 분기로 그린다.
+// (메인 외 라우트에서는 카드 내부 슬롯 X — 라우트별 자유 보장)
 //
-// 카드 외부 헤더:
-//   - 메인(/): motion title 로고 (카드 위 absolute 중앙)
-//   - 그 외: "< 메인으로" 버튼 (카드 위 좌측, normal flow)
+// 모달 state도 root가 관리해 라우트 이동에도 안정 + 메뉴 클릭 콜백을 카드 내부/외부 슬롯에서 공유.
 //
-// CARD_OUTER_CLASSES는 기존 GameFrame.ROOT_CLASSES를 인라인한 것 — slot 컨테이너는 제외.
-// 시각은 GameFrame과 동일(border/rounded/aspect/shadow/default 분홍 그라데이션).
+// 카드 width/height는 useResponsiveScale가 계산 — viewport 가용 영역 안에서 max(좌표계 × 1.5).
+// 카드 자체에 inline width/height + mx-auto로 가로 중앙, page flex centering로 세로 중앙.
+// 카드 내부 inner wrapper = 좌표계(640×480) 고정 + transform scale로 카드 외곽에 정확 일치.
+// → 캐릭터/HUD/좌표 사용처가 640×480 안에 그려지고 viewport 어디서든 카드 안에 머무름.
 const CARD_OUTER_CLASSES =
-  'relative w-full mx-auto overflow-hidden ' +
-  'max-w-frame max-md:max-w-[95vw] ' +
-  'aspect-frame rounded-frame ' +
+  'relative mx-auto overflow-hidden ' +
+  'rounded-frame ' +
   'border-[length:var(--frame-border-width)] border-solid border-border-frame ' +
   '[background:var(--gradient-frame-bg)] ' +
   'shadow-[inset_0_0_0_var(--frame-inset-width)_var(--color-border-frame-inset)]'
 
+const TOP_LEFT_SLOT_CLASSES =
+  'absolute top-frame-inner left-frame-inner flex flex-row gap-sm z-[2]'
+const CORNER_ACTIONS_SLOT_CLASSES =
+  'absolute top-frame-inner right-frame-inner flex flex-row gap-sm z-[2] max-md:hidden'
+const SIDE_MENU_SLOT_CLASSES =
+  'absolute right-frame-inner bottom-frame-inner flex flex-col gap-nav-button-gap z-[2] max-md:hidden'
+
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const isMain = pathname === '/'
+  const navigate = useNavigate()
+  const { coins } = useCoins()
+  const [multiOpen, setMultiOpen] = useState(false)
+  const [guideOpen, setGuideOpen] = useState(false)
+  const [rankingOpen, setRankingOpen] = useState(false)
+  const scale = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
+
+  const cornerActions = (
+    <>
+      <IconNavButton
+        icon={ICON_ASSETS.ranking}
+        alt="랭킹"
+        onClick={() => setRankingOpen(true)}
+      />
+      <IconNavButton
+        icon={ICON_ASSETS.help}
+        alt="게임 방법"
+        onClick={() => setGuideOpen(true)}
+      />
+    </>
+  )
+
+  const sideMenu = (
+    <>
+      <NavButton label="혼자서" onClick={() => navigate({ to: '/solo' })} />
+      <NavButton label="둘이서" onClick={() => setMultiOpen(true)} />
+      <NavButton label="옷장" onClick={() => navigate({ to: '/wardrobe' })} />
+    </>
+  )
 
   return (
     <>
@@ -54,27 +99,78 @@ function RootLayout() {
       <div className="page-bg" style={{ backgroundImage: `url(${seasonBg})` }}>
         <main className={styles.page}>
           <div className={styles.frameStack}>
+            {/* 모바일 카드 외부 코너 액션 (메인 한정, max-md만 표시) */}
             {isMain && (
-              <motion.img
-                src={TITLE_LOGO}
-                alt="츄와와 뽀뽀 돌격"
-                className={styles.title}
-                style={{ x: '-50%' }}
-                animate={{ rotate: [-2, 2, -2] }}
-                transition={{
-                  duration: 4,
-                  ease: 'easeInOut',
-                  repeat: Infinity,
-                }}
-              />
+              <div className={styles.mobileCornerActions}>{cornerActions}</div>
             )}
 
-            <div className={CARD_OUTER_CLASSES}>
-              <Outlet />
+            <div
+              className={CARD_OUTER_CLASSES}
+              style={{
+                width: scale * GAME_WIDTH,
+                height: scale * GAME_HEIGHT,
+              }}
+            >
+              {/* inner wrapper: 좌표계 640×480 고정 + transform scale로 카드 외곽에 정확 일치 */}
+              <div
+                className="absolute top-0 left-0"
+                style={{
+                  width: GAME_WIDTH,
+                  height: GAME_HEIGHT,
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'top left',
+                }}
+              >
+                <Outlet />
+
+                {/* 메인 카드 내부 슬롯 — 메인 한정. /solo 등 다른 라우트는 자체 콘텐츠 */}
+                {isMain && (
+                  <>
+                    <div className={TOP_LEFT_SLOT_CLASSES}>
+                      <CoinChip
+                        amount={coins}
+                        size="md"
+                        className="max-md:hidden"
+                      />
+                      <CoinChip
+                        amount={coins}
+                        size="sm"
+                        className="md:hidden"
+                      />
+                    </div>
+                    <div className={CORNER_ACTIONS_SLOT_CLASSES}>
+                      {cornerActions}
+                    </div>
+                    <div className={SIDE_MENU_SLOT_CLASSES}>{sideMenu}</div>
+                  </>
+                )}
+              </div>
             </div>
+
+            {/* 모바일 카드 외부 메뉴 (메인 한정, max-md만 표시) */}
+            {isMain && <div className={styles.mobileNav}>{sideMenu}</div>}
           </div>
         </main>
       </div>
+
+      <MultiplayerSelectModal
+        open={multiOpen}
+        onClose={() => setMultiOpen(false)}
+      />
+      <CenterModal
+        open={guideOpen}
+        onClose={() => setGuideOpen(false)}
+        title="게임 방법"
+      >
+        준비 중
+      </CenterModal>
+      <CenterModal
+        open={rankingOpen}
+        onClose={() => setRankingOpen(false)}
+        title="랭킹"
+      >
+        준비 중
+      </CenterModal>
 
       {import.meta.env.DEV && (
         <TanStackRouterDevtools position="bottom-right" />

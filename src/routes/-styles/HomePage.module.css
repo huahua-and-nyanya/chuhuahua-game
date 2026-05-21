@@ -9,7 +9,8 @@
 .frameStack {
   position: relative;
   width: 100%;
-  max-width: var(--frame-max-width);
+  /* 데스크탑 카드 max 960px (좌표계 640 × 1.5) 수용 — GameFrame의 --frame-max-width(640)는 그대로 두고 frameStack만 확장 */
+  max-width: 960px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -43,7 +44,8 @@
   }
 
   .frameStack {
-    max-width: 95vw;
+    /* 모바일: page padding(16px)이 좌우 패딩 처리 — frameStack은 viewport 100% 차지 */
+    max-width: none;
     gap: var(--gap-sm);
   }
 
