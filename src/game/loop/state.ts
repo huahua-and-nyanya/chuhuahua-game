@@ -1,4 +1,5 @@
 import type {
+  AIState,
   CharacterRef,
   EffectState,
   FloatTextRef,
@@ -48,6 +49,7 @@ export type GameRefs = {
   pigeons: PigeonRef[]
   items: ItemRef[]
   effects: EffectState
+  ai: AIState
   scoreMirror: ScoreMirror
   floatTexts: FloatTextRef[]
   particles: ParticleRef[]
@@ -72,6 +74,10 @@ export function createInitialState(): GameRefs {
       catSlow: null,
       chiShield: null,
       catShield: null,
+    },
+    ai: {
+      cat: { lastDashAt: 0 },
+      catTarget: { x: 500, y: 240 },
     },
     scoreMirror: { score: 0, combo: 0, maxCombo: 0, level: 0 },
     floatTexts: [],

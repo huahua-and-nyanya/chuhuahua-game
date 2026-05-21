@@ -13,10 +13,15 @@ export type CharacterRef = Vec2 & {
 }
 
 // === 비둘기 ===
+// 'flying' = 냐냐 직격 타겟팅 (기본). 'fleeing' = 츄 접근으로 vy -= 0.08 떠오름.
+// 츄 접근으로 인한 fleeing 전환은 C-3' 충돌 검사에서 처리한다.
+export type PigeonState = 'flying' | 'fleeing'
+
 export type PigeonRef = Vec2 & {
   vx: number
   vy: number
   spawnedAt: number
+  state: PigeonState
 }
 
 // === 아이템 ===
@@ -49,6 +54,14 @@ export type ToastRef = {
   msg: string
   color: string
   expireAt: number
+}
+
+// === 고양이 AI 상태 ===
+// catTarget: wandering 목표점 (scheduleCatTarget이 0.6~3s 간격으로 갱신).
+// cat.lastDashAt: "다음 dash 가능한 시각" — `now > lastDashAt`이면 발동 가능.
+export type AIState = {
+  cat: { lastDashAt: number }
+  catTarget: Vec2
 }
 
 // === 게임 모드 / 상태 ===
