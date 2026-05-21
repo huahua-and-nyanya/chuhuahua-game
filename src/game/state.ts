@@ -18,6 +18,7 @@ export type CharacterRef = Vec2 & {
 export type PigeonState = 'flying' | 'fleeing'
 
 export type PigeonRef = Vec2 & {
+  id: string
   vx: number
   vy: number
   spawnedAt: number

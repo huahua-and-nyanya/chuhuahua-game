@@ -67,6 +67,28 @@ export type GameRefs = {
   levelUpEffect: LevelUpEffect
 }
 
+// 매 프레임 호출. until <= now 인 트랜지언트 플래그/배열을 정리한다.
+// - kissing/mwah/levelUpEffect: active=false 토글 (객체 재할당 없음, 인플레이스).
+// - floatTexts: until <= now 인 항목 filter out.
+// - items: expireAt <= now 인 항목 filter out (픽업 안 한 아이템은 그냥 사라짐 — 자동 재스폰 X, reference 일치).
+export function expireTransients(refs: GameRefs, now: number): void {
+  if (refs.kissing.active && refs.kissing.until <= now) {
+    refs.kissing.active = false
+  }
+  if (refs.mwah.active && refs.mwah.until <= now) {
+    refs.mwah.active = false
+  }
+  if (refs.levelUpEffect.active && refs.levelUpEffect.until <= now) {
+    refs.levelUpEffect.active = false
+  }
+  if (refs.floatTexts.length > 0) {
+    refs.floatTexts = refs.floatTexts.filter((f) => f.until > now)
+  }
+  if (refs.items.length > 0) {
+    refs.items = refs.items.filter((i) => i.expireAt > now)
+  }
+}
+
 export function createInitialState(): GameRefs {
   // 게임 영역 640x480 기준 좌우 대칭 배치
   return {
