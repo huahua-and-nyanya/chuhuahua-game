@@ -422,7 +422,14 @@ function SoloPage() {
   })()
 
   // ── 렌더 ───────────────────────────────────────────────────────────
-  const now = performance.now()
+  // paused/confirmQuit 중에는 now를 paused 진입 시각으로 고정 → HUD 효과 게이지가
+  // 멈춤 시점에 정지(가짜로 줄어들지 않음). resume 시 adjustTimersByPauseDuration이
+  // effect.until에 pausedDuration을 더해 보정하므로 그 후엔 정상 흐름.
+  const isPausedView = gameState === 'paused' || gameState === 'confirmQuit'
+  const now =
+    isPausedView && pausedAtRef.current > 0
+      ? pausedAtRef.current
+      : performance.now()
   const r = refs.current
   const chi = r.chi
   const cat = r.cat
