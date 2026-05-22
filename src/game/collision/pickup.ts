@@ -19,7 +19,8 @@ export type PickupDeps = {
   // 픽업 후 1회 재스폰 트리거 (kibble/fish만). spawn.ts의 scheduleItemRespawn.
   scheduleRespawn: (kind: SoloSpawnKind) => void
   // 점수/콤보/토스트 등은 본 콜백으로 외부에 위임 (C-4').
-  onPickup: (kind: ItemKind, by: 'chi') => void
+  // cancelled=true면 kibble↔sweetPotato 상호 상쇄 발생 — 부스트/슬로우 효과 X.
+  onPickup: (kind: ItemKind, by: 'chi', cancelled?: boolean) => void
 }
 
 export function checkPickups(deps: PickupDeps): void {
@@ -32,19 +33,20 @@ export function checkPickups(deps: PickupDeps): void {
     const d = Math.hypot(item.x - chi.x, item.y - chi.y)
     if (d >= ITEM_PICKUP_DIST) continue
 
+    let cancelled = false
     if (item.kind === 'kibble') {
-      applyKibbleEffect(refs, now)
+      cancelled = applyKibbleEffect(refs, now)
     } else if (item.kind === 'fish') {
       applyFishEffect(refs, now, 'chi')
     } else if (item.kind === 'cucumber') {
       applyCucumberEffect(refs, now)
     } else if (item.kind === 'sweetPotato') {
-      applySweetPotatoEffect(refs, now, 'chi')
+      cancelled = applySweetPotatoEffect(refs, now, 'chi')
     }
 
     refs.items.splice(i, 1)
     // 모든 솔로 아이템 재스폰 (디버프는 spawn.ts에서 더 긴 범위로 분기).
     scheduleRespawn(item.kind)
-    onPickup(item.kind, 'chi')
+    onPickup(item.kind, 'chi', cancelled)
   }
 }

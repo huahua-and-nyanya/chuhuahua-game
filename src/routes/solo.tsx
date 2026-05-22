@@ -256,7 +256,12 @@ function SoloPage() {
   )
 
   const onPickup = useCallback(
-    (kind: ItemKind) => {
+    (kind: ItemKind, _by: 'chi', cancelled?: boolean) => {
+      // 상쇄: kibble을 chiSlow 중에 먹거나, sweetPotato를 chiBoost 중에 먹은 경우.
+      if (cancelled) {
+        showToast('상쇄!', 'var(--color-game-warn)')
+        return
+      }
       if (kind === 'kibble') {
         showToast('부스트!', 'var(--color-game-warn)')
       } else if (kind === 'fish') {

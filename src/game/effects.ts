@@ -59,11 +59,16 @@ export function applyCatShield(
 
 // === 아이템 픽업별 효과 ===
 // solo 단일 분기. PvP picker 분기는 사이클 F에서 추가.
+// 반환값: true = 기존 반대 효과와 상쇄됨(새 효과 부여 X), false = 새 효과 부여.
 
-// reference 1504: kibble → chiBoost 5초.
-// reference 1499의 chiSlow 상쇄는 솔로에선 chiSlow 자체가 안 발동(PvP의 sweetPotato 한정)이라 dead branch.
-export function applyKibbleEffect(refs: GameRefs, now: number): void {
+// reference 1499~1508: kibble → chiSlow 활성 시 상쇄, 아니면 chiBoost 5초.
+export function applyKibbleEffect(refs: GameRefs, now: number): boolean {
+  if (refs.effects.chiSlow.until > now) {
+    refs.effects.chiSlow = { until: 0 }
+    return true
+  }
   applyChiBoost(refs, now, BOOST_DURATION)
+  return false
 }
 
 // reference 1533: 솔로 fish → cat에 쉴드 5초 (츄가 fish를 먹어 cat을 보호).
@@ -85,16 +90,25 @@ export function applyCucumberEffect(refs: GameRefs, now: number): void {
   refs.effects.catSpeedup = { until: now + CUCUMBER_DURATION }
 }
 
-// reference 2007: sweetPotato → picker쪽 슬로우 (PvP 한정).
-// 솔로엔 sweetPotato 자체가 안 스폰되므로 본 함수 호출되지 않음.
+// reference 1550~1568: sweetPotato → 먹은 쪽 부스트 활성 시 상쇄, 아니면 슬로우 부여.
+// 솔로 picker는 항상 'chi'. PvP 'cat' 분기는 사이클 F에서 동일 패턴.
 export function applySweetPotatoEffect(
   refs: GameRefs,
   now: number,
   picker: PickerSide,
-): void {
+): boolean {
   if (picker === 'cat') {
+    if (refs.effects.catSpeedup.until > now) {
+      refs.effects.catSpeedup = { until: 0 }
+      return true
+    }
     refs.effects.catSlow = { until: now + SWEETPOTATO_DURATION }
-  } else {
-    refs.effects.chiSlow = { until: now + SWEETPOTATO_DURATION }
+    return false
   }
+  if (refs.effects.chiBoost.until > now) {
+    refs.effects.chiBoost = { until: 0 }
+    return true
+  }
+  refs.effects.chiSlow = { until: now + SWEETPOTATO_DURATION }
+  return false
 }
