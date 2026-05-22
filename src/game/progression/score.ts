@@ -1,8 +1,8 @@
 import { COMBO_WINDOW } from '@/game/constants'
 import type { GameRefs } from '@/game/loop/state'
 
-// reference 1796~1800 + 1843: 점수 산식.
-//   kiss          → 1 + floor(oldCombo/2). 콤보 가중.
+// reference 1796~1800 + 1843: 점수 산식 (난이도 강화: 콤보 가중 floor/3).
+//   kiss          → 1 + floor(oldCombo/3). 콤보 가중 약화 — 큰 콤보의 점수 폭주 완화.
 //   pigeon-block  → +1 (콤보 무관).
 //   shield-block  → +1 (콤보 무관, 뽀뽀 차단도 본 카테고리).
 // scoreMult.until > now 시 ×value (보통 2). value=1이면 fallback.
@@ -30,7 +30,7 @@ export function applyScore(params: ApplyScoreParams): void {
     const oldCombo = sm.combo
     sm.combo = now - lastKiss < COMBO_WINDOW ? oldCombo + 1 : 1
     sm.maxCombo = Math.max(sm.maxCombo, sm.combo)
-    sm.score += Math.round((1 + Math.floor(oldCombo / 2)) * mult)
+    sm.score += Math.round((1 + Math.floor(oldCombo / 3)) * mult)
     return
   }
   sm.score += Math.round(1 * mult)

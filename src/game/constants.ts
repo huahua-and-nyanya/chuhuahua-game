@@ -13,8 +13,8 @@ export const MAX_SPEED = 3.4 // px/frame
 export const ACCEL = 0.2 // px/frame²
 
 // === 고양이 AI ===
-export const CAT_LERP_BASE = 0.032 // 추격 lerp 계수 (레벨 0)
-export const CAT_LERP_PER_LEVEL = 0.006 // 레벨당 lerp 증가량
+export const CAT_LERP_BASE = 0.04 // 추격 lerp 계수 (레벨 0, 난이도 강화: 0.032 → 0.040)
+export const CAT_LERP_PER_LEVEL = 0.008 // 레벨당 lerp 증가량 (난이도 강화: 0.006 → 0.008)
 export const CAT_FLEE_RANGE = 220 // px, 비둘기 회피 반경
 export const CAT_FLEE_LERP_MUL = 0.5 // 회피 시 lerp 배수
 export const CAT_DASH_THRESHOLD = 80 // px, 츄와 거리 이내면 대시 트리거
@@ -24,7 +24,7 @@ export const CAT_DASH_COOLDOWN = 1200 // ms
 // === 비둘기 ===
 export const PIGEON_SPEED_BASE = 1.6 // px/frame
 export const PIGEON_SPEED_PER_LEVEL = 0.25
-export const PIGEON_SPAWN_MIN = 3500 // ms, 최소 스폰 간격 (LV9+ cap)
+export const PIGEON_SPAWN_MIN = 2500 // ms, 최소 스폰 간격 (난이도 강화: 3500 → 2500)
 export const PIGEON_SPAWN_BASE = 13000 // ms, LV0 기준 스폰 간격
 export const PIGEON_SPAWN_PER_LEVEL = 2000 // ms, 레벨당 간격 단축량 (체감 ↑)
 export const PIGEON_SCARE_DIST = 60 // px, 츄와의 접근 시 도망 거리
@@ -66,10 +66,10 @@ export const SCORE_MULT_DURATION = 5000 // ms, 점수 ×2
 export const SCORE_MULT = 2
 
 // === 콤보 / 레벨 시스템 ===
-export const COMBO_WINDOW = 2400 // ms, 다음 뽀뽀까지 콤보 유지 윈도우 (reference 1827)
+export const COMBO_WINDOW = 1800 // ms, 다음 뽀뽀까지 콤보 유지 윈도우 (난이도 강화: 2400 → 1800)
 export const LEVEL_UP_DURATION = 1800 // ms, LEVEL UP! 오버레이 표시 시간
 export const LEVEL_THRESHOLDS = [
-  0, 10, 25, 45, 70, 100, 135, 175, 220, 270, 325,
+  0, 20, 50, 90, 140, 200, 270, 350, 440, 540, 650,
 ] as const
 export const MAX_LEVEL = 10
 
