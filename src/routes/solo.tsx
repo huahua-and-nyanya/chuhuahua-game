@@ -435,7 +435,7 @@ function SoloPage() {
   const chiFacing = chi.facing === 'right' ? -1 : 1
   const catFacing = cat.facing === 'right' ? -1 : 1
 
-  const bgUrl = getBackgroundForLevel(Math.max(1, sm.level))
+  const bgUrl = getBackgroundForLevel(sm.level)
 
   return (
     <>
