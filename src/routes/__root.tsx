@@ -51,7 +51,7 @@ function RootLayout() {
   const [multiOpen, setMultiOpen] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
   const [rankingOpen, setRankingOpen] = useState(false)
-  const { scale, isMobile } = useResponsiveScale()
+  const { scale, isMobile, dsFrameMaxWidth } = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
 
   // /dev/* 는 개발자 라우트 — DS layout 안 입히고 Outlet만 그림.
@@ -139,7 +139,7 @@ function RootLayout() {
         <main className={styles.page}>
           <div className={styles.frameStack}>
             {isMobile ? (
-              <DSFrame>
+              <DSFrame maxWidth={dsFrameMaxWidth}>
                 <GameFrameCard scale={scale}>{gameCardChildren}</GameFrameCard>
                 {dsMenuRow}
                 <VirtualController />

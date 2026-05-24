@@ -1,31 +1,24 @@
+import { dpad } from '@/assets'
+
 import type { Direction } from './virtual-types'
 
-// 방향키 십자 D-pad.
-// 132×132 컨테이너 안에 둥근 모서리 SVG 십자(진한 핑크 fill + ink-base stroke) + 4 방향 버튼 absolute.
-// 버튼은 SVG 위에 layer(z-1), 화살표 텍스트 흰색.
-// 화살표는 유니코드 트라이앵글(▲▼◀▶) — CLAUDE.md 이모지 금지 정책 안전(dingbat geometric shapes).
+// 방향키 십자 D-pad (모바일).
+// 시각: dpad.png 1장이 십자 그래픽 + 화살표 전부 담당.
+// 사이즈: flex-1 + aspect-square, 단 --virtual-pad-size 캡(좁은 viewport에서만 자람).
+//        캡 두는 이유 — 패드가 너무 크면 vh overhead로 게임 카드가 압박됨.
+// hit-test: 투명 버튼 4개를 동일 컨테이너 위(absolute)에 PNG 비율 그대로 유지.
 
-const CONTAINER_SIZE = 104
-const BUTTON_SIZE = 36
+// PNG 자산은 100×100 기준 — 버튼 한 변 36px (= 36%). 사이드 anchored (top/bottom/left/right 0).
+const BUTTON_SIZE = '36%'
 
-// 십자 SVG path — 132×132 → 104×104 비율 축소 (132에서 모든 좌표 × 104/132 ≈ × 0.788).
-// 단순화 위해 새 좌표로 작성: 외곽 8px 안쪽, 십자 팔 width 36px.
-const CROSS_PATH =
-  'M 40 2 L 64 2 Q 70 2 70 8 L 70 34 L 96 34 Q 102 34 102 40 L 102 64 ' +
-  'Q 102 70 96 70 L 70 70 L 70 96 Q 70 102 64 102 L 40 102 ' +
-  'Q 34 102 34 96 L 34 70 L 8 70 Q 2 70 2 64 L 2 40 Q 2 34 8 34 ' +
-  'L 34 34 L 34 8 Q 34 2 40 2 Z'
-
-// DS 프레임(pink-500) 위 흰 십자 + pink-300 화살표 — SVG가 흰 fill 그리고 button은 투명.
+// 투명 hit-test 버튼 — 시각은 PNG, 입력만 받음.
 const BUTTON_CLASSES =
   'absolute inline-flex items-center justify-center select-none ' +
-  'bg-transparent border-none ' +
-  'text-pink-300 font-body text-xl font-bold leading-none ' +
+  'bg-transparent border-none p-0 ' +
   'active:opacity-80'
 
 type DpadEntry = {
   dir: Direction
-  label: string
   top?: number
   left?: number
   bottom?: number
@@ -33,10 +26,10 @@ type DpadEntry = {
 }
 
 const POSITIONS: DpadEntry[] = [
-  { dir: 'up', label: '▲', top: 0 },
-  { dir: 'left', label: '◀', left: 0 },
-  { dir: 'down', label: '▼', bottom: 0 },
-  { dir: 'right', label: '▶', right: 0 },
+  { dir: 'up', top: 0 },
+  { dir: 'left', left: 0 },
+  { dir: 'down', bottom: 0 },
+  { dir: 'right', right: 0 },
 ]
 
 export type VirtualDpadProps = {
@@ -46,26 +39,18 @@ export type VirtualDpadProps = {
 
 export function VirtualDpad({ onPress, onRelease }: VirtualDpadProps) {
   return (
-    <div
-      className="relative shrink-0"
-      style={{ width: CONTAINER_SIZE, height: CONTAINER_SIZE }}
-    >
-      <svg
-        viewBox={`0 0 ${CONTAINER_SIZE} ${CONTAINER_SIZE}`}
-        width={CONTAINER_SIZE}
-        height={CONTAINER_SIZE}
-        className="pointer-events-none absolute inset-0"
-        aria-hidden
-      >
-        <path
-          d={CROSS_PATH}
-          fill="var(--color-bg-card)"
-          stroke="var(--color-ink-base)"
-          strokeWidth={2}
-          strokeLinejoin="round"
-        />
-      </svg>
-
+    <div className="relative aspect-square w-full max-w-(--virtual-pad-size) flex-1">
+      <img
+        src={dpad}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 h-full w-full"
+        style={{
+          pointerEvents: 'none',
+          userSelect: 'none',
+          zIndex: 0,
+        }}
+      />
       {POSITIONS.map((p) => {
         const positional: Record<string, string | number> = {
           width: BUTTON_SIZE,
@@ -104,9 +89,7 @@ export function VirtualDpad({ onPress, onRelease }: VirtualDpadProps) {
             onMouseDown={() => onPress(p.dir)}
             onMouseUp={() => onRelease(p.dir)}
             onMouseLeave={() => onRelease(p.dir)}
-          >
-            {p.label}
-          </button>
+          />
         )
       })}
     </div>

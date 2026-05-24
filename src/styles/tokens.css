@@ -149,6 +149,10 @@
   --gap-md: 12px;
   --gap-lg: 16px;
   --gap-xl: 24px;
+  --gap-2xl: 32px;
+
+  /* === 가상 컨트롤러 패드 한 변 max (게임 카드 vh 압박 방지) === */
+  --virtual-pad-size: 140px;
 
   /* === 트랜지션 === */
   --transition-fast: 120ms ease-out;

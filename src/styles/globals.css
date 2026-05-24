@@ -80,6 +80,7 @@
   --spacing-md: var(--gap-md);
   --spacing-lg: var(--gap-lg);
   --spacing-xl: var(--gap-xl);
+  --spacing-2xl: var(--gap-2xl);
 
   /* === PixelChip 색상 === */
   --color-chip-default-bg: var(--color-pink-300);

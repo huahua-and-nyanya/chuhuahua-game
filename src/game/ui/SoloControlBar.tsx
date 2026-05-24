@@ -40,7 +40,7 @@ export function SoloControlBar({
   if (target === null) return null
 
   return createPortal(
-    <div className="gap-sm flex w-full justify-center">
+    <div className="gap-xl flex w-full justify-center">
       <PixelButton
         variant="arcade"
         size="sm"

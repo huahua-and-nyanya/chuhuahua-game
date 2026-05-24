@@ -28,7 +28,7 @@ export function VirtualController() {
   }, [])
 
   return (
-    <div className="gap-md flex w-full items-center justify-between">
+    <div className="gap-xl px-md flex w-full items-center justify-between">
       <VirtualPad onPress={press} onRelease={release} />
       <VirtualDpad onPress={press} onRelease={release} />
     </div>

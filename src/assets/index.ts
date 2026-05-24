@@ -14,3 +14,4 @@ export {
   CAPSULE_ICON_PATH,
   FITTING_ROOM_BG_PATH,
 } from './clothes'
+export { dsFrameBg, wasdPad, dpad } from './ui'

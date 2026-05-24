@@ -1,21 +1,22 @@
+import { wasdPad } from '@/assets'
+
 import type { Direction } from './virtual-types'
 
-// WASD 원형 4버튼 그룹.
-// 컨테이너 132×132 안에 absolute로 4 위치 (top/left/bottom/right center).
-// 시각: pink-300 fill + ink-base border + ink-base text. (IconNavButton 패턴과 동일.)
+// WASD 십자 패드 (모바일).
+// 시각: wasd-pad.png 1장이 십자 그래픽 전부 담당.
+// 사이즈: flex-1 + aspect-square, 단 --virtual-pad-size 캡(좁은 viewport에서만 자람).
+//        캡 두는 이유 — 패드가 너무 크면 vh overhead로 게임 카드가 압박됨.
+// hit-test: 투명 버튼 4개를 동일 컨테이너 위(absolute)에 PNG 비율 그대로 유지.
 // onPress/onRelease는 부모(VirtualController)가 누적 state로 관리.
 
-const CONTAINER_SIZE = 104
-const BUTTON_SIZE = 36
+// PNG 자산은 100×100 기준 — 버튼 한 변 36px (= 36%). 사이드 anchored (top/bottom/left/right 0).
+const BUTTON_SIZE = '36%'
 
-// DS 프레임(pink-500) 위에서 떠보이는 톤 — 흰 fill + pink-300 텍스트.
-// rounded-full + border + ink-base 평면 그림자 (IconNavButton 패턴).
+// 투명 hit-test 버튼 — 시각은 PNG, 입력만 받음.
 const BUTTON_CLASSES =
   'absolute inline-flex items-center justify-center select-none ' +
-  'rounded-full border-2 border-ink-base ' +
-  'bg-bg-card text-pink-300 ' +
-  'font-body text-base font-medium ' +
-  'shadow-icon-button-rest active:opacity-80'
+  'bg-transparent border-none p-0 ' +
+  'active:opacity-80'
 
 const POSITIONS: Record<
   string,
@@ -41,15 +42,24 @@ export type VirtualPadProps = {
 
 export function VirtualPad({ onPress, onRelease }: VirtualPadProps) {
   return (
-    <div
-      className="relative shrink-0"
-      style={{ width: CONTAINER_SIZE, height: CONTAINER_SIZE }}
-    >
+    <div className="relative aspect-square w-full max-w-(--virtual-pad-size) flex-1">
+      <img
+        src={wasdPad}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 h-full w-full"
+        style={{
+          pointerEvents: 'none',
+          userSelect: 'none',
+          zIndex: 0,
+        }}
+      />
       {Object.entries(POSITIONS).map(([key, p]) => {
         // 십자 위치 — 좌상은 axial center로 정렬 (W는 horizontal center, A는 vertical center).
         const positional: Record<string, string | number> = {
           width: BUTTON_SIZE,
           height: BUTTON_SIZE,
+          zIndex: 1,
         }
         if (p.top !== undefined) {
           positional.top = p.top
@@ -83,9 +93,7 @@ export function VirtualPad({ onPress, onRelease }: VirtualPadProps) {
             onMouseDown={() => onPress(p.dir)}
             onMouseUp={() => onRelease(p.dir)}
             onMouseLeave={() => onRelease(p.dir)}
-          >
-            {p.label}
-          </button>
+          />
         )
       })}
     </div>
