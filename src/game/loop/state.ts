@@ -54,6 +54,14 @@ export type LevelUpEffect = TransientFlag & {
   level: number
 }
 
+// === PvP 상태 ===
+// solo 게임 루프에선 사용되지 않는다 (초기값 그대로 유지).
+// /multi/local 진입 시 startedAt = performance.now()로 갱신, 매 프레임 elapsed/kissCount로 종료 판정.
+export type PvpState = {
+  startedAt: number
+  kissCount: number
+}
+
 // === 게임 ref 컨테이너 ===
 // /solo 라우트에서 `useRef(createInitialState())`로 한 번만 생성한다.
 export type GameRefs = {
@@ -72,6 +80,7 @@ export type GameRefs = {
   kissing: TransientFlag
   flash: { until: number }
   levelUpEffect: LevelUpEffect
+  pvp: PvpState
 }
 
 // 매 프레임 호출. until <= now 인 트랜지언트 플래그/배열을 정리한다.
@@ -134,5 +143,6 @@ export function createInitialState(): GameRefs {
     kissing: { active: false, until: 0 },
     flash: { until: 0 },
     levelUpEffect: { active: false, until: 0, level: 0 },
+    pvp: { startedAt: 0, kissCount: 0 },
   }
 }
