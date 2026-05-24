@@ -72,9 +72,7 @@ function compute(): ResponsiveLayout {
   // 캡 안 걸리면 flex-1로 row 폭 절반씩, 걸리면 캡 + justify-between으로 가운데 공백.
   const controllerH = isMobile
     ? Math.min(
-        Math.floor(
-          (availW - PAD_ROW_HORIZONTAL_PADDING - PAD_ROW_GAP) / 2,
-        ),
+        Math.floor((availW - PAD_ROW_HORIZONTAL_PADDING - PAD_ROW_GAP) / 2),
         VIRTUAL_PAD_MAX,
       )
     : 0
