@@ -301,3 +301,14 @@
     transform: scale(1.12) rotate(2deg);
   }
 }
+
+/* PvP HUD — 마지막 5초 시간 칩 펄스 (chip 자체에 transform 없으므로 scale만 적용). */
+@keyframes pvp-time-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
