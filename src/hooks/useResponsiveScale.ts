@@ -32,6 +32,8 @@ const DSFRAME_HORIZONTAL_OVERHEAD = 24
 const DS_VERTICAL_FIXED_OVERHEAD = 12 + 32 + 32 * 2 + 36
 // VirtualController row 안 두 패드 사이 gap-sm
 const PAD_ROW_GAP = 8
+// VirtualController row 좌우 padding — px-md 12 × 2 = 24
+const PAD_ROW_HORIZONTAL_PADDING = 24
 // 가상 패드 한 변 max — tokens.css `--virtual-pad-size` 와 동기화 필수.
 const VIRTUAL_PAD_MAX = 140
 // 데스크탑 헤더 영역 예약 (메인으로 버튼 + 위쪽 여유, 스크롤 발생 방지)
@@ -57,10 +59,16 @@ function compute(): ResponsiveLayout {
   const availW = isMobile
     ? horizontalRaw - DSFRAME_HORIZONTAL_OVERHEAD
     : horizontalRaw
-  // 모바일: 패드 한 변 = min((DSFrame 안 폭 - row gap)/2, --virtual-pad-size 캡).
+  // 모바일: 패드 한 변 = min((row inner 폭 - row gap)/2, --virtual-pad-size 캡).
+  // row inner 폭 = DSFrame 안 폭 - row 좌우 padding.
   // 캡 안 걸리면 flex-1로 row 폭 절반씩, 걸리면 캡 + justify-between으로 가운데 공백.
   const controllerH = isMobile
-    ? Math.min(Math.floor((availW - PAD_ROW_GAP) / 2), VIRTUAL_PAD_MAX)
+    ? Math.min(
+        Math.floor(
+          (availW - PAD_ROW_HORIZONTAL_PADDING - PAD_ROW_GAP) / 2,
+        ),
+        VIRTUAL_PAD_MAX,
+      )
     : 0
   const availH =
     vh -
