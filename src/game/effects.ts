@@ -16,6 +16,8 @@ const EFFECT_FLOAT_LIFETIME = 800 // ms
 const EFFECT_SLOW_COLOR = '#a05a3a'
 // 슬로우 → 회복 상쇄 (kibble/cucumber 픽업으로 슬로우 해제). TOKEN.primary 핑크.
 const EFFECT_HEAL_COLOR = 'var(--color-pink-700)'
+// 부스트 → 디버프로 상쇄 (sweetPotato 픽업으로 부스트 해제). 신규 hex, 토큰 신설 X.
+const EFFECT_BOOST_CANCEL_COLOR = '#3a4a7a'
 
 // Y 오프셋 — 캐릭터 머리 위 ~20px (reference 동일).
 const FLOAT_Y_OFFSET = 20
@@ -146,6 +148,7 @@ export function applyCucumberEffect(refs: GameRefs, now: number): boolean {
 // reference 1550~1568: sweetPotato → 먹은 쪽 부스트 활성 시 상쇄, 아니면 슬로우 부여.
 // 솔로 picker는 항상 'chi'. PvP 'cat' 분기는 사이클 F에서 동일 패턴.
 // Q1 (F-1.6): 신규 슬로우 부여(부스트 비활성) 시 "펑!" 갈색 floatText 픽업 측 머리 위에 추가.
+// Q3 (F-1.6): 부스트 상쇄(chiBoost/catSpeedup 해제) 시 "힝..." 남색 floatText 픽업 측 머리 위에 추가.
 export function applySweetPotatoEffect(
   refs: GameRefs,
   now: number,
@@ -154,6 +157,14 @@ export function applySweetPotatoEffect(
   if (picker === 'cat') {
     if (refs.effects.catSpeedup.until > now) {
       refs.effects.catSpeedup = { until: 0 }
+      pushEffectFloat(
+        refs,
+        now,
+        '힝...',
+        refs.cat.x,
+        refs.cat.y - FLOAT_Y_OFFSET,
+        EFFECT_BOOST_CANCEL_COLOR,
+      )
       return true
     }
     refs.effects.catSlow = { until: now + SWEETPOTATO_DURATION }
@@ -169,6 +180,14 @@ export function applySweetPotatoEffect(
   }
   if (refs.effects.chiBoost.until > now) {
     refs.effects.chiBoost = { until: 0 }
+    pushEffectFloat(
+      refs,
+      now,
+      '힝...',
+      refs.chi.x,
+      refs.chi.y - FLOAT_Y_OFFSET,
+      EFFECT_BOOST_CANCEL_COLOR,
+    )
     return true
   }
   refs.effects.chiSlow = { until: now + SWEETPOTATO_DURATION }
