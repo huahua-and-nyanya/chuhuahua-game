@@ -118,6 +118,7 @@ export function createInitialState(): GameRefs {
     effects: {
       chiBoost: { until: 0 },
       chiSlow: { until: 0 },
+      chiSad: { until: 0 },
       catSpeedup: { until: 0 },
       catSlow: { until: 0 },
       catShield: { until: 0 },

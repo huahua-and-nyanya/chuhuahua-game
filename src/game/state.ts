@@ -112,10 +112,12 @@ export interface ScoreMultEffect {
 }
 
 // 게임 루프가 보유하는 전역 효과 트래커 (effects.ts가 mutate)
-// chiShield는 PvP F에서 분기 추가. 솔로 단일 동작에 필요한 6개만 유지.
+// chiSad는 PvP에서 catShield 막힘 시 1.5초간 sad 스프라이트 전환 (솔로엔 활성화 X).
+// chiShield는 F-2 이후 분기 추가 예정.
 export interface EffectState {
   chiBoost: TimedEffect
   chiSlow: TimedEffect
+  chiSad: TimedEffect
   catSpeedup: TimedEffect
   catSlow: TimedEffect
   catShield: TimedEffect

@@ -24,6 +24,7 @@ export function adjustTimersByPauseDuration(
   const e = refs.effects
   if (e.chiBoost.until > 0) e.chiBoost.until += pausedDuration
   if (e.chiSlow.until > 0) e.chiSlow.until += pausedDuration
+  if (e.chiSad.until > 0) e.chiSad.until += pausedDuration
   if (e.catSpeedup.until > 0) e.catSpeedup.until += pausedDuration
   if (e.catSlow.until > 0) e.catSlow.until += pausedDuration
   if (e.catShield.until > 0) e.catShield.until += pausedDuration

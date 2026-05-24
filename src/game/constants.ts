@@ -68,6 +68,7 @@ export const PVP_CUCUMBER_RESPAWN_MIN = 6500 // ms
 export const PVP_CUCUMBER_RESPAWN_MAX = 10000 // ms
 
 // === 효과 지속시간 ===
+export const CHI_SAD_DURATION = 1500 // ms, PvP 쉴드 막힘 시 츄 sad 스프라이트 전환 지속
 export const BOOST_DURATION = 5000 // ms, 츄 부스트
 export const BOOST_MUL = 1.55
 export const MEGA_DURATION = 3000 // ms, 메가 부스트
