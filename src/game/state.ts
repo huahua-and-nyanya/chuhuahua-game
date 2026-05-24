@@ -25,6 +25,16 @@ export type PigeonRef = Vec2 & {
   state: PigeonState
 }
 
+// === 비둘기 등장 경고 마커 (솔로 전용) ===
+// 비둘기 실제 스폰 1300ms 전 등장 위치(가장자리 안쪽)에 깜빡이는 빨간 칩으로 표시.
+// PvP에선 비둘기 자체가 안 나오므로 본 배열은 항상 비어 있다.
+export type PigeonEdge = 'top' | 'bottom' | 'left' | 'right'
+
+export type PigeonWarningRef = Vec2 & {
+  id: string
+  edge: PigeonEdge
+}
+
 // === 아이템 ===
 // 솔로/PvP 모두 동일 타입, 모드별 효과 분기는 사용 측 책임.
 // id는 React key용 unique string. expireAt 만료 처리는 expireTransients(C-5')에서.

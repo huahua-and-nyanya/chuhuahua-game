@@ -312,3 +312,16 @@
     transform: scale(1.08);
   }
 }
+
+/* 비둘기 등장 경고 마커 (F-1.7) — 0.35s 무한 반복, scale만.
+ * wrapper(translate)가 중앙정렬, 내부 자식 div가 actual 칩 (transform: translate(-50%, -50%)).
+ * wrapper에 적용 시 wrapper transform과 충돌하지 않도록 wrapper 자체에 transform 없음 가정. */
+@keyframes warn-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}

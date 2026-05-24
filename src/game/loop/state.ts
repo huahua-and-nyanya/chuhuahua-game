@@ -6,6 +6,7 @@ import type {
   ItemRef,
   ParticleRef,
   PigeonRef,
+  PigeonWarningRef,
   ShockwaveRef,
   Vec2,
 } from '@/game/state'
@@ -68,6 +69,7 @@ export type GameRefs = {
   chi: CharacterRef
   cat: CharacterRef
   pigeons: PigeonRef[]
+  warnings: PigeonWarningRef[]
   items: ItemRef[]
   effects: EffectState
   ai: AIState
@@ -114,6 +116,7 @@ export function createInitialState(): GameRefs {
     chi: { x: 200, y: 240, vx: 0, vy: 0, facing: 'right' },
     cat: { x: 440, y: 240, vx: 0, vy: 0, facing: 'left' },
     pigeons: [],
+    warnings: [],
     items: [],
     effects: {
       chiBoost: { until: 0 },
