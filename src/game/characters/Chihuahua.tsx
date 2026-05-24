@@ -20,9 +20,9 @@ function pickSrc(props: ChihuahuaProps): string {
 }
 
 // 효과별 통일 비율: 약(kissing, sad) ×1.05 / 강(slowed, mega) ×1.10
-const SIZE_BASE = 64
-const SIZE_SOFT = 67
-const SIZE_STRONG = 70
+const SIZE_BASE = 96
+const SIZE_SOFT = 101
+const SIZE_STRONG = 105
 
 function pickSize(props: ChihuahuaProps): number {
   if (props.kissing || props.sad) return SIZE_SOFT

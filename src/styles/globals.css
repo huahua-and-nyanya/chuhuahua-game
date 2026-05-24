@@ -158,6 +158,13 @@
   /* === CenterModal 애니메이션 (keyframes는 animations.css) === */
   --animate-backdrop-in: backdrop-in 180ms ease-out;
   --animate-card-in: card-in 220ms ease-out;
+
+  /* === 게임 시각 토큰 (Tailwind utility 생성용 — bg-game-accent-gold 등) === */
+  --color-game-accent-gold: #fbbf24;
+  --color-game-warn: #f59e0b;
+  --color-game-shield-blue: #3b82f6;
+  --color-game-success: #22c55e;
+  --color-game-mega: var(--color-pink-700);
 }
 
 body {
@@ -174,10 +181,27 @@ body {
   text-box: trim-both cap alphabetic;
 }
 
+/* input/textarea/button은 사용자 입력 텍스트가 ascent/descent까지 정상 표시되어야 (받침/디센더 잘림 방지).
+ * button: trim이 적용되면 inline-flex 안 텍스트의 vertical baseline이 미세하게 어긋남 → 영역 안 중앙 정렬이 깨짐. */
+input,
+textarea,
+button {
+  text-box: normal;
+}
+
 .page-bg {
   background-color: var(--color-bg-letterbox);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
   min-height: 100dvh;
+}
+
+/* 모바일 viewport 가로 overflow 방지 — 자식 박스가 부모보다 살짝 더 클 때
+ * 우측 잘림 회귀 방지. DSFrame 외곽 + 캐릭터 1.5배 후 박스 합산 시 자식이
+ * viewport를 살짝 넘는 경우가 발생할 수 있음. */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
 }

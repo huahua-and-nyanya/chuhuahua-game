@@ -76,6 +76,13 @@
   --color-danger: #d94747;
   --color-disabled: #c7b8c5;
 
+  /* === 게임 시각 토큰 (HUD/Toast/FloatText/콤보 보상 색상) === */
+  --color-game-accent-gold: #fbbf24; /* mult2x 보상, 점수 칩 */
+  --color-game-warn: #f59e0b; /* kibble/chiBoost 게이지 */
+  --color-game-shield-blue: #3b82f6; /* fish/catShield 게이지 */
+  --color-game-success: #22c55e; /* 츄 차단 +1 FloatText */
+  --color-game-mega: var(--color-pink-700); /* 메가 부스트 토스트 */
+
   /* === 그래디언트 === */
   --gradient-frame-bg: linear-gradient(
     180deg,

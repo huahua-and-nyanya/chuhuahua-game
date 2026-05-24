@@ -8,8 +8,8 @@ export function Fish(): JSX.Element {
       alt=""
       draggable={false}
       style={{
-        width: 50,
-        height: 33,
+        width: 75,
+        height: 50,
         objectFit: 'contain',
         filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.2))',
         pointerEvents: 'none',

@@ -1,98 +1,18 @@
-import { useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { motion } from 'framer-motion'
-import { MAIN_HERO, TITLE_LOGO, ICON_ASSETS } from '@/assets'
-import { GameFrame } from '@/ui/GameFrame'
-import { NavButton } from '@/ui/NavButton'
-import { IconNavButton } from '@/ui/IconNavButton'
-import { CoinChip } from '@/ui/CoinChip'
-import { CenterModal } from '@/ui/CenterModal'
-import { useCoins } from '@/features/coins/useCoins'
-import { MultiplayerSelectModal } from './-components/MultiplayerSelectModal'
-import styles from './-styles/HomePage.module.css'
+import { createFileRoute } from '@tanstack/react-router'
+
+import { MAIN_HERO } from '@/assets'
 
 export const Route = createFileRoute('/')({
   component: HomePage,
 })
 
+// 메인 카드 내부 슬롯(CoinChip/트로피/?/메뉴) + 모달은 모두 __root.tsx 라우트 분기 책임.
+// 본 컴포넌트는 카드 배경 일러스트만 그린다 (포인터 통과).
 function HomePage() {
-  const navigate = useNavigate()
-  const { coins } = useCoins()
-  const [multiOpen, setMultiOpen] = useState(false)
-  const [guideOpen, setGuideOpen] = useState(false)
-  const [rankingOpen, setRankingOpen] = useState(false)
-
-  const cornerActions = (
-    <>
-      <IconNavButton
-        icon={ICON_ASSETS.ranking}
-        alt="랭킹"
-        onClick={() => setRankingOpen(true)}
-      />
-      <IconNavButton
-        icon={ICON_ASSETS.help}
-        alt="게임 방법"
-        onClick={() => setGuideOpen(true)}
-      />
-    </>
-  )
-
-  const sideMenu = (
-    <>
-      <NavButton label="혼자서" onClick={() => navigate({ to: '/solo' })} />
-      <NavButton label="둘이서" onClick={() => setMultiOpen(true)} />
-      <NavButton label="옷장" onClick={() => navigate({ to: '/wardrobe' })} />
-    </>
-  )
-
   return (
-    <main className={styles.page}>
-      <div className={styles.frameStack}>
-        <motion.img
-          src={TITLE_LOGO}
-          alt="츄와와 뽀뽀 돌격"
-          className={styles.title}
-          style={{ x: '-50%' }}
-          animate={{ rotate: [-2, 2, -2] }}
-          transition={{ duration: 4, ease: 'easeInOut', repeat: Infinity }}
-        />
-        <div className={styles.mobileCornerActions}>{cornerActions}</div>
-
-        <GameFrame
-          background={`url(${MAIN_HERO}) center / cover no-repeat`}
-          topLeftSlot={
-            <>
-              <CoinChip amount={coins} size="md" className="max-md:hidden" />
-              <CoinChip amount={coins} size="sm" className="md:hidden" />
-            </>
-          }
-          cornerActions={cornerActions}
-          sideMenu={sideMenu}
-        >
-          <div aria-hidden className="h-full w-full" />
-        </GameFrame>
-
-        <div className={styles.mobileNav}>{sideMenu}</div>
-      </div>
-
-      <MultiplayerSelectModal
-        open={multiOpen}
-        onClose={() => setMultiOpen(false)}
-      />
-      <CenterModal
-        open={guideOpen}
-        onClose={() => setGuideOpen(false)}
-        title="게임 방법"
-      >
-        준비 중
-      </CenterModal>
-      <CenterModal
-        open={rankingOpen}
-        onClose={() => setRankingOpen(false)}
-        title="랭킹"
-      >
-        준비 중
-      </CenterModal>
-    </main>
+    <div
+      className="pointer-events-none absolute inset-0"
+      style={{ background: `url(${MAIN_HERO}) center / cover no-repeat` }}
+    />
   )
 }

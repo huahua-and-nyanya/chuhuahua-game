@@ -8,8 +8,8 @@ export function Kibble(): JSX.Element {
       alt=""
       draggable={false}
       style={{
-        width: 50,
-        height: 24,
+        width: 75,
+        height: 36,
         objectFit: 'contain',
         filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.2))',
         pointerEvents: 'none',

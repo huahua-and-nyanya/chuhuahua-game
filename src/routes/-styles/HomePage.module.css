@@ -3,13 +3,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* safe-area-inset 포함 — iOS notch/홈바 대응. 좌우는 page padding 16, 하단은 +safe-area */
   padding: var(--gap-lg);
+  padding-bottom: calc(var(--gap-lg) + env(safe-area-inset-bottom));
+  padding-right: calc(var(--gap-lg) + env(safe-area-inset-right));
 }
 
 .frameStack {
   position: relative;
   width: 100%;
-  max-width: var(--frame-max-width);
+  /* 데스크탑 카드 max 960px (좌표계 640 × 1.5) 수용 */
+  max-width: 960px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,11 +30,6 @@
   pointer-events: none;
 }
 
-.mobileCornerActions,
-.mobileNav {
-  display: none;
-}
-
 @media (max-height: 720px) {
   .title {
     display: none;
@@ -42,22 +41,8 @@
     display: none;
   }
 
+  /* 모바일: page padding(16px)이 좌우 패딩 처리. frameStack 안엔 DSFrame 하나만 — gap 무관. */
   .frameStack {
-    max-width: 95vw;
-    gap: var(--gap-sm);
-  }
-
-  .mobileCornerActions {
-    display: flex;
-    flex-direction: row;
-    gap: var(--gap-sm);
-    align-self: flex-end;
-  }
-
-  .mobileNav {
-    display: flex;
-    flex-direction: row;
-    gap: var(--nav-button-gap);
-    align-self: center;
+    max-width: none;
   }
 }
