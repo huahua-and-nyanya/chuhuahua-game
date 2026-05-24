@@ -9,6 +9,33 @@ import {
 import type { GameRefs } from './loop/state'
 import type { PickerSide } from './state'
 
+// === floatText 색상 / 지속시간 (F-1.6 effect-side 인스트루먼테이션) ===
+// FloatText.tsx FLOAT_LIFETIME 800ms과 일치. 별도 토큰 신설 없음.
+const EFFECT_FLOAT_LIFETIME = 800 // ms
+// 신규 슬로우 받음 (sweetPotato 디버프 부여). 기존 고구마색 (reference '#a05a3a').
+const EFFECT_SLOW_COLOR = '#a05a3a'
+
+// Y 오프셋 — 캐릭터 머리 위 ~20px (reference 동일).
+const FLOAT_Y_OFFSET = 20
+
+function pushEffectFloat(
+  refs: GameRefs,
+  now: number,
+  text: string,
+  x: number,
+  y: number,
+  color: string,
+): void {
+  refs.floatTexts.push({
+    id: now + Math.random(),
+    text,
+    x,
+    y,
+    color,
+    until: now + EFFECT_FLOAT_LIFETIME,
+  })
+}
+
 // === 속도 곱셈 헬퍼 (chi-input / cat-flee에서 매 프레임 호출) ===
 
 // reference 1623/1656: 디버프 속도 배율.
@@ -92,6 +119,7 @@ export function applyCucumberEffect(refs: GameRefs, now: number): void {
 
 // reference 1550~1568: sweetPotato → 먹은 쪽 부스트 활성 시 상쇄, 아니면 슬로우 부여.
 // 솔로 picker는 항상 'chi'. PvP 'cat' 분기는 사이클 F에서 동일 패턴.
+// Q1 (F-1.6): 신규 슬로우 부여(부스트 비활성) 시 "펑!" 갈색 floatText 픽업 측 머리 위에 추가.
 export function applySweetPotatoEffect(
   refs: GameRefs,
   now: number,
@@ -103,6 +131,14 @@ export function applySweetPotatoEffect(
       return true
     }
     refs.effects.catSlow = { until: now + SWEETPOTATO_DURATION }
+    pushEffectFloat(
+      refs,
+      now,
+      '펑!',
+      refs.cat.x,
+      refs.cat.y - FLOAT_Y_OFFSET,
+      EFFECT_SLOW_COLOR,
+    )
     return false
   }
   if (refs.effects.chiBoost.until > now) {
@@ -110,5 +146,13 @@ export function applySweetPotatoEffect(
     return true
   }
   refs.effects.chiSlow = { until: now + SWEETPOTATO_DURATION }
+  pushEffectFloat(
+    refs,
+    now,
+    '펑!',
+    refs.chi.x,
+    refs.chi.y - FLOAT_Y_OFFSET,
+    EFFECT_SLOW_COLOR,
+  )
   return false
 }
