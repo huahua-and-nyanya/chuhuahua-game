@@ -98,7 +98,7 @@ export function checkPvpPickups(deps: PvpPickupDeps): void {
       }
       // pickedBy === 'chi'인 fish는 F-1에서 효과 미부여 (chiShield F-2에서 도입).
     } else if (item.kind === 'cucumber') {
-      applyCucumberEffect(refs, now)
+      cancelled = applyCucumberEffect(refs, now)
     } else if (item.kind === 'sweetPotato') {
       cancelled = applySweetPotatoEffect(refs, now, pickedBy)
     }

@@ -14,6 +14,8 @@ import type { PickerSide } from './state'
 const EFFECT_FLOAT_LIFETIME = 800 // ms
 // 신규 슬로우 받음 (sweetPotato 디버프 부여). 기존 고구마색 (reference '#a05a3a').
 const EFFECT_SLOW_COLOR = '#a05a3a'
+// 슬로우 → 회복 상쇄 (kibble/cucumber 픽업으로 슬로우 해제). TOKEN.primary 핑크.
+const EFFECT_HEAL_COLOR = 'var(--color-pink-700)'
 
 // Y 오프셋 — 캐릭터 머리 위 ~20px (reference 동일).
 const FLOAT_Y_OFFSET = 20
@@ -89,9 +91,18 @@ export function applyCatShield(
 // 반환값: true = 기존 반대 효과와 상쇄됨(새 효과 부여 X), false = 새 효과 부여.
 
 // reference 1499~1508: kibble → chiSlow 활성 시 상쇄, 아니면 chiBoost 5초.
+// Q2 (F-1.6): chiSlow 상쇄 시 "야호!" 핑크 floatText 츄 머리 위에 추가.
 export function applyKibbleEffect(refs: GameRefs, now: number): boolean {
   if (refs.effects.chiSlow.until > now) {
     refs.effects.chiSlow = { until: 0 }
+    pushEffectFloat(
+      refs,
+      now,
+      '야호!',
+      refs.chi.x,
+      refs.chi.y - FLOAT_Y_OFFSET,
+      EFFECT_HEAL_COLOR,
+    )
     return true
   }
   applyChiBoost(refs, now, BOOST_DURATION)
@@ -111,10 +122,25 @@ export function applyFishEffect(
 
 // === 솔로엔 안 스폰되는 디버프 아이템 (PvP F에서 사용. 현재는 dead branch 자리) ===
 
-// reference 1546: cucumber → catSpeedup (PvP에선 catSlow와 상쇄).
-// 솔로엔 cucumber 자체가 안 스폰되므로 본 함수 호출되지 않음.
-export function applyCucumberEffect(refs: GameRefs, now: number): void {
+// reference 1541~1547: cucumber → catSlow 활성 시 상쇄, 아니면 catSpeedup.
+// Q2 (F-1.6): catSlow 상쇄 시 "야호!" 핑크 floatText 냐 머리 위에 추가.
+// 솔로엔 cucumber가 스폰되지 않지만 picker 분기 없이 cat 기준만 적용 (cucumber는 PvP cat 전용 픽업).
+// 반환값: true = catSlow 상쇄 / false = catSpeedup 부여.
+export function applyCucumberEffect(refs: GameRefs, now: number): boolean {
+  if (refs.effects.catSlow.until > now) {
+    refs.effects.catSlow = { until: 0 }
+    pushEffectFloat(
+      refs,
+      now,
+      '야호!',
+      refs.cat.x,
+      refs.cat.y - FLOAT_Y_OFFSET,
+      EFFECT_HEAL_COLOR,
+    )
+    return true
+  }
   refs.effects.catSpeedup = { until: now + CUCUMBER_DURATION }
+  return false
 }
 
 // reference 1550~1568: sweetPotato → 먹은 쪽 부스트 활성 시 상쇄, 아니면 슬로우 부여.
