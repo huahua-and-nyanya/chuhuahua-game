@@ -43,9 +43,17 @@ const MAX_SCALE = 1.5
 export type ResponsiveLayout = {
   scale: number
   isMobile: boolean
+  // 모바일 DSFrame 외곽 max-width — 게임 카드 폭 + DSFRAME_HORIZONTAL_OVERHEAD.
+  // viewport가 카드보다 훨씬 넓을 때 DSFrame이 카드를 살짝 감싸는 비율 유지.
+  // 데스크탑은 의미 없음 (0 placeholder).
+  dsFrameMaxWidth: number
 }
 
-const DESKTOP_DEFAULT: ResponsiveLayout = { scale: 1, isMobile: false }
+const DESKTOP_DEFAULT: ResponsiveLayout = {
+  scale: 1,
+  isMobile: false,
+  dsFrameMaxWidth: 0,
+}
 
 function compute(): ResponsiveLayout {
   if (typeof window === 'undefined') return DESKTOP_DEFAULT
@@ -80,7 +88,10 @@ function compute(): ResponsiveLayout {
   // aspect 4:3 → 카드 width = 가용 height × 4/3
   const widthByHeight = (availH * GAME_WIDTH) / GAME_HEIGHT
   const cardWidth = Math.min(availW, widthByHeight, GAME_WIDTH * MAX_SCALE)
-  return { scale: cardWidth / GAME_WIDTH, isMobile }
+  // DSFrame은 카드 폭 + horizontal overhead로 cap — 큰 viewport에서 카드가 vh로 작아져도
+  // DSFrame이 카드를 살짝 감싸는 비율 유지 (viewport 폭에 무조건 늘어나 카드만 가운데 쪼그라드는 회귀 방지).
+  const dsFrameMaxWidth = cardWidth + DSFRAME_HORIZONTAL_OVERHEAD
+  return { scale: cardWidth / GAME_WIDTH, isMobile, dsFrameMaxWidth }
 }
 
 export function useResponsiveScale(): ResponsiveLayout {
