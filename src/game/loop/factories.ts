@@ -5,8 +5,41 @@ import {
   PIGEON_SPEED_BASE,
   PIGEON_SPEED_PER_LEVEL,
 } from '@/game/constants'
-import type { GameRefs } from '@/game/loop/state'
+import type { BgHeart, GameRefs } from '@/game/loop/state'
 import type { SoloSpawnKind } from '@/game/loop/spawn'
+
+// === 배경 부유 하트 ===
+// 게임 시작/리셋 시 12개 init. 매 RAF updateBgHearts가 위로 끌어올리며 wrap.
+const BG_HEART_COUNT = 12
+const BG_HEART_COLORS = ['#ff85a1', '#ffd1dc', '#ffadc6', '#ff9ec1']
+
+export function initBgHearts(): BgHeart[] {
+  return Array.from({ length: BG_HEART_COUNT }, (_, i) => ({
+    id: i,
+    x: Math.random() * GAME_WIDTH,
+    y: Math.random() * GAME_HEIGHT,
+    size: 12 + Math.random() * 18,
+    speed: 0.25 + Math.random() * 0.55,
+    drift: (Math.random() - 0.5) * 0.4,
+    opacity: 0.18 + Math.random() * 0.22,
+    color: BG_HEART_COLORS[i % BG_HEART_COLORS.length],
+  }))
+}
+
+// 매 RAF(60fps) 호출. in-place mutation으로 위로 올라가며 좌우 흔들림.
+// 위로 벗어나면 아래에서 재등장 + x 새로 랜덤. 좌우 경계는 wrap.
+export function updateBgHearts(hearts: BgHeart[]): void {
+  for (const h of hearts) {
+    h.y -= h.speed
+    h.x += h.drift
+    if (h.y < -h.size) {
+      h.y = GAME_HEIGHT + h.size
+      h.x = Math.random() * GAME_WIDTH
+    }
+    if (h.x < -h.size) h.x = GAME_WIDTH + h.size
+    if (h.x > GAME_WIDTH + h.size) h.x = -h.size
+  }
+}
 
 // reference 1089~1108 패턴: 4방향 화면 밖 → 화면 가장자리 안쪽 좌표로 진입.
 // 비둘기는 cat 방향 벡터로 초기 vx/vy 부여. 이후 매 프레임 pigeon-fly.ts가 lerp로 갱신.

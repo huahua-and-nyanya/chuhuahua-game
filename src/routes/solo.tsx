@@ -24,7 +24,7 @@ import {
   DEBUFF_STAGGER,
   MAX_TOASTS,
 } from '@/game/constants'
-import { spawnPigeon, spawnItem } from '@/game/loop/factories'
+import { spawnPigeon, spawnItem, updateBgHearts } from '@/game/loop/factories'
 import {
   scheduleDebuffFirstSpawn,
   scheduleItemRespawn,
@@ -43,15 +43,19 @@ import { checkLevelUp, isMilestoneLevel } from '@/game/progression/level'
 import { applyScore, expireCombo } from '@/game/progression/score'
 import type { ItemKind, ToastRef } from '@/game/state'
 
+import { BgHearts } from '@/game/ui/BgHearts'
 import { ComboLabel } from '@/game/ui/ComboLabel'
 import { FloatTexts } from '@/game/ui/FloatText'
 import { GameOverModal, type GameOverInfo } from '@/game/ui/GameOverModal'
 import { HUD } from '@/game/ui/HUD'
-import { LevelUpOverlay } from '@/game/ui/LevelUpOverlay'
+import { LevelUpEffect } from '@/game/ui/LevelUpEffect'
+import { Mwah } from '@/game/ui/Mwah'
+import { Particles } from '@/game/ui/Particles'
 import { PauseModal } from '@/game/ui/PauseModal'
 import { QuitConfirmModal } from '@/game/ui/QuitConfirmModal'
 import { SoloControlBar } from '@/game/ui/SoloControlBar'
 import { adjustTimersByPauseDuration } from '@/game/loop/pause'
+import { updateParticles } from '@/game/particles'
 
 import { useHistory } from '@/features/history/useHistory'
 
@@ -65,6 +69,8 @@ const NICKNAME_KEY = 'chuhuahua:nickname'
 const FLOAT_DURATION = 800 // ms — FloatText 기준 잔여시간 (FloatText.tsx FLOAT_LIFETIME과 일치)
 const TOAST_DURATION = 1800 // ms
 const CHARACTER_BOX = 150 // px — 캐릭터 wrapper 정사각 (캐릭터/아이템 1.5배 시각)
+// 아이템 expireAt 까지 남은 시간이 본 값 이하면 item-expire 깜빡임 + 글로우 시작.
+const ITEM_EXPIRE_WARN_MS = 2000
 
 type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover'
 
@@ -80,6 +86,8 @@ function SoloPage() {
 
   const [gameState, setGameState] = useState<GameState>('playing')
   const [gameOverInfo, setGameOverInfo] = useState<GameOverInfo | null>(null)
+  // 게임오버 → 카드 shake + 빨간 flash가 ~500ms 동안 끝난 뒤 모달 등장.
+  const [showGameOverModal, setShowGameOverModal] = useState(false)
   const [toasts, setToasts] = useState<ToastRef[]>([])
   // 일시정지 관리: paused 진입 시각 + 그만두기 확인 진입 직전 상태(복귀용).
   // confirmQuit 진입은 playing/paused 둘 다 가능 — 취소 시 원 상태로 복귀해야 함.
@@ -143,23 +151,42 @@ function SoloPage() {
     refs.current = createInitialState()
     gameStartRef.current = performance.now()
     setGameOverInfo(null)
+    setShowGameOverModal(false)
     setToasts([])
     pausedAtRef.current = 0
     preQuitStateRef.current = 'playing'
     setGameState('playing')
   }, [])
 
+  // gameover 진입 → shake/flash가 ~500ms 동안 보인 뒤 모달 등장.
+  // gameover 이탈은 startGame()/onMain만 가능, 둘 다 showGameOverModal을 명시 리셋.
+  useEffect(() => {
+    if (gameState !== 'gameover') return
+    const t = window.setTimeout(() => setShowGameOverModal(true), 500)
+    return () => window.clearTimeout(t)
+  }, [gameState])
+
   // 일시정지 토글 — playing ↔ paused. resume 시 pausedDuration만큼 모든 timed 값 보정.
+  //
+  // React 18 Strict Mode는 dev에서 setState updater를 두 번 호출(불순 updater 검출용).
+  // pausedAtRef mutation / adjustTimersByPauseDuration이 두 번 실행되면 resume 시
+  // pausedDuration이 `now - 0 = performance.now()` 규모로 폭증 → effect.until / lastKissAt
+  // 등이 미래로 튀어 게이지 max 고정 + 뽀뽀 디바운스 영구 차단 버그가 났음.
+  // → 각 분기를 idempotent하게 가드 (pausedAtRef 값으로 1회만 적용 보장).
   const togglePause = useCallback(() => {
     setGameState((prev) => {
       if (prev === 'playing') {
-        pausedAtRef.current = performance.now()
+        if (pausedAtRef.current === 0) {
+          pausedAtRef.current = performance.now()
+        }
         return 'paused'
       }
       if (prev === 'paused') {
-        const pausedDuration = performance.now() - pausedAtRef.current
-        adjustTimersByPauseDuration(refs.current, pausedDuration)
-        pausedAtRef.current = 0
+        if (pausedAtRef.current > 0) {
+          const pausedDuration = performance.now() - pausedAtRef.current
+          adjustTimersByPauseDuration(refs.current, pausedDuration)
+          pausedAtRef.current = 0
+        }
         return 'playing'
       }
       return prev
@@ -171,7 +198,9 @@ function SoloPage() {
   const openQuitConfirm = useCallback(() => {
     setGameState((prev) => {
       if (prev === 'playing') {
-        pausedAtRef.current = performance.now()
+        if (pausedAtRef.current === 0) {
+          pausedAtRef.current = performance.now()
+        }
         preQuitStateRef.current = 'playing'
         return 'confirmQuit'
       }
@@ -188,7 +217,7 @@ function SoloPage() {
     setGameState((prev) => {
       if (prev !== 'confirmQuit') return prev
       const target = preQuitStateRef.current
-      if (target === 'playing') {
+      if (target === 'playing' && pausedAtRef.current > 0) {
         const pausedDuration = performance.now() - pausedAtRef.current
         adjustTimersByPauseDuration(refs.current, pausedDuration)
         pausedAtRef.current = 0
@@ -391,6 +420,8 @@ function SoloPage() {
         onShieldBlock,
       })
 
+      updateParticles(r.particles)
+      updateBgHearts(r.bgHearts)
       expireCombo(r, now)
       expireTransients(r, now)
     },
@@ -455,35 +486,52 @@ function SoloPage() {
         className="absolute inset-0 overflow-hidden"
         style={{
           background: `url(${bgUrl}) center / cover no-repeat`,
-          // 게임오버 시 카드 안쪽 가장자리에 빨간 글로우 (vignette). root 외곽 안 건드림.
-          boxShadow:
+          transition: 'background 0.6s ease',
+          // 게임오버 진입 시 game-stage 전체 흔들림 (500ms 1회). flash 오버레이는 내부에 별도 렌더.
+          animation:
             gameState === 'gameover'
-              ? 'inset 0 0 80px 30px rgba(220, 38, 38, 0.55)'
+              ? 'game-stage-shake 500ms ease-out'
               : undefined,
-          transition: 'background 0.6s ease, box-shadow 0.4s ease-out',
         }}
       >
-        {/* 아이템 — 캐릭터/비둘기 아래 */}
-        {r.items.map((item) => (
-          <div
-            key={item.id}
-            className="absolute flex items-center justify-center"
-            style={{
-              left: item.x,
-              top: item.y,
-              width: CHARACTER_BOX,
-              height: CHARACTER_BOX,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            {item.kind === 'kibble' && <Kibble />}
-            {item.kind === 'fish' && <Fish />}
-            {item.kind === 'cucumber' && <Cucumber />}
-            {item.kind === 'sweetPotato' && <SweetPotato />}
-          </div>
-        ))}
+        {/* 배경 부유 하트 (zIndex 1, 캐릭터/아이템/HUD 아래) */}
+        <BgHearts hearts={r.bgHearts} />
 
-        {/* 츄와와 */}
+        {/* 아이템 — 캐릭터/비둘기 아래.
+            item-bob: 위아래 부유 + 살짝 회전 (1.4s 무한).
+            만료 직전 2초(ITEM_EXPIRE_WARN_MS)부터 item-expire로 교체(결정 옵션 2a)
+            + drop-shadow 글로우(결정 옵션 3). */}
+        {r.items.map((item) => {
+          const isExpiringSoon = item.expireAt - now < ITEM_EXPIRE_WARN_MS
+          return (
+            <div
+              key={item.id}
+              className="absolute flex items-center justify-center"
+              style={{
+                left: item.x,
+                top: item.y,
+                width: CHARACTER_BOX,
+                height: CHARACTER_BOX,
+                transform: 'translate(-50%, -50%)',
+                animation: isExpiringSoon
+                  ? 'item-expire 0.5s ease-in-out infinite'
+                  : 'item-bob 1.4s ease-in-out infinite',
+                filter: isExpiringSoon
+                  ? 'drop-shadow(0 0 8px rgba(255,255,255,0.8))'
+                  : undefined,
+              }}
+            >
+              {item.kind === 'kibble' && <Kibble />}
+              {item.kind === 'fish' && <Fish />}
+              {item.kind === 'cucumber' && <Cucumber />}
+              {item.kind === 'sweetPotato' && <SweetPotato />}
+            </div>
+          )
+        })}
+
+        {/* 츄와와 — 외부 wrapper(translate + facing scaleX) 안 inner div가 kiss-shake.
+            key={kissing.until} → 매 뽀뽀마다 inner remount → 애니메이션 재시작
+            (결정 옵션 4: Cat의 kiss-bounce와 동일 패턴). */}
         <div
           className="absolute flex items-center justify-center"
           style={{
@@ -494,12 +542,19 @@ function SoloPage() {
             transform: `translate(-50%, -50%) scaleX(${chiFacing})`,
           }}
         >
-          <Chihuahua
-            kissing={chiKissing}
-            boosted={chiBoosted}
-            mega={chiMega}
-            slowed={chiSlowed}
-          />
+          <div
+            key={`chi-shake-${r.kissing.until}`}
+            style={{
+              animation: chiKissing ? 'kiss-shake 400ms ease-out' : undefined,
+            }}
+          >
+            <Chihuahua
+              kissing={chiKissing}
+              boosted={chiBoosted}
+              mega={chiMega}
+              slowed={chiSlowed}
+            />
+          </div>
         </div>
 
         {/* 고양이 + 쉴드 거품 */}
@@ -546,25 +601,15 @@ function SoloPage() {
               transform: 'translate(-50%, -50%)',
             }}
           >
-            <Pigeon fleeing={p.state === 'fleeing'} />
+            <Pigeon fleeing={p.state === 'fleeing'} vx={p.vx} vy={p.vy} />
           </div>
         ))}
 
-        {/* mwah "쪽!" */}
-        {r.mwah.active && r.mwah.until > now && (
-          <div
-            className="font-display pointer-events-none absolute text-lg leading-none"
-            style={{
-              left: r.mwah.x,
-              top: r.mwah.y,
-              transform: 'translate(-50%, -50%)',
-              color: 'var(--color-pink-700)',
-              textShadow: '0 0 4px var(--color-text-on-pink)',
-            }}
-          >
-            쪽!
-          </div>
-        )}
+        {/* 하트 파티클 — z 8 (캐릭터 위, mwah/levelUp 아래) */}
+        <Particles particles={r.particles} />
+
+        {/* 뽀뽀 "쪽!!" — z 10 */}
+        <Mwah state={r.mwah} now={now} />
 
         {/* HUD (좌상단 점수 + 우상단 LV/효과 게이지/토스트 stack) / 콤보 라벨 / 오버레이 / 플로트 텍스트 */}
         <HUD
@@ -575,14 +620,23 @@ function SoloPage() {
           toasts={toasts}
         />
         <ComboLabel combo={sm.combo} visible={gameState === 'playing'} />
-        <LevelUpOverlay
-          active={r.levelUpEffect.active && r.levelUpEffect.until > now}
-          level={r.levelUpEffect.level}
-        />
+        {/* 레벨업 효과 — z 18 (HUD/콤보 위) */}
+        <LevelUpEffect state={r.levelUpEffect} now={now} />
         <FloatTexts items={r.floatTexts} now={now} />
+
+        {/* 게임오버 빨간 플래시 — 카드 전체 위에 1회 페이드. 모달보다 아래(모달은 portal/z-100). */}
+        {gameState === 'gameover' && (
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background: 'rgba(255, 51, 68, 0.5)',
+              animation: 'game-stage-flash 500ms ease-out forwards',
+            }}
+          />
+        )}
       </div>
 
-      {gameState === 'gameover' && gameOverInfo && (
+      {showGameOverModal && gameOverInfo && (
         <GameOverModal
           open={true}
           info={gameOverInfo}

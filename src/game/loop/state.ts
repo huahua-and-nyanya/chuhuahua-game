@@ -8,16 +8,21 @@ import type {
   PigeonRef,
   Vec2,
 } from '@/game/state'
+import { initBgHearts } from './factories'
 
 // === 시각 효과 ===
 
-// 배경에 떠다니는 하트. life는 남은 프레임 수, 0 이하면 인플레이스 제거.
-export type BgHeart = Vec2 & {
-  vx: number
-  vy: number
-  life: number
+// 배경에 떠다니는 분홍 하트 — 게임 시작 시 12개 init, 매 프레임 위로 올라감.
+// 화면 위로 나가면 아래에서 재등장 (loop). speed/drift는 frame 기반이라 pause 보정 X.
+export type BgHeart = {
+  id: number
+  x: number
+  y: number
   size: number
-  alpha: number
+  speed: number
+  drift: number
+  opacity: number
+  color: string
 }
 
 // === 점수 미러 ===
@@ -118,7 +123,7 @@ export function createInitialState(): GameRefs {
     },
     floatTexts: [],
     particles: [],
-    bgHearts: [],
+    bgHearts: initBgHearts(),
     mwah: { active: false, until: 0, x: 0, y: 0 },
     kissing: { active: false, until: 0 },
     flash: { until: 0 },
