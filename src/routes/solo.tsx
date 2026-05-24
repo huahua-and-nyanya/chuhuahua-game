@@ -24,7 +24,13 @@ import {
   DEBUFF_STAGGER,
   MAX_TOASTS,
 } from '@/game/constants'
-import { spawnPigeon, spawnItem, updateBgHearts } from '@/game/loop/factories'
+import {
+  commitPigeonAt,
+  removeWarning,
+  spawnItem,
+  spawnPigeonWarning,
+  updateBgHearts,
+} from '@/game/loop/factories'
 import {
   scheduleDebuffFirstSpawn,
   scheduleItemRespawn,
@@ -57,6 +63,7 @@ import { QuitConfirmModal } from '@/game/ui/QuitConfirmModal'
 import { SoloControlBar } from '@/game/ui/SoloControlBar'
 import { adjustTimersByPauseDuration } from '@/game/loop/pause'
 import { updateParticles } from '@/game/particles'
+import { trackedTimeout } from '@/hooks/trackedTimeout'
 
 import { useHistory } from '@/features/history/useHistory'
 
@@ -67,6 +74,9 @@ export const Route = createFileRoute('/solo')({
 })
 
 const NICKNAME_KEY = 'chuhuahua:nickname'
+// 비둘기 등장 경고 마커 표시 시간 (F-1.7, reference 1100).
+// 마커 push 후 본 ms 경과 시 마커 제거 + 비둘기 실제 스폰.
+const PIGEON_WARN_DURATION = 1300
 const FLOAT_DURATION = 800 // ms — FloatText 기준 잔여시간 (FloatText.tsx FLOAT_LIFETIME과 일치)
 const TOAST_DURATION = 1800 // ms
 const CHARACTER_BOX = 150 // px — 캐릭터 wrapper 정사각 (캐릭터/아이템 1.5배 시각)
@@ -393,7 +403,17 @@ function SoloPage() {
       refs: refs.current,
       getLevel: () => refs.current.scoreMirror.level,
       getNow: () => performance.now(),
-      spawnPigeon: () => spawnPigeon(refs.current, performance.now()),
+      // 2단계 스폰 — 먼저 경고 마커를 push, PIGEON_WARN_DURATION 후 마커 제거 + 비둘기 실제 스폰.
+      // stopSpawnScheduler가 호출되면 trackedTimeout이 일괄 정리되어 마커 제거 콜백도 취소되므로,
+      // 스폰 스케줄러는 stop 시 잔여 warnings를 함께 비운다(spawn.ts).
+      spawnPigeon: () => {
+        const now = performance.now()
+        const { wid, spawnX, spawnY } = spawnPigeonWarning(refs.current, now)
+        trackedTimeout(() => {
+          removeWarning(refs.current, wid)
+          commitPigeonAt(refs.current, spawnX, spawnY, performance.now())
+        }, PIGEON_WARN_DURATION)
+      },
       spawnItem: (kind: SoloSpawnKind) =>
         spawnItem(refs.current, kind, performance.now()),
     })
@@ -603,6 +623,39 @@ function SoloPage() {
             <ShieldBubble owner="cat" />
           </div>
         )}
+
+        {/* 비둘기 등장 경고 마커 (F-1.7) — z 7. 1.3s 후 자동 사라지고 같은 위치에서 비둘기 등장.
+            wrapper(translate)는 위치만 잡고, 내부 칩이 실제 -50% 중앙정렬 + warn-pulse scale. */}
+        {r.warnings.map((w) => (
+          <div
+            key={w.id}
+            className="pointer-events-none absolute"
+            style={{
+              left: w.x,
+              top: w.y,
+              zIndex: 7,
+              animation: 'warn-pulse 0.35s ease-in-out infinite',
+            }}
+          >
+            <div
+              style={{
+                background: '#ff2222',
+                color: '#ffffff',
+                border: '3px solid var(--color-ink-base)',
+                borderRadius: 8,
+                padding: '4px 10px',
+                fontFamily: 'var(--font-display)',
+                fontSize: 18,
+                lineHeight: 1,
+                boxShadow: '3px 3px 0 var(--color-ink-base)',
+                whiteSpace: 'nowrap',
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              ! 비둘기 !
+            </div>
+          </div>
+        ))}
 
         {/* 비둘기 */}
         {r.pigeons.map((p) => (

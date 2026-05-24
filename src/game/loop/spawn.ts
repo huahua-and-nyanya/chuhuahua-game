@@ -58,6 +58,12 @@ export function startSpawnScheduler(deps: SpawnDeps): void {
 }
 
 export function stopSpawnScheduler(): void {
+  // 비둘기 경고 마커(F-1.7) 정리 — 1300ms 후 마커 제거 콜백이 trackedTimeout에 묶여있어
+  // clearAllTrackedTimeouts 호출 시 함께 취소된다. 그 결과 refs.warnings에 잔여가 남으므로
+  // 스케줄러 정지 시 직접 비운다 (일시정지/게임오버 후 잔여 마커 방지).
+  if (currentDeps !== null) {
+    currentDeps.refs.warnings = []
+  }
   clearAllTrackedTimeouts()
   currentDeps = null
 }
