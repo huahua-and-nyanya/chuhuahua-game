@@ -4,11 +4,12 @@ import type { Direction } from './virtual-types'
 
 // WASD 십자 패드 (모바일).
 // 시각: wasd-pad.png 1장이 십자 그래픽 전부 담당.
-// hit-test: 투명 버튼 4개를 동일 컨테이너 위(absolute)에 그대로 유지.
+// 사이즈: 부모 row의 flex-1 + aspect-square — viewport 따라 정사각 가변 사이즈.
+// hit-test: 투명 버튼 4개를 동일 컨테이너 위(absolute)에 PNG 비율 그대로 유지.
 // onPress/onRelease는 부모(VirtualController)가 누적 state로 관리.
 
-const CONTAINER_SIZE = 104
-const BUTTON_SIZE = 36
+// PNG 자산은 100×100 기준 — 버튼 한 변 36px (= 36%). 사이드 anchored (top/bottom/left/right 0).
+const BUTTON_SIZE = '36%'
 
 // 투명 hit-test 버튼 — 시각은 PNG, 입력만 받음.
 const BUTTON_CLASSES =
@@ -40,10 +41,7 @@ export type VirtualPadProps = {
 
 export function VirtualPad({ onPress, onRelease }: VirtualPadProps) {
   return (
-    <div
-      className="relative shrink-0"
-      style={{ width: CONTAINER_SIZE, height: CONTAINER_SIZE }}
-    >
+    <div className="relative aspect-square flex-1">
       <img
         src={wasdPad}
         alt=""

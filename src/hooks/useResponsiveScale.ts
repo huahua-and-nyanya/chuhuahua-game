@@ -8,24 +8,28 @@ import { GAME_HEIGHT, GAME_WIDTH } from '@/game/constants'
 // 카드 width = min(가용 가로, 가용 세로 × 4/3, 좌표계 × MAX_SCALE).
 // 가용 세로 = viewport height − page padding × 2 − 예약 영역.
 //   - 데스크탑: 메인으로 버튼 자리 + 위쪽 여유 (DESKTOP_HEADER_RESERVED)
-//   - 모바일: DS 프레임 내부 overhead (DS_OVERHEAD_MOBILE)
-//     padding 24 + gap 12 × 2 + 메뉴 row 36 + 컨트롤러 100 + border 4 = 188
+//   - 모바일: DS 프레임 내부 overhead = 고정값 + 가변 컨트롤러 높이
+//     고정: pt-md 12 + pb-2xl 32 + gap-2xl 32 × 2 + 메뉴 row 36 = 144
+//     가변: VirtualController는 flex-1 + aspect-square — 한 변 = (DSFrame 안 폭 - gap-sm 8)/2
 // 가용 가로 = viewport width − page padding × 2 − (모바일: DSFRAME_HORIZONTAL_OVERHEAD)
-//   DSFRAME_HORIZONTAL_OVERHEAD = padding 24 + border 4 = 28
+//   DSFRAME_HORIZONTAL_OVERHEAD = p-md 24 (PNG가 외곽 담당 — CSS border 없음)
 //   DSFrame은 viewport 가로 한계치(- page padding 32)까지 꽉 채움. cap 없음.
-//   카드는 그 안 폭(DSFrame width - overhead) 또는 vh 한계 중 작은 값.
+//   카드는 그 안 폭 또는 vh 한계 중 작은 값.
 //
-// 모바일(viewport 375×667): DSFrame 343 → 안 폭 315, vh 가용 447, 카드 315 (scale ~0.492)
-// 모바일(viewport 414×600 가로 큰 작은 폰): DSFrame 382 → 안 폭 354, vh 가용 380, widthByH 507 → 카드 354
-// 데스크탑(viewport 1920×1080): 가용 1888 × 948 → 카드 960 (MAX_SCALE 1.5)
+// 모바일(375×667): DSFrame 343 → 안 폭 319, 패드 155, vh 가용 336, 카드 319 (scale ~0.498)
+// 모바일(320×568): DSFrame 288 → 안 폭 264, 패드 128, vh 가용 264, 카드 264 (scale ~0.413)
+// 모바일(414×600): DSFrame 382 → 안 폭 358, 패드 175, vh 가용 245, widthByH 327 → 카드 327
+// 데스크탑(1920×1080): 가용 1888 × 948 → 카드 960 (MAX_SCALE 1.5)
 //
 // 좌표계는 항상 640×480 — 게임 로직/충돌은 0% 영향.
 const PAGE_PADDING = 16
 const MOBILE_BREAKPOINT = 768
-// DS 프레임 좌우 overhead — p-md 24 + border 2 × 2 = 28
-const DSFRAME_HORIZONTAL_OVERHEAD = 28
-// DS 프레임 안 vertical overhead — p-md 24 + gap-md 12 × 2 + 메뉴 row 36 + 컨트롤러 100 + border 4
-const DS_OVERHEAD_MOBILE = 24 + 12 + 12 + 36 + 100 + 4
+// DS 프레임 좌우 overhead — p-md 24 (PNG 외곽이라 CSS border 없음)
+const DSFRAME_HORIZONTAL_OVERHEAD = 24
+// DS 프레임 안 vertical 고정 overhead — pt-md 12 + pb-2xl 32 + gap-2xl 32 × 2 + 메뉴 row 36
+const DS_VERTICAL_FIXED_OVERHEAD = 12 + 32 + 32 * 2 + 36
+// VirtualController row 안 두 패드 사이 gap-sm
+const PAD_ROW_GAP = 8
 // 데스크탑 헤더 영역 예약 (메인으로 버튼 + 위쪽 여유, 스크롤 발생 방지)
 const DESKTOP_HEADER_RESERVED = 100
 const MAX_SCALE = 1.5
@@ -49,10 +53,14 @@ function compute(): ResponsiveLayout {
   const availW = isMobile
     ? horizontalRaw - DSFRAME_HORIZONTAL_OVERHEAD
     : horizontalRaw
+  // 모바일: VirtualController 패드 한 변 = (DSFrame 안 폭 - 패드 row gap) / 2.
+  const controllerH = isMobile ? Math.floor((availW - PAD_ROW_GAP) / 2) : 0
   const availH =
     vh -
     PAGE_PADDING * 2 -
-    (isMobile ? DS_OVERHEAD_MOBILE : DESKTOP_HEADER_RESERVED)
+    (isMobile
+      ? DS_VERTICAL_FIXED_OVERHEAD + controllerH
+      : DESKTOP_HEADER_RESERVED)
 
   // aspect 4:3 → 카드 width = 가용 height × 4/3
   const widthByHeight = (availH * GAME_WIDTH) / GAME_HEIGHT
