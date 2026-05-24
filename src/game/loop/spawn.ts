@@ -78,13 +78,23 @@ export function scheduleDebuffFirstSpawn(
 }
 
 // 픽업 후 외부에서 호출 — 아이템 1개를 재스폰. kind/level에 따라 분기:
-//   도움(kibble/fish): 레벨↑ → 쿨다운↑ (LV0 1.0배, LV10 1.7배). 도움이 점점 귀해짐.
-//   디버프(cucumber/sweetPotato): 레벨↑ → 쿨다운↓ (LV3 1.0배, LV10 0.45배). 함정 더 자주.
+//   도움(kibble/fish): 레벨↑ → 쿨다운↓ (LV0 1.0배, LV10 0.4배). 도움이 더 자주.
+//   디버프(cucumber/sweetPotato): 레벨↑ → 쿨다운↓ (LV3 1.0배, LV10 0.3배). 함정 더 자주.
 // 레벨은 currentDeps.getLevel()에서 매 호출 시 최신 값을 읽음.
-const AID_FACTOR_PER_LEVEL = 0.07
-const AID_FACTOR_MAX = 1.7
-const DEBUFF_FACTOR_PER_LEVEL = 0.08
-const DEBUFF_FACTOR_MIN = 0.45
+// cap: 같은 종류 3개 이상 필드 잔존 시 이번 사이클 스킵 (체인 끊김 — 다음 픽업이 새 체인 시작).
+const AID_FACTOR_PER_LEVEL = 0.06
+const AID_FACTOR_MIN = 0.4
+const DEBUFF_FACTOR_PER_LEVEL = 0.12
+const DEBUFF_FACTOR_MIN = 0.3
+const ITEM_FIELD_CAP = 3
+
+function canSpawnKind(refs: GameRefs, kind: SoloSpawnKind): boolean {
+  let n = 0
+  for (const it of refs.items) {
+    if (it.kind === kind) n++
+  }
+  return n < ITEM_FIELD_CAP
+}
 
 export function scheduleItemRespawn(kind: SoloSpawnKind): void {
   const deps = currentDeps
@@ -101,13 +111,14 @@ export function scheduleItemRespawn(kind: SoloSpawnKind): void {
     min = DEBUFF_RESPAWN_MIN * factor
     max = DEBUFF_RESPAWN_MAX * factor
   } else {
-    const factor = Math.min(AID_FACTOR_MAX, 1 + level * AID_FACTOR_PER_LEVEL)
+    const factor = Math.max(AID_FACTOR_MIN, 1 - level * AID_FACTOR_PER_LEVEL)
     min = ITEM_RESPAWN_MIN * factor
     max = ITEM_RESPAWN_MAX * factor
   }
   const delay = (min + Math.random() * (max - min)) * ITEM_SPAWN_MUL
   trackedTimeout(() => {
     if (currentDeps !== deps) return
+    if (!canSpawnKind(deps.refs, kind)) return
     deps.spawnItem(kind)
   }, delay)
 }

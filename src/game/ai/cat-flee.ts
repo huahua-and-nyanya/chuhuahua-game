@@ -2,8 +2,12 @@ import {
   CAT_DASH_COOLDOWN,
   CAT_DASH_DIST,
   CAT_DASH_THRESHOLD,
-  CAT_FLEE_LERP_MUL,
-  CAT_FLEE_RANGE,
+  CAT_FLEE_LERP_BASE,
+  CAT_FLEE_LERP_PER_LEVEL,
+  CAT_FLEE_LOOKAHEAD_BASE,
+  CAT_FLEE_LOOKAHEAD_PER_LEVEL,
+  CAT_FLEE_TRIGGER_BASE,
+  CAT_FLEE_TRIGGER_PER_LEVEL,
   CAT_LERP_BASE,
   CAT_LERP_PER_LEVEL,
   GAME_HEIGHT,
@@ -16,8 +20,6 @@ import { clamp } from '@/game/physics'
 
 // reference 1728: dash 발동 최소 레벨.
 const DASH_MIN_LEVEL = 2
-// reference 1688: 비둘기 회피 시 lookahead 거리.
-const PIGEON_FLEE_LOOKAHEAD = 90
 // reference 1688: 화면 안 안전 margin.
 const SCREEN_MARGIN = 60
 // reference 1719/1732: dash 발동 하한 (이 거리보다 가까우면 의미 없음).
@@ -39,6 +41,11 @@ export function updateCatFlee(
   void dt
   const { cat, chi, pigeons, ai } = refs
   const baseLerp = CAT_LERP_BASE + level * CAT_LERP_PER_LEVEL
+  // 회피 매커니즘 — 레벨↑ 시 트리거 거리/도망 거리/lerp 배수 모두 증가.
+  const fleeTrigger = CAT_FLEE_TRIGGER_BASE + level * CAT_FLEE_TRIGGER_PER_LEVEL
+  const fleeLookahead =
+    CAT_FLEE_LOOKAHEAD_BASE + level * CAT_FLEE_LOOKAHEAD_PER_LEVEL
+  const fleeLerpMul = CAT_FLEE_LERP_BASE + level * CAT_FLEE_LERP_PER_LEVEL
   let activeLerp = baseLerp
   let target = ai.catTarget
 
@@ -49,7 +56,7 @@ export function updateCatFlee(
     let minD = Infinity
     for (const p of flying) {
       const d = Math.hypot(cat.x - p.x, cat.y - p.y)
-      if (d < minD && d < CAT_FLEE_RANGE) {
+      if (d < minD && d < fleeTrigger) {
         minD = d
         closest = p
       }
@@ -60,17 +67,17 @@ export function updateCatFlee(
       const len = minD || 1
       target = {
         x: clamp(
-          cat.x + (dxp / len) * PIGEON_FLEE_LOOKAHEAD,
+          cat.x + (dxp / len) * fleeLookahead,
           SCREEN_MARGIN,
           GAME_WIDTH - SCREEN_MARGIN,
         ),
         y: clamp(
-          cat.y + (dyp / len) * PIGEON_FLEE_LOOKAHEAD,
+          cat.y + (dyp / len) * fleeLookahead,
           SCREEN_MARGIN,
           GAME_HEIGHT - SCREEN_MARGIN,
         ),
       }
-      activeLerp = baseLerp * CAT_FLEE_LERP_MUL
+      activeLerp = baseLerp * fleeLerpMul
     }
   } else {
     const catSpedUp = refs.effects.catSpeedup.until > now

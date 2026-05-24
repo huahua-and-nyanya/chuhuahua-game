@@ -15,15 +15,21 @@ export const ACCEL = 0.2 // px/frame²
 // === 고양이 AI ===
 export const CAT_LERP_BASE = 0.04 // 추격 lerp 계수 (레벨 0, 난이도 강화: 0.032 → 0.040)
 export const CAT_LERP_PER_LEVEL = 0.008 // 레벨당 lerp 증가량 (난이도 강화: 0.006 → 0.008)
-export const CAT_FLEE_RANGE = 220 // px, 비둘기 회피 반경
-export const CAT_FLEE_LERP_MUL = 0.5 // 회피 시 lerp 배수
+// 비둘기 회피 — 레벨↑ 시 트리거 거리 / 도망 거리 / 회피 lerp 배수 모두 증가.
+// LV0: 220px / 90px / ×1.0 → LV10: 300px / 150px / ×1.5
+export const CAT_FLEE_TRIGGER_BASE = 220 // px, 회피 반경 base
+export const CAT_FLEE_TRIGGER_PER_LEVEL = 8 // px/level, 회피 반경 증가
+export const CAT_FLEE_LOOKAHEAD_BASE = 90 // px, 회피 도망 거리 base
+export const CAT_FLEE_LOOKAHEAD_PER_LEVEL = 6 // px/level, 도망 거리 증가
+export const CAT_FLEE_LERP_BASE = 1.0 // 회피 시 lerp 배수 base (느려지지 않음)
+export const CAT_FLEE_LERP_PER_LEVEL = 0.05 // 레벨당 회피 lerp 증가
 export const CAT_DASH_THRESHOLD = 80 // px, 츄와 거리 이내면 대시 트리거
 export const CAT_DASH_DIST = 130 // px, 대시 이동 거리
 export const CAT_DASH_COOLDOWN = 1200 // ms
 
 // === 비둘기 ===
 export const PIGEON_SPEED_BASE = 1.6 // px/frame
-export const PIGEON_SPEED_PER_LEVEL = 0.25
+export const PIGEON_SPEED_PER_LEVEL = 0.4 // 난이도 강화: 0.25 → 0.4 (LV10: 5.6)
 export const PIGEON_SPAWN_MIN = 2500 // ms, 최소 스폰 간격 (난이도 강화: 3500 → 2500)
 export const PIGEON_SPAWN_BASE = 13000 // ms, LV0 기준 스폰 간격
 export const PIGEON_SPAWN_PER_LEVEL = 2000 // ms, 레벨당 간격 단축량 (체감 ↑)
@@ -77,6 +83,9 @@ export const MAX_LEVEL = 10
 export const PVP_TIME_LIMIT = 60000 // ms
 export const PVP_KISS_GOAL = 10
 export const DEBUFF_LEVEL_MIN = 3 // 솔로 디버프 활성화 레벨
+
+// === 파티클 ===
+export const MAX_PARTICLES = 40 // 동시 최대 — 초과 시 오래된 것부터 splice (in-place)
 
 // === 토스트 / 히스토리 ===
 export const MAX_TOASTS = 3
