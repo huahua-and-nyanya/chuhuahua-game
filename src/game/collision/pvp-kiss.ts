@@ -1,4 +1,5 @@
 import {
+  CHI_SAD_DURATION,
   KISS_DEBOUNCE,
   KISS_DIST,
   KISS_DURATION,
@@ -49,7 +50,6 @@ export type PvpKissDeps = {
   onKiss?: () => void
 }
 
-const CHI_SAD_DURATION = 1500 // ms — reference CHI_SAD_DURATION 동일 (F-1: floatText까지만)
 const FLOAT_LIFETIME = 800 // ms — FloatText 일치 (solo.tsx FLOAT_DURATION)
 
 export function checkPvpKiss(deps: PvpKissDeps): void {
@@ -68,9 +68,10 @@ export function checkPvpKiss(deps: PvpKissDeps): void {
   refs.scoreMirror.lastKissAt = now
 
   // 고양이 쉴드 활성 시 — 쉴드 1회 소진. PvP에선 카운트 증가 X.
+  // 추가로 츄와와 sad 스프라이트 1.5초 전환 (reference 1781~1782 chiSadRef).
   if (refs.effects.catShield.until > now) {
     refs.effects.catShield = { until: 0 }
-    // chi sad: F-1은 floatText만 (sprite sad 전환은 F-2에서 chiSadRef 도입 시).
+    refs.effects.chiSad = { until: now + CHI_SAD_DURATION }
     refs.floatTexts.push({
       id: now + Math.random(),
       text: '쉴드!',
@@ -79,8 +80,6 @@ export function checkPvpKiss(deps: PvpKissDeps): void {
       color: 'var(--color-game-shield-blue)',
       until: now + FLOAT_LIFETIME,
     })
-    // chiSad lifetime 자리만 표시. F-1은 시각 상태 토글 X — 참조 보존.
-    void CHI_SAD_DURATION
     if (onShieldBlock) onShieldBlock()
     return
   }
