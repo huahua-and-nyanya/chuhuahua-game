@@ -1,6 +1,23 @@
 import { PIGEON_HIT_DIST, PIGEON_SCARE_DIST } from '@/game/constants'
 import type { GameRefs } from '@/game/loop/state'
 
+// 비둘기 차단 성공 시 충돌 지점에 흰 ring 충격파 push.
+// kiss.ts가 mwah/kissing을 직접 mutate하는 패턴과 동일 — 시각 효과는 콜백 우회.
+const SHOCKWAVE_DURATION = 300 // ms — CSS keyframe shockwave-expand 길이와 일치
+function pushShockwave(
+  refs: GameRefs,
+  now: number,
+  x: number,
+  y: number,
+): void {
+  refs.shockwaves.push({
+    id: now + Math.random(),
+    x,
+    y,
+    until: now + SHOCKWAVE_DURATION,
+  })
+}
+
 // reference 1831~1899 솔로 분기 + C-3.5 보강. 우선순위:
 //   1) chi 차단 (SCARE_DIST 60 내) → fleeing 전환 + 푸시 ×9 + onPigeonBlock(+1점).
 //   2) 쉴드 차단 (HIT_DIST 30 + catShield 활성) → fleeing 전환 + 푸시 ×11 + onShieldBlock(+1점).
@@ -44,6 +61,7 @@ export function checkPigeonHits(deps: PigeonHitDeps): void {
       p.vx = (dxc / len) * CHI_BLOCK_PUSH
       p.vy = (dyc / len) * CHI_BLOCK_PUSH - VERTICAL_LIFT
       p.state = 'fleeing'
+      pushShockwave(refs, now, p.x, p.y)
       onPigeonBlock()
       continue
     }
@@ -62,6 +80,7 @@ export function checkPigeonHits(deps: PigeonHitDeps): void {
       p.vx = nx * SHIELD_BLOCK_PUSH
       p.vy = ny * SHIELD_BLOCK_PUSH - VERTICAL_LIFT
       p.state = 'fleeing'
+      pushShockwave(refs, now, p.x, p.y)
       onShieldBlock()
       continue
     }
@@ -71,6 +90,7 @@ export function checkPigeonHits(deps: PigeonHitDeps): void {
       p.vx = nx * KISS_BLOCK_PUSH
       p.vy = ny * KISS_BLOCK_PUSH - VERTICAL_LIFT
       p.state = 'fleeing'
+      pushShockwave(refs, now, p.x, p.y)
       onShieldBlock()
       continue
     }

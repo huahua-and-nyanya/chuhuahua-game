@@ -6,6 +6,7 @@ import type {
   ItemRef,
   ParticleRef,
   PigeonRef,
+  ShockwaveRef,
   Vec2,
 } from '@/game/state'
 import { initBgHearts } from './factories'
@@ -65,6 +66,7 @@ export type GameRefs = {
   scoreMirror: ScoreMirror
   floatTexts: FloatTextRef[]
   particles: ParticleRef[]
+  shockwaves: ShockwaveRef[]
   bgHearts: BgHeart[]
   mwah: MwahFlag
   kissing: TransientFlag
@@ -88,6 +90,9 @@ export function expireTransients(refs: GameRefs, now: number): void {
   }
   if (refs.floatTexts.length > 0) {
     refs.floatTexts = refs.floatTexts.filter((f) => f.until > now)
+  }
+  if (refs.shockwaves.length > 0) {
+    refs.shockwaves = refs.shockwaves.filter((s) => s.until > now)
   }
   if (refs.items.length > 0) {
     refs.items = refs.items.filter((i) => i.expireAt > now)
@@ -123,6 +128,7 @@ export function createInitialState(): GameRefs {
     },
     floatTexts: [],
     particles: [],
+    shockwaves: [],
     bgHearts: initBgHearts(),
     mwah: { active: false, until: 0, x: 0, y: 0 },
     kissing: { active: false, until: 0 },

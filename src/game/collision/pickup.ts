@@ -7,7 +7,45 @@ import {
 } from '@/game/effects'
 import type { GameRefs } from '@/game/loop/state'
 import type { SoloSpawnKind } from '@/game/loop/spawn'
-import type { ItemKind } from '@/game/state'
+import { addParticles } from '@/game/particles'
+import type { ItemKind, ParticleRef } from '@/game/state'
+
+// 픽업 성공 시 작은 글로우 폭발 — 아이템 종류별 색상. 6개 방사형. 상쇄 시엔 안 발동.
+// 결정 옵션 3: cucumber=초록, sweetPotato=주황 (item 시각과 매칭).
+const PICKUP_COLORS: Record<ItemKind, string> = {
+  kibble: '#f59e0b',
+  fish: '#3b82f6',
+  cucumber: '#10b981',
+  sweetPotato: '#f59e0b',
+}
+
+function spawnPickupBurst(
+  refs: GameRefs,
+  now: number,
+  x: number,
+  y: number,
+  kind: ItemKind,
+): void {
+  const color = PICKUP_COLORS[kind]
+  const burst: ParticleRef[] = []
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2
+    const speed = 2 + Math.random() * 2
+    burst.push({
+      id: now + i + Math.random(),
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1,
+      vr: (Math.random() - 0.5) * 12,
+      rot: Math.random() * 360,
+      size: 10 + Math.random() * 4,
+      life: 16 + Math.random() * 6,
+      color,
+    })
+  }
+  addParticles(refs.particles, burst)
+}
 
 // reference 1901~2020 솔로 분기 이식. 솔로 단일 (chi만 픽업).
 // kibble/fish는 항상 등장, cucumber/sweetPotato는 LV3+ 활성 (spawn.ts).
@@ -42,6 +80,11 @@ export function checkPickups(deps: PickupDeps): void {
       applyCucumberEffect(refs, now)
     } else if (item.kind === 'sweetPotato') {
       cancelled = applySweetPotatoEffect(refs, now, 'chi')
+    }
+
+    // 상쇄 시엔 글로우 안 발동 — 효과 미적용을 시각적으로 구분.
+    if (!cancelled) {
+      spawnPickupBurst(refs, now, item.x, item.y, item.kind)
     }
 
     refs.items.splice(i, 1)

@@ -35,6 +35,7 @@ export function adjustTimersByPauseDuration(
   if (refs.flash.until > 0) refs.flash.until += pausedDuration
 
   for (const f of refs.floatTexts) f.until += pausedDuration
+  for (const s of refs.shockwaves) s.until += pausedDuration
   for (const i of refs.items) i.expireAt += pausedDuration
 
   if (refs.scoreMirror.lastKissAt > 0) {

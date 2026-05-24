@@ -52,6 +52,7 @@ import { LevelUpEffect } from '@/game/ui/LevelUpEffect'
 import { Mwah } from '@/game/ui/Mwah'
 import { Particles } from '@/game/ui/Particles'
 import { PauseModal } from '@/game/ui/PauseModal'
+import { Shockwaves } from '@/game/ui/Shockwaves'
 import { QuitConfirmModal } from '@/game/ui/QuitConfirmModal'
 import { SoloControlBar } from '@/game/ui/SoloControlBar'
 import { adjustTimersByPauseDuration } from '@/game/loop/pause'
@@ -89,10 +90,9 @@ function SoloPage() {
   // 게임오버 → 카드 shake + 빨간 flash가 ~500ms 동안 끝난 뒤 모달 등장.
   const [showGameOverModal, setShowGameOverModal] = useState(false)
   const [toasts, setToasts] = useState<ToastRef[]>([])
-  // 일시정지 관리: paused 진입 시각 + 그만두기 확인 진입 직전 상태(복귀용).
-  // confirmQuit 진입은 playing/paused 둘 다 가능 — 취소 시 원 상태로 복귀해야 함.
+  // 일시정지 관리: paused 진입 시각.
+  // 옵션 (a) 동선: confirmQuit 진입 시 paused 정산 → 더 놀래 = playing 직행 (paused 복귀 X).
   const pausedAtRef = useRef<number>(0)
-  const preQuitStateRef = useRef<'playing' | 'paused'>('playing')
 
   // 스케줄러 콜백이 stale state를 안 보게 ref 미러.
   const gameStateRef = useRef<GameState>(gameState)
@@ -154,7 +154,6 @@ function SoloPage() {
     setShowGameOverModal(false)
     setToasts([])
     pausedAtRef.current = 0
-    preQuitStateRef.current = 'playing'
     setGameState('playing')
   }, [])
 
@@ -193,36 +192,32 @@ function SoloPage() {
     })
   }, [])
 
-  // 그만두기 확인 모달 열기 — 게임 시간은 멈춤. 이전 상태(playing/paused) 기억해 취소 시 복귀.
-  // playing에서 진입 시 paused와 동일하게 pausedAt 기록 → 취소 복귀 시 동일한 보정 적용.
+  // 그만두기 확인 모달 열기 — 게임 시간은 멈춤. 더 놀래 시엔 항상 playing 직행 (옵션 a).
+  // paused에서 진입 시 그 시점까지의 pausedDuration을 timer에 즉시 보정한 뒤,
+  // confirmQuit 동안의 추가 freeze는 새 pausedAtRef로 측정 → 더 놀래 시 그 만큼 또 보정.
+  // (보정 사이클이 분리되지만 timer까지의 누적 paused time은 동일 — HUD jump 없음.)
   const openQuitConfirm = useCallback(() => {
     setGameState((prev) => {
-      if (prev === 'playing') {
-        if (pausedAtRef.current === 0) {
-          pausedAtRef.current = performance.now()
-        }
-        preQuitStateRef.current = 'playing'
-        return 'confirmQuit'
+      if (prev !== 'playing' && prev !== 'paused') return prev
+      if (prev === 'paused' && pausedAtRef.current > 0) {
+        const pausedDuration = performance.now() - pausedAtRef.current
+        adjustTimersByPauseDuration(refs.current, pausedDuration)
       }
-      if (prev === 'paused') {
-        preQuitStateRef.current = 'paused'
-        return 'confirmQuit'
-      }
-      return prev
+      pausedAtRef.current = performance.now()
+      return 'confirmQuit'
     })
   }, [])
 
-  // 그만두기 취소 — 이전 상태로 복귀. playing 복귀면 pausedDuration 보정.
+  // 그만두기 취소 — playing 직행 (paused 복귀 X). confirmQuit 동안 흐른 시간만큼 timer 보정.
   const cancelQuit = useCallback(() => {
     setGameState((prev) => {
       if (prev !== 'confirmQuit') return prev
-      const target = preQuitStateRef.current
-      if (target === 'playing' && pausedAtRef.current > 0) {
+      if (pausedAtRef.current > 0) {
         const pausedDuration = performance.now() - pausedAtRef.current
         adjustTimersByPauseDuration(refs.current, pausedDuration)
         pausedAtRef.current = 0
       }
-      return target
+      return 'playing'
     })
   }, [])
 
@@ -267,6 +262,11 @@ function SoloPage() {
         prevLastKissAt,
       })
       const newScore = refs.current.scoreMirror.score
+      const gained = newScore - oldScore
+      if (gained > 0) {
+        const chi = refs.current.chi
+        pushFloatText(`+${gained}`, chi.x, chi.y - 30, 'var(--color-pink-700)')
+      }
       rollComboReward({
         refs: refs.current,
         combo: refs.current.scoreMirror.combo,
@@ -281,27 +281,43 @@ function SoloPage() {
         onLevelUp,
       })
     },
-    [onLevelUp, showToast],
+    [onLevelUp, pushFloatText, showToast],
   )
 
+  // 픽업 시 Toast(우상단 stack) + FloatText(츄 위에 짧게 떠오름) 동시 발동.
+  // 상쇄(cancelled)면 글로우/부스트 효과 안 들어가니 토스트만 표시.
   const onPickup = useCallback(
     (kind: ItemKind, _by: 'chi', cancelled?: boolean) => {
-      // 상쇄: kibble을 chiSlow 중에 먹거나, sweetPotato를 chiBoost 중에 먹은 경우.
       if (cancelled) {
         showToast('상쇄!', 'var(--color-game-warn)')
         return
       }
+      const chi = refs.current.chi
+      let label = ''
+      let toastText = ''
+      let color = 'var(--color-game-warn)'
       if (kind === 'kibble') {
-        showToast('부스트!', 'var(--color-game-warn)')
+        label = '부스트!'
+        toastText = '부스트!'
       } else if (kind === 'fish') {
-        showToast('쉴드!', 'var(--color-game-shield-blue)')
+        label = '쉴드!'
+        toastText = '쉴드!'
+        color = 'var(--color-game-shield-blue)'
       } else if (kind === 'cucumber') {
-        showToast('고양이 빨라짐!', 'var(--color-danger)')
+        label = '오이!'
+        toastText = '고양이 빨라짐!'
+        color = 'var(--color-danger)'
       } else if (kind === 'sweetPotato') {
-        showToast('느려졌어요!', 'var(--color-danger)')
+        label = '무거움!'
+        toastText = '느려졌어요!'
+        color = 'var(--color-danger)'
+      }
+      showToast(toastText, color)
+      if (label) {
+        pushFloatText(label, chi.x, chi.y - 30, color)
       }
     },
-    [showToast],
+    [pushFloatText, showToast],
   )
 
   const onPigeonBlock = useCallback(() => {
@@ -607,6 +623,9 @@ function SoloPage() {
 
         {/* 하트 파티클 — z 8 (캐릭터 위, mwah/levelUp 아래) */}
         <Particles particles={r.particles} />
+
+        {/* 비둘기 차단 흰 ring 충격파 — z 7 (파티클/FloatText/Mwah 아래) */}
+        <Shockwaves items={r.shockwaves} />
 
         {/* 뽀뽀 "쪽!!" — z 10 */}
         <Mwah state={r.mwah} now={now} />

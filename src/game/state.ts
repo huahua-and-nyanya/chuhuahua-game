@@ -59,6 +59,14 @@ export type FloatTextRef = Vec2 & {
   until: number
 }
 
+// 비둘기 차단 시 (chi/shield/kiss) 발생하는 흰 ring 충격파.
+// 위치는 차단 지점(비둘기 좌표), 0.3s 동안 CSS keyframe shockwave-expand로 확장 + 페이드.
+// 만료 splice는 expireTransients에서.
+export type ShockwaveRef = Vec2 & {
+  id: number
+  until: number
+}
+
 // === 토스트 ===
 // 우측 상단 max 3개 스택. 라우트 state로 관리하지만 UI 컴포넌트와 같은 타입을 공유.
 export type ToastRef = {
