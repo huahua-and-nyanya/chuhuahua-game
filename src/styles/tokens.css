@@ -149,6 +149,7 @@
   --gap-md: 12px;
   --gap-lg: 16px;
   --gap-xl: 24px;
+  --gap-2xl: 32px;
 
   /* === 트랜지션 === */
   --transition-fast: 120ms ease-out;
