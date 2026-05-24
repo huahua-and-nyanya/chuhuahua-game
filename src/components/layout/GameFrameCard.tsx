@@ -14,6 +14,13 @@ const BASE_CLASSES =
   'bg-bg-card ' +
   'shadow-[inset_0_0_0_var(--frame-inset-width)_var(--color-border-frame-inset)]'
 
+// tokens.css `--frame-border-width` 와 동기화 필수.
+// border-box가 cardWidth인데 absolute 자식의 containing block은 padding-box —
+// 좌표계 640을 cardWidth로 스케일하면 우/하단으로 border 두께만큼 overflow돼 잘림.
+// → padding-box(= cardWidth - 2×border) 기준으로 스케일해서 HUD 우측 칩이
+//    카드 경계에 붙어 보이는 회귀 차단.
+const FRAME_BORDER_PX = 4
+
 export type GameFrameCardProps = {
   scale: number
   children: ReactNode
@@ -22,6 +29,7 @@ export type GameFrameCardProps = {
 export function GameFrameCard({ scale, children }: GameFrameCardProps) {
   const cardWidth = scale * GAME_WIDTH
   const cardHeight = scale * GAME_HEIGHT
+  const innerScale = (cardWidth - 2 * FRAME_BORDER_PX) / GAME_WIDTH
   return (
     <div
       className={BASE_CLASSES}
@@ -32,7 +40,7 @@ export function GameFrameCard({ scale, children }: GameFrameCardProps) {
         style={{
           width: GAME_WIDTH,
           height: GAME_HEIGHT,
-          transform: `scale(${scale})`,
+          transform: `scale(${innerScale})`,
           transformOrigin: 'top left',
         }}
       >
