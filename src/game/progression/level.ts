@@ -1,9 +1,39 @@
 import {
+  GAME_HEIGHT,
+  GAME_WIDTH,
   LEVEL_THRESHOLDS,
   LEVEL_UP_DURATION,
   MAX_LEVEL,
 } from '@/game/constants'
 import type { GameRefs } from '@/game/loop/state'
+import { addParticles } from '@/game/particles'
+import type { ParticleRef } from '@/game/state'
+
+// 레벨업 burst — 게임 중앙에서 18개 금하트 폭발. 골드+핑크 5색.
+const LEVEL_UP_COLORS = ['#fbbf24', '#ffaa00', '#fcd34d', '#ff3d7f', '#ffeb3b']
+
+function spawnLevelUpBurst(refs: GameRefs, now: number): void {
+  const cx = GAME_WIDTH / 2
+  const cy = GAME_HEIGHT / 2
+  const burst: ParticleRef[] = []
+  for (let i = 0; i < 18; i++) {
+    const angle = (i / 18) * Math.PI * 2
+    const speed = 6 + Math.random() * 5
+    burst.push({
+      id: now + i + Math.random(),
+      x: cx,
+      y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+      vr: (Math.random() - 0.5) * 18,
+      rot: Math.random() * 360,
+      size: 16 + Math.random() * 12,
+      life: 32 + Math.random() * 14,
+      color: LEVEL_UP_COLORS[i % LEVEL_UP_COLORS.length],
+    })
+  }
+  addParticles(refs.particles, burst)
+}
 
 // reference 1641 computeLevel + 1880~ 식 레벨업 트리거 패턴.
 // LEVEL_THRESHOLDS = [0, 10, 25, 45, 70, 100, 135, 175, 220, 270, 325] (길이 11, LV0~LV10).
@@ -38,6 +68,7 @@ export function checkLevelUp(params: CheckLevelUpParams): void {
     until: now + LEVEL_UP_DURATION,
     level: newLevel,
   }
+  spawnLevelUpBurst(refs, now)
   onLevelUp(newLevel)
 }
 

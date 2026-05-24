@@ -8,7 +8,34 @@ import {
   MWAH_DURATION,
 } from '@/game/constants'
 import type { GameRefs } from '@/game/loop/state'
+import { addParticles } from '@/game/particles'
 import { clamp } from '@/game/physics'
+import type { ParticleRef } from '@/game/state'
+
+// 뽀뽀 파티클 — 츄 머리 위에서 4~6개 하트 폭발. 핑크 4색.
+const KISS_COLORS = ['#ff3d7f', '#ff85a1', '#ffadc6', '#ff5577']
+
+function spawnKissParticles(refs: GameRefs, now: number): void {
+  const count = 4 + Math.floor(Math.random() * 3) // 4, 5, 6
+  const newOnes: ParticleRef[] = []
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.6
+    const speed = 3 + Math.random() * 3
+    newOnes.push({
+      id: now + i + Math.random(),
+      x: refs.chi.x,
+      y: refs.chi.y - 10,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.5,
+      vr: (Math.random() - 0.5) * 14,
+      rot: Math.random() * 360,
+      size: 12 + Math.random() * 8,
+      life: 24 + Math.random() * 10,
+      color: KISS_COLORS[i % KISS_COLORS.length],
+    })
+  }
+  addParticles(refs.particles, newOnes)
+}
 
 // 카드 안전 마진 — cat이 화면 벽 너무 가깝지 않게.
 const SCREEN_MARGIN = 60
@@ -63,6 +90,9 @@ export function checkKiss(deps: KissDeps): void {
   const cx = (chi.x + cat.x) / 2
   const cy = (chi.y + cat.y) / 2 - 16
   refs.mwah = { active: true, until: now + MWAH_DURATION, x: cx, y: cy - 12 }
+
+  // 하트 파티클 폭발 — 츄 머리 위에서 핑크 4색.
+  spawnKissParticles(refs, now)
 
   // 갱신 직전 값을 콜백에 넘긴 뒤 디바운스용 타임스탬프 즉시 갱신.
   const prevLastKissAt = refs.scoreMirror.lastKissAt

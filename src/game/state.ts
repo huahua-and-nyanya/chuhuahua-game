@@ -38,9 +38,13 @@ export type ItemRef = Vec2 & {
 }
 
 // === 파티클 / 부유 텍스트 ===
+// id는 React key용 unique number. rot/vr은 하트 회전 표현 — kiss/levelUp burst 사용.
 export type ParticleRef = Vec2 & {
+  id: number
   vx: number
   vy: number
+  vr: number // 회전 속도 (deg/frame)
+  rot: number // 현재 회전 (deg)
   life: number // 남은 프레임 수
   color: string
   size: number
