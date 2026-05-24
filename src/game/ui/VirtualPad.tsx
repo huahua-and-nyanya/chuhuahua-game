@@ -4,7 +4,8 @@ import type { Direction } from './virtual-types'
 
 // WASD 십자 패드 (모바일).
 // 시각: wasd-pad.png 1장이 십자 그래픽 전부 담당.
-// 사이즈: 부모 row의 flex-1 + aspect-square — viewport 따라 정사각 가변 사이즈.
+// 사이즈: flex-1 + aspect-square, 단 --virtual-pad-size 캡(좁은 viewport에서만 자람).
+//        캡 두는 이유 — 패드가 너무 크면 vh overhead로 게임 카드가 압박됨.
 // hit-test: 투명 버튼 4개를 동일 컨테이너 위(absolute)에 PNG 비율 그대로 유지.
 // onPress/onRelease는 부모(VirtualController)가 누적 state로 관리.
 
@@ -41,7 +42,7 @@ export type VirtualPadProps = {
 
 export function VirtualPad({ onPress, onRelease }: VirtualPadProps) {
   return (
-    <div className="relative aspect-square flex-1">
+    <div className="relative aspect-square w-full max-w-(--virtual-pad-size) flex-1">
       <img
         src={wasdPad}
         alt=""

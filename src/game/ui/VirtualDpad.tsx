@@ -4,7 +4,8 @@ import type { Direction } from './virtual-types'
 
 // 방향키 십자 D-pad (모바일).
 // 시각: dpad.png 1장이 십자 그래픽 + 화살표 전부 담당.
-// 사이즈: 부모 row의 flex-1 + aspect-square — viewport 따라 정사각 가변 사이즈.
+// 사이즈: flex-1 + aspect-square, 단 --virtual-pad-size 캡(좁은 viewport에서만 자람).
+//        캡 두는 이유 — 패드가 너무 크면 vh overhead로 게임 카드가 압박됨.
 // hit-test: 투명 버튼 4개를 동일 컨테이너 위(absolute)에 PNG 비율 그대로 유지.
 
 // PNG 자산은 100×100 기준 — 버튼 한 변 36px (= 36%). 사이드 anchored (top/bottom/left/right 0).
@@ -38,7 +39,7 @@ export type VirtualDpadProps = {
 
 export function VirtualDpad({ onPress, onRelease }: VirtualDpadProps) {
   return (
-    <div className="relative aspect-square flex-1">
+    <div className="relative aspect-square w-full max-w-(--virtual-pad-size) flex-1">
       <img
         src={dpad}
         alt=""
