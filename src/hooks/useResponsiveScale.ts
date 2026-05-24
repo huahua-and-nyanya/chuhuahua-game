@@ -30,8 +30,8 @@ const MOBILE_BREAKPOINT = 768
 const DSFRAME_HORIZONTAL_OVERHEAD = 24
 // DS 프레임 안 vertical 고정 overhead — pt-md 12 + pb-2xl 32 + gap-2xl 32 × 2 + 메뉴 row 36
 const DS_VERTICAL_FIXED_OVERHEAD = 12 + 32 + 32 * 2 + 36
-// VirtualController row 안 두 패드 사이 gap-sm
-const PAD_ROW_GAP = 8
+// VirtualController row 안 두 패드 사이 gap-xl
+const PAD_ROW_GAP = 24
 // VirtualController row 좌우 padding — px-md 12 × 2 = 24
 const PAD_ROW_HORIZONTAL_PADDING = 24
 // 가상 패드 한 변 max — tokens.css `--virtual-pad-size` 와 동기화 필수.
