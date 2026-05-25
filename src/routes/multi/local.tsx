@@ -475,6 +475,7 @@ function PvpSetupModal({
     <CenterModal
       open={open}
       onClose={onCancel}
+      title="둘이서 모드"
       closeOnBackdropClick={false}
       closeOnEscape={false}
     >
@@ -484,24 +485,13 @@ function PvpSetupModal({
           flexDirection: 'column',
           alignItems: 'center',
           textAlign: 'center',
+          gap: 'var(--gap-lg)',
         }}
       >
         <div
           style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 28,
-            color: 'var(--color-ink-base)',
-            marginBottom: 4,
-            textShadow: '3px 3px 0 var(--color-pink-300)',
-          }}
-        >
-          둘이서 모드
-        </div>
-        <div
-          style={{
-            fontSize: 12,
+            fontSize: 'var(--text-xs)',
             color: 'var(--color-ink-soft)',
-            marginBottom: 16,
           }}
         >
           각자 자기 키를 한 번 눌러 준비!
@@ -510,10 +500,9 @@ function PvpSetupModal({
         <div
           style={{
             display: 'flex',
-            gap: 14,
+            gap: 'var(--gap-sm)',
             justifyContent: 'center',
             width: '100%',
-            marginBottom: 16,
           }}
         >
           <PlayerReadyCard
@@ -535,7 +524,7 @@ function PvpSetupModal({
         <div
           style={{
             display: 'flex',
-            gap: 10,
+            gap: 'var(--gap-sm)',
             justifyContent: 'center',
           }}
         >
@@ -570,9 +559,9 @@ function PlayerReadyCard({
     <div
       style={{
         flex: '1 1 0',
-        minWidth: 180,
-        borderRadius: 14,
-        padding: '14px 12px 12px',
+        minWidth: 0,
+        borderRadius: 'var(--radius-md)',
+        padding: 'var(--gap-lg)',
         background: ready ? 'var(--color-pink-100)' : 'var(--color-bg-card)',
         border: ready
           ? '3px solid var(--color-pink-700)'
@@ -582,16 +571,19 @@ function PlayerReadyCard({
           : '4px 4px 0 var(--color-ink-base)',
         transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
         textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 'var(--gap-sm)',
       }}
     >
       <div
         style={{
           width: 96,
           height: 96,
-          margin: '0 auto 10px',
           background: 'var(--color-bg-card)',
           border: '2px solid var(--color-ink-soft)',
-          borderRadius: 10,
+          borderRadius: 'var(--radius-md)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -611,9 +603,8 @@ function PlayerReadyCard({
       </div>
       <div
         style={{
-          fontSize: 14,
+          fontSize: 'var(--text-sm)',
           color: 'var(--color-ink-base)',
-          marginBottom: 6,
         }}
       >
         {label}
@@ -621,8 +612,7 @@ function PlayerReadyCard({
       <PixelChip>{keysText}</PixelChip>
       <div
         style={{
-          marginTop: 8,
-          fontSize: 11,
+          fontSize: 'var(--text-xs)',
           color: ready ? 'var(--color-pink-700)' : 'var(--color-ink-soft)',
         }}
       >
