@@ -18,6 +18,29 @@ const PICKUP_COLORS: Record<ItemKind, string> = {
   sweetPotato: '#f59e0b',
 }
 
+// F-1.9: 쉴드 차단 / 디버프 해제 시 캐릭터 머리 위 floatText.
+// FloatText.tsx FLOAT_LIFETIME 800ms 일치, Y 오프셋 20px (effects.ts 패턴 동일).
+const SHIELD_FLOAT_LIFETIME = 800
+const SHIELD_FLOAT_Y_OFFSET = 20
+const SHIELD_FLOAT_COLOR = 'var(--color-game-shield-blue)'
+
+function pushShieldFloat(
+  refs: GameRefs,
+  now: number,
+  text: string,
+  x: number,
+  y: number,
+): void {
+  refs.floatTexts.push({
+    id: now + Math.random(),
+    text,
+    x,
+    y,
+    color: SHIELD_FLOAT_COLOR,
+    until: now + SHIELD_FLOAT_LIFETIME,
+  })
+}
+
 function spawnPickupBurst(
   refs: GameRefs,
   now: number,
@@ -96,7 +119,20 @@ export function checkPvpPickups(deps: PvpPickupDeps): void {
       cancelled = applyKibbleEffect(refs, now)
     } else if (item.kind === 'fish') {
       if (pickedBy === 'cat') {
-        applyCatShield(refs, now, SHIELD_DURATION)
+        // F-1.9 (reference 1511~1519): catSlow 활성 시 디버프 해제 (쉴드 미부여).
+        if (refs.effects.catSlow.until > now) {
+          refs.effects.catSlow = { until: 0 }
+          pushShieldFloat(
+            refs,
+            now,
+            '해제!',
+            refs.cat.x,
+            refs.cat.y - SHIELD_FLOAT_Y_OFFSET,
+          )
+          cancelled = true
+        } else {
+          applyCatShield(refs, now, SHIELD_DURATION)
+        }
       } else {
         applyChiShield(refs, now, SHIELD_DURATION)
       }
