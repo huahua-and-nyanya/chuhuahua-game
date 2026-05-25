@@ -102,9 +102,17 @@
   --color-bg-card: #ffffff;
   --color-border-card: var(--color-pink-300);
   --color-text-primary: var(--color-ink-base);
+  --color-text-muted: var(--color-ink-soft);
+  --color-text-accent: var(--color-pink-700);
 
   /* === PixelCard 그림자 === */
   --shadow-card: 3px 3px 0 var(--color-ink-base);
+
+  /* === 강조 카드 그림자 (rest / active — setup 모달 ready 분기 등) === */
+  --shadow-card-rest: 4px 4px 0 var(--color-ink-base);
+  --shadow-card-active:
+    0 0 0 4px color-mix(in srgb, var(--color-pink-700) 33%, transparent),
+    4px 4px 0 var(--color-pink-700);
 
   /* === NavButton (사이드 탭) 색상 === */
   --color-tab-default: var(--color-pink-600);

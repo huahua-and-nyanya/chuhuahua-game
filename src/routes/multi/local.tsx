@@ -447,8 +447,6 @@ interface PvpSetupModalProps {
   onStart: () => void
 }
 
-const READY_GLOW = 'color-mix(in srgb, var(--color-pink-700) 33%, transparent)'
-
 function PvpSetupModal({
   open,
   chiReady,
@@ -483,7 +481,7 @@ function PvpSetupModal({
           />
         </div>
         <div className="flex w-full flex-col gap-1 md:gap-2 lg:gap-3">
-          <div className="text-ink-soft text-xs">
+          <div className="text-text-muted text-xs">
             각자 자기 키를 한 번 눌러 준비!
           </div>
           <div className="gap-sm flex justify-center">
@@ -520,13 +518,10 @@ function PlayerReadyCard({
       className={clsx(
         'gap-sm p-lg flex min-w-0 flex-1 flex-col items-center rounded-md border-[3px] border-solid text-center',
         'transition-[background,border-color,box-shadow] duration-150',
-        ready ? 'border-pink-700 bg-pink-100' : 'border-ink-base bg-bg-card',
+        ready
+          ? 'shadow-card-active border-pink-700 bg-pink-100'
+          : 'border-ink-base bg-bg-card shadow-card-rest',
       )}
-      style={{
-        boxShadow: ready
-          ? `0 0 0 4px ${READY_GLOW}, 4px 4px 0 var(--color-pink-700)`
-          : '4px 4px 0 var(--color-ink-base)',
-      }}
     >
       <div className="border-ink-soft bg-bg-card flex h-24 w-24 shrink-0 items-center justify-center rounded-md border-2 border-solid">
         <img
@@ -535,10 +530,13 @@ function PlayerReadyCard({
           className="h-18 w-18 shrink-0 object-contain"
         />
       </div>
-      <div className="text-ink-base text-sm">{label}</div>
+      <div className="text-text-primary text-sm">{label}</div>
       <PixelChip>{keysText}</PixelChip>
       <div
-        className={clsx('text-xs', ready ? 'text-pink-700' : 'text-ink-soft')}
+        className={clsx(
+          'text-xs',
+          ready ? 'text-text-accent' : 'text-text-muted',
+        )}
       >
         {ready ? '✓ 준비 완료' : '대기 중...'}
       </div>
