@@ -488,15 +488,6 @@ function PvpSetupModal({
           gap: 'var(--gap-lg)',
         }}
       >
-        <div
-          style={{
-            fontSize: 'var(--text-xs)',
-            color: 'var(--color-ink-soft)',
-          }}
-        >
-          각자 자기 키를 한 번 눌러 준비!
-        </div>
-
         <div className="flex w-full justify-center gap-4 md:gap-5 lg:gap-6">
           <PlayerReadyCard
             ready={chiReady}
@@ -513,20 +504,29 @@ function PvpSetupModal({
             keysText="↑ ↓ ← →"
           />
         </div>
-
-        <div
-          style={{
-            display: 'flex',
-            gap: 'var(--gap-sm)',
-            justifyContent: 'center',
-          }}
-        >
-          <PixelButton variant="secondary" size="lg" onClick={onCancel}>
-            취소
-          </PixelButton>
-          <PixelButton size="lg" disabled={!bothReady} onClick={onStart}>
-            {bothReady ? '시작 💥 (Enter)' : '둘 다 준비 필요'}
-          </PixelButton>
+        <div className="flex w-full flex-col gap-1 md:gap-2 lg:gap-3">
+          <div
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--color-ink-soft)',
+            }}
+          >
+            각자 자기 키를 한 번 눌러 준비!
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              gap: 'var(--gap-sm)',
+              justifyContent: 'center',
+            }}
+          >
+            <PixelButton variant="secondary" size="lg" onClick={onCancel}>
+              취소
+            </PixelButton>
+            <PixelButton size="lg" disabled={!bothReady} onClick={onStart}>
+              {bothReady ? '시작 💥 (Enter)' : '둘 다 준비 필요'}
+            </PixelButton>
+          </div>
         </div>
       </div>
     </CenterModal>
