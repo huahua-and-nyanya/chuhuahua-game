@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import clsx from 'clsx'
 
 import { CHARACTER_ASSETS } from '@/assets'
 import { Cat } from '@/game/characters/Cat'
@@ -413,23 +414,8 @@ function LocalPvpPage() {
 
         {/* F-1 임시 — 게임오버 시 화면 중앙 텍스트로 승자 표시 (F-2에서 모달 교체). */}
         {gameState === 'gameover' && winner !== null && (
-          <div
-            className="pointer-events-none absolute inset-0 flex items-center justify-center"
-            style={{
-              background: 'rgba(45, 27, 61, 0.55)',
-            }}
-          >
-            <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'var(--text-2xl)',
-                color: 'var(--color-text-on-pink)',
-                background: 'var(--color-ink-base)',
-                padding: 'var(--gap-lg) var(--gap-xl)',
-                borderRadius: 'var(--radius-md)',
-                boxShadow: 'var(--shadow-card)',
-              }}
-            >
+          <div className="bg-bg-modal-backdrop pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="font-display text-text-on-pink bg-ink-base px-xl py-lg shadow-card rounded-md text-2xl">
               {winner === 'chi' ? '츄와와 승!' : '고양이 승!'}
             </div>
           </div>
@@ -479,15 +465,7 @@ function PvpSetupModal({
       closeOnBackdropClick={false}
       closeOnEscape={false}
     >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          gap: 'var(--gap-lg)',
-        }}
-      >
+      <div className="gap-lg flex flex-col items-center text-center">
         <div className="flex w-full justify-center gap-4 md:gap-5 lg:gap-6">
           <PlayerReadyCard
             ready={chiReady}
@@ -505,21 +483,10 @@ function PvpSetupModal({
           />
         </div>
         <div className="flex w-full flex-col gap-1 md:gap-2 lg:gap-3">
-          <div
-            style={{
-              fontSize: 'var(--text-xs)',
-              color: 'var(--color-ink-soft)',
-            }}
-          >
+          <div className="text-ink-soft text-xs">
             각자 자기 키를 한 번 눌러 준비!
           </div>
-          <div
-            style={{
-              display: 'flex',
-              gap: 'var(--gap-sm)',
-              justifyContent: 'center',
-            }}
-          >
+          <div className="gap-sm flex justify-center">
             <PixelButton variant="secondary" size="lg" onClick={onCancel}>
               취소
             </PixelButton>
@@ -550,64 +517,28 @@ function PlayerReadyCard({
 }: PlayerReadyCardProps) {
   return (
     <div
+      className={clsx(
+        'gap-sm p-lg flex min-w-0 flex-1 flex-col items-center rounded-md border-[3px] border-solid text-center',
+        'transition-[background,border-color,box-shadow] duration-150',
+        ready ? 'border-pink-700 bg-pink-100' : 'border-ink-base bg-bg-card',
+      )}
       style={{
-        flex: '1 1 0',
-        minWidth: 0,
-        borderRadius: 'var(--radius-md)',
-        padding: 'var(--gap-lg)',
-        background: ready ? 'var(--color-pink-100)' : 'var(--color-bg-card)',
-        border: ready
-          ? '3px solid var(--color-pink-700)'
-          : '3px solid var(--color-ink-base)',
         boxShadow: ready
           ? `0 0 0 4px ${READY_GLOW}, 4px 4px 0 var(--color-pink-700)`
           : '4px 4px 0 var(--color-ink-base)',
-        transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
-        textAlign: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 'var(--gap-sm)',
       }}
     >
-      <div
-        style={{
-          width: 96,
-          height: 96,
-          background: 'var(--color-bg-card)',
-          border: '2px solid var(--color-ink-soft)',
-          borderRadius: 'var(--radius-md)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
+      <div className="border-ink-soft bg-bg-card flex h-24 w-24 shrink-0 items-center justify-center rounded-md border-2 border-solid">
         <img
           src={imageSrc}
           alt={imageAlt}
-          style={{
-            width: 72,
-            height: 72,
-            objectFit: 'contain',
-            flexShrink: 0,
-          }}
+          className="h-18 w-18 shrink-0 object-contain"
         />
       </div>
-      <div
-        style={{
-          fontSize: 'var(--text-sm)',
-          color: 'var(--color-ink-base)',
-        }}
-      >
-        {label}
-      </div>
+      <div className="text-ink-base text-sm">{label}</div>
       <PixelChip>{keysText}</PixelChip>
       <div
-        style={{
-          fontSize: 'var(--text-xs)',
-          color: ready ? 'var(--color-pink-700)' : 'var(--color-ink-soft)',
-        }}
+        className={clsx('text-xs', ready ? 'text-pink-700' : 'text-ink-soft')}
       >
         {ready ? '✓ 준비 완료' : '대기 중...'}
       </div>

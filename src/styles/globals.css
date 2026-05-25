@@ -57,6 +57,8 @@
   --text-sm: 14px;
   --text-md: 16px;
   --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
 
   /* === 스페이싱 — PixelButton 사이즈 (h-*, w-*, p-*, m-* 자동 생성) === */
   --spacing-button-sm: 32px;
