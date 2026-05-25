@@ -15,39 +15,42 @@ interface CatProps {
   equippedSrc?: string
 }
 
-// 우선순위: kissing > shielded > slowed > angry > scared > equippedSrc > default
+// 우선순위 (F-1.8 휘게 결정): kissing > angry > slowed > shielded > scared > equippedSrc > default
+// reference 원본은 kissing > shielded > slowed > angry > scared 순이었으나, 분노/슬로우 매커니즘 활성 시
+// 시각도 매커니즘 우선이 맞다는 결정으로 angry/slowed를 shielded 위로 이동.
 function pickSrc(props: CatProps): string {
   if (props.kissing) return CHARACTER_ASSETS.catKissing
-  if (props.shielded) return CHARACTER_ASSETS.catShield
-  if (props.slowed) return CHARACTER_ASSETS.catSlow
   if (props.angry) return CHARACTER_ASSETS.catAngry
+  if (props.slowed) return CHARACTER_ASSETS.catSlow
+  if (props.shielded) return CHARACTER_ASSETS.catShield
   if (props.scared) return CHARACTER_ASSETS.catScared
   if (props.equippedSrc) return props.equippedSrc
   return CHARACTER_ASSETS.cat
 }
 
-// 효과별 통일 비율: 약(kissing) ×1.05 / 강(shielded, slowed, angry) ×1.10
+// 효과별 통일 비율: 약(kissing) ×1.05 / 강(angry, slowed, shielded) ×1.10
+// F-1.8: pickSrc 우선순위와 동일 순서로 size 분기 재배치. 강효과 3종은 같은 SIZE_STRONG이라 결과 동일.
 const SIZE_BASE = 120
 const SIZE_SOFT = 126
 const SIZE_STRONG = 132
 
 function pickSize(props: CatProps): number {
   if (props.kissing) return SIZE_SOFT
-  if (props.shielded || props.slowed || props.angry) return SIZE_STRONG
+  if (props.angry || props.slowed || props.shielded) return SIZE_STRONG
   return SIZE_BASE
 }
 
 function pickFilter(props: CatProps): string {
   if (props.kissing)
     return 'brightness(1.15) drop-shadow(0 0 8px rgba(255, 61, 127, 0.9))'
-  if (props.shielded)
-    return 'brightness(1.05) drop-shadow(0 0 8px rgba(93, 173, 226, 0.9))'
-  if (props.slowed)
-    return 'drop-shadow(0 0 8px rgba(160, 90, 58, 0.85)) drop-shadow(2px 2px 0 rgba(0,0,0,0.15))'
-  if (props.boosted)
-    return 'brightness(1.1) drop-shadow(0 0 10px rgba(255, 140, 0, 0.9))'
   if (props.angry)
     return 'brightness(1.05) drop-shadow(0 0 8px rgba(120, 200, 50, 0.85))'
+  if (props.slowed)
+    return 'drop-shadow(0 0 8px rgba(160, 90, 58, 0.85)) drop-shadow(2px 2px 0 rgba(0,0,0,0.15))'
+  if (props.shielded)
+    return 'brightness(1.05) drop-shadow(0 0 8px rgba(93, 173, 226, 0.9))'
+  if (props.boosted)
+    return 'brightness(1.1) drop-shadow(0 0 10px rgba(255, 140, 0, 0.9))'
   if (props.scared) return 'drop-shadow(0 0 6px rgba(255, 50, 50, 0.6))'
   return 'drop-shadow(2px 2px 0 rgba(0,0,0,0.15))'
 }
