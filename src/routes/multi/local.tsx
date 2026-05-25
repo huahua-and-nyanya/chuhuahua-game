@@ -200,6 +200,8 @@ function LocalPvpPage() {
 
   const chiKissing = r.kissing.active && r.kissing.until > now
   const chiSlowed = effects.chiSlow.until > now
+  const chiBoosted = effects.chiBoost.until > now
+  const chiMega = chiBoosted && Boolean(effects.chiBoost.mega)
   // sad는 키스 중엔 미발동 (Chihuahua 컴포넌트 우선순위: kissing > sad > slowed > equipped > default).
   // 조건 단순화는 컴포넌트 내부에서 수행되므로 여기선 활성 여부만 계산.
   const chiSad = effects.chiSad.until > now
@@ -271,7 +273,13 @@ function LocalPvpPage() {
               animation: chiKissing ? 'kiss-shake 400ms ease-out' : undefined,
             }}
           >
-            <Chihuahua kissing={chiKissing} sad={chiSad} slowed={chiSlowed} />
+            <Chihuahua
+              kissing={chiKissing}
+              sad={chiSad}
+              slowed={chiSlowed}
+              boosted={chiBoosted}
+              mega={chiMega}
+            />
           </div>
         </div>
         {chiShielded && (
