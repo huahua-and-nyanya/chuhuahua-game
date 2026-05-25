@@ -88,6 +88,15 @@ export function applyCatShield(
   refs.effects.catShield = { until: now + duration }
 }
 
+// PvP에서 chi가 fish 픽업 시 부여 — sweetPotato 디버프 1회 차단 (소진).
+export function applyChiShield(
+  refs: GameRefs,
+  now: number,
+  duration: number,
+): void {
+  refs.effects.chiShield = { until: now + duration }
+}
+
 // === 아이템 픽업별 효과 ===
 // solo 단일 분기. PvP picker 분기는 사이클 F에서 추가.
 // 반환값: true = 기존 반대 효과와 상쇄됨(새 효과 부여 X), false = 새 효과 부여.

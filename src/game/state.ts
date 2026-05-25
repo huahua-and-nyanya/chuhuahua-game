@@ -123,11 +123,12 @@ export interface ScoreMultEffect {
 
 // 게임 루프가 보유하는 전역 효과 트래커 (effects.ts가 mutate)
 // chiSad는 PvP에서 catShield 막힘 시 1.5초간 sad 스프라이트 전환 (솔로엔 활성화 X).
-// chiShield는 F-2 이후 분기 추가 예정.
+// chiShield는 PvP에서 chi가 fish 픽업 시 5초간 부여 — sweetPotato 디버프 1회 차단 (솔로엔 활성화 X).
 export interface EffectState {
   chiBoost: TimedEffect
   chiSlow: TimedEffect
   chiSad: TimedEffect
+  chiShield: TimedEffect
   catSpeedup: TimedEffect
   catSlow: TimedEffect
   catShield: TimedEffect

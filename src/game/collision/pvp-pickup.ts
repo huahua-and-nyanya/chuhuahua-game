@@ -1,6 +1,7 @@
 import { ITEM_PICKUP_DIST, SHIELD_DURATION } from '@/game/constants'
 import {
   applyCatShield,
+  applyChiShield,
   applyCucumberEffect,
   applyKibbleEffect,
   applySweetPotatoEffect,
@@ -54,8 +55,9 @@ function spawnPickupBurst(
 //   kibble       → applyKibbleEffect (chi)
 //   cucumber     → applyCucumberEffect (catSpeedup 부여 → cat 빨라짐, 츄 입장에선 디버프)
 //   fish (cat)   → applyCatShield (catShield 5초)
-//   fish (chi)   → F-1: 효과 없음 (chiShield는 EffectState에 미존재 — F-2에서 추가 예정)
+//   fish (chi)   → applyChiShield (chiShield 5초, reference 1521~1529)
 //   sweetPotato  → applySweetPotatoEffect(picker) — 픽업 측 슬로우 부여 (부스트와 상쇄)
+//                  단, picker='chi'면 chiShield 활성 시 슬로우 차단 + 쉴드 1회 소진 (reference 1992~2014)
 //
 // scheduleRespawn: pvp-spawn.schedulePvpItemRespawn — 픽업 후 1회 재스폰 예약.
 // onPickup: 토스트/플로트 텍스트는 라우트에서 처리.
@@ -95,12 +97,20 @@ export function checkPvpPickups(deps: PvpPickupDeps): void {
     } else if (item.kind === 'fish') {
       if (pickedBy === 'cat') {
         applyCatShield(refs, now, SHIELD_DURATION)
+      } else {
+        applyChiShield(refs, now, SHIELD_DURATION)
       }
-      // pickedBy === 'chi'인 fish는 F-1에서 효과 미부여 (chiShield F-2에서 도입).
     } else if (item.kind === 'cucumber') {
       cancelled = applyCucumberEffect(refs, now)
     } else if (item.kind === 'sweetPotato') {
-      cancelled = applySweetPotatoEffect(refs, now, pickedBy)
+      // chi가 chiShield 활성 중이면 디버프 1회 차단 (쉴드 소진).
+      // reference 1992~2014: shieldBlocks 체크 → 슬로우 미부여.
+      if (pickedBy === 'chi' && refs.effects.chiShield.until > now) {
+        refs.effects.chiShield = { until: 0 }
+        cancelled = true
+      } else {
+        cancelled = applySweetPotatoEffect(refs, now, pickedBy)
+      }
     }
 
     if (!cancelled) {

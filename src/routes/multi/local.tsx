@@ -203,6 +203,8 @@ function LocalPvpPage() {
   // sad는 키스 중엔 미발동 (Chihuahua 컴포넌트 우선순위: kissing > sad > slowed > equipped > default).
   // 조건 단순화는 컴포넌트 내부에서 수행되므로 여기선 활성 여부만 계산.
   const chiSad = effects.chiSad.until > now
+  // chi 쉴드 — fish 픽업 시 5초간 부여. sweetPotato 디버프 1회 차단 (소진).
+  const chiShielded = effects.chiShield.until > now
   const catKissing = chiKissing
   const catShielded = effects.catShield.until > now
   const catAngry = effects.catSpeedup.until > now
@@ -272,6 +274,14 @@ function LocalPvpPage() {
             <Chihuahua kissing={chiKissing} sad={chiSad} slowed={chiSlowed} />
           </div>
         </div>
+        {chiShielded && (
+          <div
+            className="pointer-events-none absolute"
+            style={{ left: chi.x, top: chi.y, width: 0, height: 0 }}
+          >
+            <ShieldBubble owner="chi" />
+          </div>
+        )}
 
         {/* 고양이 */}
         <div

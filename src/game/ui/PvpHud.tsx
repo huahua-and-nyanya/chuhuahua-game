@@ -34,6 +34,7 @@ export function PvpHud(props: PvpHudProps) {
   const isDanger = remainingMs <= TIME_DANGER_MS
 
   const shieldRemaining = effects.catShield.until - now
+  const chiShieldRemaining = effects.chiShield.until - now
 
   return (
     <div className="pointer-events-none absolute inset-0">
@@ -68,27 +69,36 @@ export function PvpHud(props: PvpHudProps) {
         </div>
       </div>
 
-      {/* 우상단 — catShield 게이지 (활성 시만). 솔로 HUD와 동일 위치/포맷. */}
-      {shieldRemaining > 0 && (
+      {/* 우상단 — 쉴드 게이지 stack. catShield/chiShield 각각 활성 시 표시. */}
+      {(shieldRemaining > 0 || chiShieldRemaining > 0) && (
         <div className="top-md right-md gap-xs absolute flex flex-col items-end">
-          <div className="bg-bg-card border-ink-base gap-xs rounded-pill px-sm py-xs flex items-center border-2">
-            <IconShield
-              size={16}
-              stroke={2.5}
-              style={{ color: 'var(--color-game-shield-blue)' }}
-            />
-            <div className="rounded-pill h-1 w-9 overflow-hidden bg-pink-50">
-              <div
-                className="rounded-pill h-full transition-[width] duration-150 ease-linear"
-                style={{
-                  width: `${Math.max(0, Math.min(1, shieldRemaining / SHIELD_DURATION)) * 100}%`,
-                  background: 'var(--color-game-shield-blue)',
-                }}
-              />
-            </div>
-          </div>
+          {chiShieldRemaining > 0 && (
+            <ShieldGauge remaining={chiShieldRemaining} />
+          )}
+          {shieldRemaining > 0 && <ShieldGauge remaining={shieldRemaining} />}
         </div>
       )}
+    </div>
+  )
+}
+
+function ShieldGauge({ remaining }: { remaining: number }) {
+  return (
+    <div className="bg-bg-card border-ink-base gap-xs rounded-pill px-sm py-xs flex items-center border-2">
+      <IconShield
+        size={16}
+        stroke={2.5}
+        style={{ color: 'var(--color-game-shield-blue)' }}
+      />
+      <div className="rounded-pill h-1 w-9 overflow-hidden bg-pink-50">
+        <div
+          className="rounded-pill h-full transition-[width] duration-150 ease-linear"
+          style={{
+            width: `${Math.max(0, Math.min(1, remaining / SHIELD_DURATION)) * 100}%`,
+            background: 'var(--color-game-shield-blue)',
+          }}
+        />
+      </div>
     </div>
   )
 }
