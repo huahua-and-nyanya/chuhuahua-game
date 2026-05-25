@@ -134,7 +134,21 @@ export function checkPvpPickups(deps: PvpPickupDeps): void {
           applyCatShield(refs, now, SHIELD_DURATION)
         }
       } else {
-        applyChiShield(refs, now, SHIELD_DURATION)
+        // F-1.10 (reference 1521~1529): chiSlow 활성 시 디버프 해제 (쉴드 미부여).
+        // cat 분기 (F-1.9)와 완전 대칭.
+        if (refs.effects.chiSlow.until > now) {
+          refs.effects.chiSlow = { until: 0 }
+          pushShieldFloat(
+            refs,
+            now,
+            '해제!',
+            refs.chi.x,
+            refs.chi.y - SHIELD_FLOAT_Y_OFFSET,
+          )
+          cancelled = true
+        } else {
+          applyChiShield(refs, now, SHIELD_DURATION)
+        }
       }
     } else if (item.kind === 'cucumber') {
       cancelled = applyCucumberEffect(refs, now)
