@@ -139,10 +139,21 @@ export function checkPvpPickups(deps: PvpPickupDeps): void {
     } else if (item.kind === 'cucumber') {
       cancelled = applyCucumberEffect(refs, now)
     } else if (item.kind === 'sweetPotato') {
-      // chi가 chiShield 활성 중이면 디버프 1회 차단 (쉴드 소진).
+      // 픽업 측 쉴드 활성 시 디버프 1회 차단 (쉴드 소진).
       // reference 1992~2014: shieldBlocks 체크 → 슬로우 미부여.
+      // chi 측은 F-1.8 그대로 (floatText 없음). cat 측은 F-1.9에서 "막음!" floatText 추가.
       if (pickedBy === 'chi' && refs.effects.chiShield.until > now) {
         refs.effects.chiShield = { until: 0 }
+        cancelled = true
+      } else if (pickedBy === 'cat' && refs.effects.catShield.until > now) {
+        refs.effects.catShield = { until: 0 }
+        pushShieldFloat(
+          refs,
+          now,
+          '막음!',
+          refs.cat.x,
+          refs.cat.y - SHIELD_FLOAT_Y_OFFSET,
+        )
         cancelled = true
       } else {
         cancelled = applySweetPotatoEffect(refs, now, pickedBy)
