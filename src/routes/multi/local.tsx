@@ -88,6 +88,17 @@ function LocalPvpPage() {
     gameStateRef.current = gameState
   }, [gameState])
 
+  // pvpSetup 30초간 상호작용 없으면 자동으로 메인 복귀.
+  // chiPlayerReady/catPlayerReady가 dependency라 ready 토글 시 effect 재실행 → 타이머 리셋.
+  // gameStateRef 가드는 setTimeout 발화 시점에 setup 이탈 여부 재확인 (race 방지).
+  useEffect(() => {
+    if (gameState !== 'pvpSetup') return
+    const timer = window.setTimeout(() => {
+      if (gameStateRef.current === 'pvpSetup') navigate({ to: '/' })
+    }, 30000)
+    return () => window.clearTimeout(timer)
+  }, [gameState, chiPlayerReady, catPlayerReady, navigate])
+
   const triggerPvpGameOver = useCallback((w: PvpWinner) => {
     setWinner(w)
     setGameState('gameover')
