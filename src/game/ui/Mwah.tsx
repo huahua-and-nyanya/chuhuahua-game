@@ -13,18 +13,14 @@ export function Mwah({ state, now }: MwahProps) {
   return (
     <div
       key={state.until}
-      className="font-display pointer-events-none absolute"
+      className="font-display animate-mwah-pop pointer-events-none absolute z-10 font-bold whitespace-nowrap"
       style={{
         left: state.x,
         top: state.y,
-        zIndex: 10,
         fontSize: 40,
-        fontWeight: 700,
         color: 'var(--color-bg-card)',
         textShadow:
           '4px 4px 0 var(--color-pink-700), -1px -1px 0 var(--color-ink-base), 1px -1px 0 var(--color-ink-base), -1px 1px 0 var(--color-ink-base), 1px 1px 0 var(--color-ink-base)',
-        whiteSpace: 'nowrap',
-        animation: 'mwah-pop 0.7s ease-out forwards',
       }}
     >
       쪽!!

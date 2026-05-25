@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import clsx from 'clsx'
 
 import { Cat } from '@/game/characters/Cat'
 import { Chihuahua } from '@/game/characters/Chihuahua'
@@ -527,15 +528,13 @@ function SoloPage() {
   return (
     <>
       <div
-        className="absolute inset-0 overflow-hidden"
+        className={clsx(
+          'absolute inset-0 overflow-hidden',
+          gameState === 'gameover' && 'animate-game-stage-shake',
+        )}
         style={{
           background: `url(${bgUrl}) center / cover no-repeat`,
           transition: 'background 0.6s ease',
-          // 게임오버 진입 시 game-stage 전체 흔들림 (500ms 1회). flash 오버레이는 내부에 별도 렌더.
-          animation:
-            gameState === 'gameover'
-              ? 'game-stage-shake 500ms ease-out'
-              : undefined,
         }}
       >
         {/* 배경 부유 하트 (zIndex 1, 캐릭터/아이템/HUD 아래) */}
@@ -550,19 +549,18 @@ function SoloPage() {
           return (
             <div
               key={item.id}
-              className="absolute flex items-center justify-center"
+              className={clsx(
+                'absolute flex items-center justify-center',
+                isExpiringSoon
+                  ? 'animate-item-expire drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]'
+                  : 'animate-item-bob',
+              )}
               style={{
                 left: item.x,
                 top: item.y,
                 width: CHARACTER_BOX,
                 height: CHARACTER_BOX,
                 transform: 'translate(-50%, -50%)',
-                animation: isExpiringSoon
-                  ? 'item-expire 0.5s ease-in-out infinite'
-                  : 'item-bob 1.4s ease-in-out infinite',
-                filter: isExpiringSoon
-                  ? 'drop-shadow(0 0 8px rgba(255,255,255,0.8))'
-                  : undefined,
               }}
             >
               {item.kind === 'kibble' && <Kibble />}
@@ -588,9 +586,7 @@ function SoloPage() {
         >
           <div
             key={`chi-shake-${r.kissing.until}`}
-            style={{
-              animation: chiKissing ? 'kiss-shake 400ms ease-out' : undefined,
-            }}
+            className={clsx(chiKissing && 'animate-kiss-shake')}
           >
             <Chihuahua
               kissing={chiKissing}
@@ -616,9 +612,7 @@ function SoloPage() {
               key=kissing.until → 매 kiss마다 inner remount → animation 재시작. */}
           <div
             key={`cat-bounce-${r.kissing.until}`}
-            style={{
-              animation: catKissing ? 'kiss-bounce 500ms ease-out' : undefined,
-            }}
+            className={clsx(catKissing && 'animate-kiss-bounce')}
           >
             <Cat
               kissing={catKissing}
@@ -642,29 +636,10 @@ function SoloPage() {
         {r.warnings.map((w) => (
           <div
             key={w.id}
-            className="pointer-events-none absolute"
-            style={{
-              left: w.x,
-              top: w.y,
-              zIndex: 7,
-              animation: 'warn-pulse 0.35s ease-in-out infinite',
-            }}
+            className="animate-warn-pulse pointer-events-none absolute z-7"
+            style={{ left: w.x, top: w.y }}
           >
-            <div
-              style={{
-                background: 'var(--color-danger)',
-                color: '#ffffff',
-                border: '3px solid var(--color-ink-base)',
-                borderRadius: 8,
-                padding: '4px 10px',
-                fontFamily: 'var(--font-display)',
-                fontSize: 18,
-                lineHeight: 1,
-                boxShadow: '3px 3px 0 var(--color-ink-base)',
-                whiteSpace: 'nowrap',
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
+            <div className="bg-danger border-ink-base font-display text-text-on-pink shadow-card -translate-x-1/2 -translate-y-1/2 rounded-lg border-[3px] border-solid px-2.5 py-1 text-lg leading-none whitespace-nowrap">
               ! 비둘기 !
             </div>
           </div>
@@ -711,13 +686,7 @@ function SoloPage() {
 
         {/* 게임오버 빨간 플래시 — 카드 전체 위에 1회 페이드. 모달보다 아래(모달은 portal/z-100). */}
         {gameState === 'gameover' && (
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background: 'rgba(255, 51, 68, 0.5)',
-              animation: 'game-stage-flash 500ms ease-out forwards',
-            }}
-          />
+          <div className="animate-game-stage-flash pointer-events-none absolute inset-0 bg-[rgba(255,51,68,0.5)]" />
         )}
       </div>
 

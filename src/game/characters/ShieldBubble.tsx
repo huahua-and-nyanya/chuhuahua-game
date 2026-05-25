@@ -20,27 +20,17 @@ export function ShieldBubble({ owner }: ShieldBubbleProps): JSX.Element {
   return (
     <div
       aria-label={`${owner} shield`}
-      style={{
-        position: 'absolute',
-        left: '50%',
-        top: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 4,
-        pointerEvents: 'none',
-        lineHeight: 0,
-      }}
+      className="pointer-events-none absolute top-1/2 left-1/2 z-4 -translate-x-1/2 -translate-y-1/2 leading-none"
     >
       <div
+        className="animate-shield-pulse rounded-full border-[3px] border-solid border-[rgba(93,173,226,0.85)]"
         style={{
           width: size,
           height: size,
-          borderRadius: '50%',
           background:
             'radial-gradient(circle, rgba(93, 173, 226, 0.15) 0%, rgba(93, 173, 226, 0.4) 70%, rgba(93, 173, 226, 0.15) 100%)',
-          border: '3px solid rgba(93, 173, 226, 0.85)',
           boxShadow:
             '0 0 25px rgba(93, 173, 226, 0.7), inset 0 0 15px rgba(255, 255, 255, 0.4)',
-          animation: 'shield-pulse 0.8s ease-in-out infinite',
         }}
       />
     </div>

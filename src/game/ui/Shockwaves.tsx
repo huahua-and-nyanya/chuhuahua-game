@@ -15,16 +15,8 @@ export function Shockwaves({ items }: ShockwavesProps) {
       {items.map((s) => (
         <div
           key={s.id}
-          className="pointer-events-none absolute rounded-full"
-          style={{
-            left: s.x,
-            top: s.y,
-            width: 8,
-            height: 8,
-            border: '2px solid rgba(255, 255, 255, 0.85)',
-            animation: 'shockwave-expand 0.3s ease-out forwards',
-            zIndex: 7,
-          }}
+          className="animate-shockwave-expand pointer-events-none absolute z-7 h-2 w-2 rounded-full border-2 border-solid border-[rgba(255,255,255,0.85)]"
+          style={{ left: s.x, top: s.y }}
         />
       ))}
     </>

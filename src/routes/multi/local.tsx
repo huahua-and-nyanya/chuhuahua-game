@@ -302,19 +302,18 @@ function LocalPvpPage() {
           return (
             <div
               key={item.id}
-              className="absolute flex items-center justify-center"
+              className={clsx(
+                'absolute flex items-center justify-center',
+                isExpiringSoon
+                  ? 'animate-item-expire drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]'
+                  : 'animate-item-bob',
+              )}
               style={{
                 left: item.x,
                 top: item.y,
                 width: CHARACTER_BOX,
                 height: CHARACTER_BOX,
                 transform: 'translate(-50%, -50%)',
-                animation: isExpiringSoon
-                  ? 'item-expire 0.5s ease-in-out infinite'
-                  : 'item-bob 1.4s ease-in-out infinite',
-                filter: isExpiringSoon
-                  ? 'drop-shadow(0 0 8px rgba(255,255,255,0.8))'
-                  : undefined,
               }}
             >
               {item.kind === 'kibble' && <Kibble />}
@@ -338,9 +337,7 @@ function LocalPvpPage() {
         >
           <div
             key={`chi-shake-${r.kissing.until}`}
-            style={{
-              animation: chiKissing ? 'kiss-shake 400ms ease-out' : undefined,
-            }}
+            className={clsx(chiKissing && 'animate-kiss-shake')}
           >
             <Chihuahua
               kissing={chiKissing}
@@ -373,9 +370,7 @@ function LocalPvpPage() {
         >
           <div
             key={`cat-bounce-${r.kissing.until}`}
-            style={{
-              animation: catKissing ? 'kiss-bounce 500ms ease-out' : undefined,
-            }}
+            className={clsx(catKissing && 'animate-kiss-bounce')}
           >
             <Cat
               kissing={catKissing}

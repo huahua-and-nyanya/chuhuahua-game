@@ -72,10 +72,7 @@ export function GameOverModal(props: GameOverModalProps) {
     >
       <div className="flex flex-col">
         {/* GAME OVER 큰 텍스트 + 부제 — 등장 시 흔들림 */}
-        <div
-          className="mb-5.5 text-center"
-          style={{ animation: 'gameover-shake 600ms ease-out' }}
-        >
+        <div className="animate-gameover-shake mb-5.5 text-center">
           <h2
             className="font-display text-3xl leading-none tracking-wider"
             style={{ color: COLOR_PRIMARY }}

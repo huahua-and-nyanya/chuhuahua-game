@@ -17,33 +17,24 @@ export function LevelUpEffect({ state, now }: LevelUpEffectProps) {
   return (
     <div
       key={state.until}
-      className="pointer-events-none absolute inset-0"
-      style={{ zIndex: 18 }}
+      className="pointer-events-none absolute inset-0 z-18"
     >
       <div
-        className="absolute"
+        className="animate-level-up-rays absolute top-1/2 left-1/2"
         style={{
           width: 600,
           height: 600,
-          left: '50%',
-          top: '50%',
           background:
             'conic-gradient(from 0deg, transparent 0deg, rgba(251, 191, 36, 0.4) 30deg, transparent 60deg, rgba(255, 61, 127, 0.3) 90deg, transparent 120deg, rgba(251, 191, 36, 0.4) 150deg, transparent 180deg, rgba(255, 61, 127, 0.3) 210deg, transparent 240deg, rgba(251, 191, 36, 0.4) 270deg, transparent 300deg, rgba(255, 61, 127, 0.3) 330deg, transparent 360deg)',
-          animation: 'level-up-rays 1.8s ease-out forwards',
         }}
       />
       <div
-        className="font-display absolute"
+        className="font-display animate-level-up-burst absolute top-1/2 left-1/2 font-bold whitespace-nowrap"
         style={{
-          left: '50%',
-          top: '50%',
           fontSize: 64,
-          fontWeight: 700,
           color: 'var(--color-game-accent-gold)',
           textShadow:
             '5px 5px 0 var(--color-ink-base), -2px -2px 0 var(--color-ink-base), 2px -2px 0 var(--color-ink-base), -2px 2px 0 var(--color-ink-base), 2px 2px 0 var(--color-ink-base)',
-          animation: 'level-up-burst 1.8s ease-out forwards',
-          whiteSpace: 'nowrap',
         }}
       >
         LEVEL {state.level}
