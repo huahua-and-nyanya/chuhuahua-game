@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
+import { CHARACTER_ASSETS } from '@/assets'
 import { Cat } from '@/game/characters/Cat'
 import { Chihuahua } from '@/game/characters/Chihuahua'
 import { ShieldBubble } from '@/game/characters/ShieldBubble'
@@ -36,6 +37,10 @@ import { Particles } from '@/game/ui/Particles'
 import { PvpHud } from '@/game/ui/PvpHud'
 import { updateParticles } from '@/game/particles'
 
+import { CenterModal } from '@/ui/CenterModal'
+import { PixelButton } from '@/ui/PixelButton'
+import { PixelChip } from '@/ui/PixelChip'
+
 import '@/game/keyframes.css'
 
 export const Route = createFileRoute('/multi/local')({
@@ -47,7 +52,7 @@ const ITEM_EXPIRE_WARN_MS = 2000
 const FLOAT_DURATION = 800 // FloatText 일치
 const GAME_OVER_TO_MAIN_MS = 3000 // F-1 임시 — F-2에서 모달로 대체
 
-type PvpGameState = 'playing' | 'gameover'
+type PvpGameState = 'pvpSetup' | 'playing' | 'gameover'
 type PvpWinner = 'chi' | 'cat'
 
 function LocalPvpPage() {
@@ -57,10 +62,24 @@ function LocalPvpPage() {
   const refs = useRef<GameRefs>(createInitialState())
   const gameModeRef = useRef<'solo' | 'pvp'>('pvp')
 
-  const [gameState, setGameState] = useState<PvpGameState>('playing')
+  // Setup 모달부터 시작 — 양쪽 ready 후 startPvpGame()으로 'playing' 전환.
+  const [gameState, setGameState] = useState<PvpGameState>('pvpSetup')
   const [winner, setWinner] = useState<PvpWinner | null>(null)
   // 배경은 진입 시 1회 픽 — 게임 중 변경 없음.
   const [bgUrl] = useState<string>(() => getRandomBackground())
+
+  // ready state — 각자 자기 키 한 번 눌러 준비.
+  // keydown 핸들러는 closure라 state 직접 읽으면 stale → ref 동기화 필수.
+  const [chiPlayerReady, setChiPlayerReady] = useState(false)
+  const [catPlayerReady, setCatPlayerReady] = useState(false)
+  const chiPlayerReadyRef = useRef(false)
+  const catPlayerReadyRef = useRef(false)
+  useEffect(() => {
+    chiPlayerReadyRef.current = chiPlayerReady
+  }, [chiPlayerReady])
+  useEffect(() => {
+    catPlayerReadyRef.current = catPlayerReady
+  }, [catPlayerReady])
 
   // 30fps 렌더 미러용 — pvp time/count는 매 프레임 갱신해도 표시는 useGameLoop의 forceRender에 묶임.
   const gameStateRef = useRef<PvpGameState>(gameState)
@@ -71,6 +90,22 @@ function LocalPvpPage() {
   const triggerPvpGameOver = useCallback((w: PvpWinner) => {
     setWinner(w)
     setGameState('gameover')
+  }, [])
+
+  // Setup 취소 — PvP는 별도 라우트라 메인 복귀로 매핑.
+  const cancelPvpSetup = useCallback(() => {
+    navigate({ to: '/' })
+  }, [navigate])
+
+  // PvP 시작 — startedAt/kissCount 재설정 + ready 플래그 리셋 + 'playing' 전환.
+  // 마운트 effect의 startedAt은 setup 동안에도 채워두지만, 시작 시점에 덮어써서 타이머가 0부터 흐름.
+  const startPvpGame = useCallback(() => {
+    const r = refs.current
+    r.pvp.startedAt = performance.now()
+    r.pvp.kissCount = 0
+    setChiPlayerReady(false)
+    setCatPlayerReady(false)
+    setGameState('playing')
   }, [])
 
   // 마운트 1회 — pvp 게임 시작 타임스탬프 + chi/cat ref init.
@@ -92,7 +127,40 @@ function LocalPvpPage() {
   // ── 입력 ───────────────────────────────────────────────────────────
   const isPlaying = useCallback(() => gameStateRef.current === 'playing', [])
   // chi-input은 키 상태만 keysRef에 채움. PvP에선 chi는 WASD, cat은 화살표를 같은 ref에서 읽음.
+  // pvpSetup 동안은 enabled=false라 게임 입력으로 흐르지 않음.
   useChiInput({ refs: refs.current, enabled: isPlaying })
+
+  // pvpSetup 전용 ready 키 핸들러 — WASD = chi ready, 화살표 = cat ready, Enter = 둘 다 ready면 시작.
+  // input/textarea 포커스 중엔 무시 (다른 모달 텍스트 입력과의 충돌 회피).
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (gameStateRef.current !== 'pvpSetup') return
+      const target = e.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
+      ) {
+        return
+      }
+      const k = e.key.toLowerCase()
+      if (['w', 'a', 's', 'd'].includes(k)) {
+        e.preventDefault()
+        setChiPlayerReady(true)
+      } else if (
+        ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)
+      ) {
+        e.preventDefault()
+        setCatPlayerReady(true)
+      } else if (k === 'enter') {
+        e.preventDefault()
+        if (chiPlayerReadyRef.current && catPlayerReadyRef.current) {
+          startPvpGame()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [startPvpGame])
 
   // 픽업 처리 후 짧은 FloatText 표시 (디버깅/검증용 — F-2에서 토스트로 정식 분기).
   const pushFloatText = useCallback(
@@ -367,6 +435,199 @@ function LocalPvpPage() {
           </div>
         )}
       </div>
+
+      {/* Setup 모달 — pvpSetup 동안 표시. backdrop이 게임 영역을 가림. */}
+      <PvpSetupModal
+        open={gameState === 'pvpSetup'}
+        chiReady={chiPlayerReady}
+        catReady={catPlayerReady}
+        onCancel={cancelPvpSetup}
+        onStart={startPvpGame}
+      />
     </>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Setup 모달 — "둘이서 모드" 시작 전 각자 자기 키를 한 번 눌러 준비.
+// 좌/우 카드 ready 강조는 카드 외곽 스타일(배경/테두리/그림자)만으로 표현.
+// 색상은 전부 토큰 변수 사용 (하드코딩 hex 금지).
+// ─────────────────────────────────────────────────────────────────────
+interface PvpSetupModalProps {
+  open: boolean
+  chiReady: boolean
+  catReady: boolean
+  onCancel: () => void
+  onStart: () => void
+}
+
+const READY_GLOW = 'color-mix(in srgb, var(--color-pink-700) 33%, transparent)'
+
+function PvpSetupModal({
+  open,
+  chiReady,
+  catReady,
+  onCancel,
+  onStart,
+}: PvpSetupModalProps) {
+  const bothReady = chiReady && catReady
+  return (
+    <CenterModal
+      open={open}
+      onClose={onCancel}
+      closeOnBackdropClick={false}
+      closeOnEscape={false}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 28,
+            color: 'var(--color-ink-base)',
+            marginBottom: 4,
+            textShadow: '3px 3px 0 var(--color-pink-300)',
+          }}
+        >
+          둘이서 모드
+        </div>
+        <div
+          style={{
+            fontSize: 12,
+            color: 'var(--color-ink-soft)',
+            marginBottom: 16,
+          }}
+        >
+          각자 자기 키를 한 번 눌러 준비!
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: 14,
+            justifyContent: 'center',
+            width: '100%',
+            marginBottom: 16,
+          }}
+        >
+          <PlayerReadyCard
+            ready={chiReady}
+            label="츄와와"
+            imageSrc={CHARACTER_ASSETS.chihuahua}
+            imageAlt="츄와와"
+            keysText="W A S D"
+          />
+          <PlayerReadyCard
+            ready={catReady}
+            label="고양이"
+            imageSrc={CHARACTER_ASSETS.cat}
+            imageAlt="고양이"
+            keysText="↑ ↓ ← →"
+          />
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: 10,
+            justifyContent: 'center',
+          }}
+        >
+          <PixelButton variant="secondary" size="lg" onClick={onCancel}>
+            취소
+          </PixelButton>
+          <PixelButton size="lg" disabled={!bothReady} onClick={onStart}>
+            {bothReady ? '시작 💥 (Enter)' : '둘 다 준비 필요'}
+          </PixelButton>
+        </div>
+      </div>
+    </CenterModal>
+  )
+}
+
+interface PlayerReadyCardProps {
+  ready: boolean
+  label: string
+  imageSrc: string
+  imageAlt: string
+  keysText: string
+}
+
+function PlayerReadyCard({
+  ready,
+  label,
+  imageSrc,
+  imageAlt,
+  keysText,
+}: PlayerReadyCardProps) {
+  return (
+    <div
+      style={{
+        flex: '1 1 0',
+        minWidth: 180,
+        borderRadius: 14,
+        padding: '14px 12px 12px',
+        background: ready ? 'var(--color-pink-100)' : 'var(--color-bg-card)',
+        border: ready
+          ? '3px solid var(--color-pink-700)'
+          : '3px solid var(--color-ink-base)',
+        boxShadow: ready
+          ? `0 0 0 4px ${READY_GLOW}, 4px 4px 0 var(--color-pink-700)`
+          : '4px 4px 0 var(--color-ink-base)',
+        transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
+        textAlign: 'center',
+      }}
+    >
+      <div
+        style={{
+          width: 96,
+          height: 96,
+          margin: '0 auto 10px',
+          background: 'var(--color-bg-card)',
+          border: '2px solid var(--color-ink-soft)',
+          borderRadius: 10,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <img
+          src={imageSrc}
+          alt={imageAlt}
+          style={{
+            width: 72,
+            height: 72,
+            objectFit: 'contain',
+            flexShrink: 0,
+          }}
+        />
+      </div>
+      <div
+        style={{
+          fontSize: 14,
+          color: 'var(--color-ink-base)',
+          marginBottom: 6,
+        }}
+      >
+        {label}
+      </div>
+      <PixelChip>{keysText}</PixelChip>
+      <div
+        style={{
+          marginTop: 8,
+          fontSize: 11,
+          color: ready ? 'var(--color-pink-700)' : 'var(--color-ink-soft)',
+        }}
+      >
+        {ready ? '✓ 준비 완료' : '대기 중...'}
+      </div>
+    </div>
   )
 }
