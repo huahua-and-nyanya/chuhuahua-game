@@ -639,7 +639,7 @@ function SoloPage() {
           >
             <div
               style={{
-                background: '#ff2222',
+                background: 'var(--color-danger)',
                 color: '#ffffff',
                 border: '3px solid var(--color-ink-base)',
                 borderRadius: 8,
