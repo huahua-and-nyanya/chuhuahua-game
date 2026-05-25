@@ -7,8 +7,13 @@ import { clamp } from '@/game/physics'
 
 // reference 739: keysRef.current = {} 패턴 그대로.
 // 모듈 스코프 단일 인스턴스 — 사이클 C 제약(동시 게임 1개)과 일관.
-// PvP에서 chi/cat 키 분리는 사이클 F 책임.
+// PvP에서 chi는 WASD 전용, cat은 화살표 전용 (applyChiPhysics / cat-input.ts에서 분기).
 const keysRef = { current: {} as Record<string, boolean> }
+
+// cat-input.ts 등 같은 입력 소스를 쓰는 모듈에서 키 상태를 조회하기 위한 readonly 헬퍼.
+export function isKeyDown(key: string): boolean {
+  return Boolean(keysRef.current[key])
+}
 
 // 마진 — slow 활성 시 큰 캐릭터 크기 대응 (reference 1633: slow ? 65 : 50).
 const CHI_MARGIN_NORMAL = 50
@@ -102,25 +107,29 @@ export function useChiInput(deps: ChiInputDeps): void {
 // reference 1599~1636 정확 이식. dt 인자는 호환용으로만 받고 본문에선 미사용
 // (RAF 60fps 가정으로 위치 += vx 그대로 더한다). getLevel도 호환용 (옷 효과 사이클 W).
 // 가상 컨트롤러 입력은 setVirtualInput으로 module-level virtualInputRef에 누적된 값을 매 프레임 OR로 읽음.
+//
+// getMode: 'pvp' 반환 시 화살표 키 무시 (reference 1602~1606). 미지정 시 'solo' 기본.
 export function applyChiPhysics(
   refs: GameRefs,
   now: number,
   dt: number,
   getLevel: () => number,
+  getMode?: () => 'solo' | 'pvp',
 ): void {
   void dt
   void getLevel
   const k = keysRef.current
   const v = virtualInputRef.current
   const chi = refs.chi
+  const isPvp = getMode ? getMode() === 'pvp' : false
 
-  // 솔로 = WASD + 방향키 + 가상 컨트롤러 OR. PvP에선 chi가 WASD 전용이지만 사이클 F 책임.
+  // 솔로 = WASD + 방향키 + 가상 컨트롤러 OR. PvP에선 chi가 WASD 전용 (화살표는 cat 전담).
   let tvx = 0
   let tvy = 0
-  if (k['a'] || k['arrowleft'] || v.left) tvx -= 1
-  if (k['d'] || k['arrowright'] || v.right) tvx += 1
-  if (k['w'] || k['arrowup'] || v.up) tvy -= 1
-  if (k['s'] || k['arrowdown'] || v.down) tvy += 1
+  if (k['a'] || (!isPvp && k['arrowleft']) || v.left) tvx -= 1
+  if (k['d'] || (!isPvp && k['arrowright']) || v.right) tvx += 1
+  if (k['w'] || (!isPvp && k['arrowup']) || v.up) tvy -= 1
+  if (k['s'] || (!isPvp && k['arrowdown']) || v.down) tvy += 1
 
   // facing — 좌우 입력만 기준 (수직 입력은 방향 안 바꿈).
   if (tvx > FACING_DEADZONE) chi.facing = 'right'

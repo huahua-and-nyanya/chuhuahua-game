@@ -158,7 +158,7 @@ export function GameOverModal(props: GameOverModalProps) {
                   {nickname.trim()}
                 </span>
                 <span
-                  className="font-body inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-xs font-medium"
+                  className="font-body inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-2 text-xs font-medium"
                   style={{ color: COLOR_PRIMARY }}
                 >
                   <span aria-hidden>✓</span>

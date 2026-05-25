@@ -25,6 +25,16 @@ export type PigeonRef = Vec2 & {
   state: PigeonState
 }
 
+// === 비둘기 등장 경고 마커 (솔로 전용) ===
+// 비둘기 실제 스폰 1300ms 전 등장 위치(가장자리 안쪽)에 깜빡이는 빨간 칩으로 표시.
+// PvP에선 비둘기 자체가 안 나오므로 본 배열은 항상 비어 있다.
+export type PigeonEdge = 'top' | 'bottom' | 'left' | 'right'
+
+export type PigeonWarningRef = Vec2 & {
+  id: string
+  edge: PigeonEdge
+}
+
 // === 아이템 ===
 // 솔로/PvP 모두 동일 타입, 모드별 효과 분기는 사용 측 책임.
 // id는 React key용 unique string. expireAt 만료 처리는 expireTransients(C-5')에서.
@@ -112,10 +122,13 @@ export interface ScoreMultEffect {
 }
 
 // 게임 루프가 보유하는 전역 효과 트래커 (effects.ts가 mutate)
-// chiShield는 PvP F에서 분기 추가. 솔로 단일 동작에 필요한 6개만 유지.
+// chiSad는 PvP에서 catShield 막힘 시 1.5초간 sad 스프라이트 전환 (솔로엔 활성화 X).
+// chiShield는 PvP에서 chi가 fish 픽업 시 5초간 부여 — sweetPotato 디버프 1회 차단 (솔로엔 활성화 X).
 export interface EffectState {
   chiBoost: TimedEffect
   chiSlow: TimedEffect
+  chiSad: TimedEffect
+  chiShield: TimedEffect
   catSpeedup: TimedEffect
   catSlow: TimedEffect
   catShield: TimedEffect

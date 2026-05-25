@@ -77,7 +77,7 @@ export function checkPickups(deps: PickupDeps): void {
     } else if (item.kind === 'fish') {
       applyFishEffect(refs, now, 'chi')
     } else if (item.kind === 'cucumber') {
-      applyCucumberEffect(refs, now)
+      cancelled = applyCucumberEffect(refs, now)
     } else if (item.kind === 'sweetPotato') {
       cancelled = applySweetPotatoEffect(refs, now, 'chi')
     }

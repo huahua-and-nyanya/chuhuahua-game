@@ -30,9 +30,17 @@ export const CAT_DASH_COOLDOWN = 1200 // ms
 // === 비둘기 ===
 export const PIGEON_SPEED_BASE = 1.6 // px/frame
 export const PIGEON_SPEED_PER_LEVEL = 0.4 // 난이도 강화: 0.25 → 0.4 (LV10: 5.6)
-export const PIGEON_SPAWN_MIN = 2500 // ms, 최소 스폰 간격 (난이도 강화: 3500 → 2500)
-export const PIGEON_SPAWN_BASE = 13000 // ms, LV0 기준 스폰 간격
-export const PIGEON_SPAWN_PER_LEVEL = 2000 // ms, 레벨당 간격 단축량 (체감 ↑)
+// F-1.8: wave 시스템 도입 — 단일 스폰(PIGEON_SPAWN_*) 대신 spawnPigeonWave가 cadence 관리.
+// 기존 단일 스폰 상수는 레퍼런스로만 보관 (다른 모듈에서 import 안 함).
+export const PIGEON_SPAWN_MIN = 2500 // ms, [legacy] 단일 스폰 최소 간격
+export const PIGEON_SPAWN_BASE = 13000 // ms, [legacy] LV0 기준 단일 스폰 간격
+export const PIGEON_SPAWN_PER_LEVEL = 2000 // ms, [legacy] 레벨당 간격 단축량
+// wave 시스템 cadence — reference line 1147~1149.
+export const PIGEON_WAVE_BASE_DELAY = 13000 // ms, LV0 wave 사이 base 간격
+export const PIGEON_WAVE_DELAY_PER_LEVEL = 1200 // ms, 레벨당 단축
+export const PIGEON_WAVE_MIN_DELAY = 5000 // ms, 최소 wave 간격
+export const PIGEON_WAVE_DELAY_JITTER = 1800 // ms, base에 더해지는 랜덤 jitter 상한
+export const PIGEON_WAVE_MEMBER_SPACING = 600 // ms, 같은 wave 안 비둘기 간 간격
 export const PIGEON_SCARE_DIST = 60 // px, 츄와의 접근 시 도망 거리
 export const PIGEON_HIT_DIST = 30 // px, 피격 판정 거리
 
@@ -51,16 +59,24 @@ export const DEBUFF_RESPAWN_MIN = 18000 // ms
 export const DEBUFF_RESPAWN_MAX = 30000 // ms
 
 // === 아이템 (PvP — 빈도 상향) ===
-export const PVP_KIBBLE_FIRST_DELAY = 1500 // ms
+// reference 113~125 — solo와 별도 상수. 첫 등장은 빠르고 재스폰은 짧다.
+export const PVP_KIBBLE_FIRST_DELAY = 1000 // ms
 export const PVP_FISH_FIRST_DELAY = 2500 // ms
-export const PVP_DEBUFF_FIRST_DELAY = 2500 // ms
-export const PVP_DEBUFF_FIRST_STAGGER = 4000 // ms
-export const PVP_ITEM_RESPAWN_MIN = 2500 // ms
-export const PVP_ITEM_RESPAWN_MAX = 5000 // ms
-export const PVP_DEBUFF_RESPAWN_MIN = 4000 // ms
-export const PVP_DEBUFF_RESPAWN_MAX = 7000 // ms
+export const PVP_DEBUFF_FIRST_DELAY = 5000 // ms, cucumber 첫 등장
+export const PVP_DEBUFF_FIRST_STAGGER = 4000 // ms, cucumber 후 sweetPotato 첫 등장 추가 딜레이
+export const PVP_ITEM_RESPAWN_MIN = 2500 // ms, 일반(fish) 재스폰 하한
+export const PVP_ITEM_RESPAWN_MAX = 5000 // ms, 일반(fish) 재스폰 상한
+export const PVP_DEBUFF_RESPAWN_MIN = 4000 // ms, sweetPotato 재스폰 하한
+export const PVP_DEBUFF_RESPAWN_MAX = 7000 // ms, sweetPotato 재스폰 상한
+// 츄 유리 — kibble은 더 자주.
+export const PVP_KIBBLE_RESPAWN_MIN = 1500 // ms
+export const PVP_KIBBLE_RESPAWN_MAX = 3000 // ms
+// 츄 불리 — cucumber는 덜 자주.
+export const PVP_CUCUMBER_RESPAWN_MIN = 6500 // ms
+export const PVP_CUCUMBER_RESPAWN_MAX = 10000 // ms
 
 // === 효과 지속시간 ===
+export const CHI_SAD_DURATION = 1500 // ms, PvP 쉴드 막힘 시 츄 sad 스프라이트 전환 지속
 export const BOOST_DURATION = 5000 // ms, 츄 부스트
 export const BOOST_MUL = 1.55
 export const MEGA_DURATION = 3000 // ms, 메가 부스트
@@ -80,8 +96,9 @@ export const LEVEL_THRESHOLDS = [
 export const MAX_LEVEL = 10
 
 // === PvP 게임 규칙 ===
-export const PVP_TIME_LIMIT = 60000 // ms
+export const PVP_TIME_LIMIT = 30000 // ms — 츄와와에게 주어진 시간
 export const PVP_KISS_GOAL = 10
+export const PVP_HISTORY_MAX = 50 // F-2 이후 PvP 히스토리 최대 보관 수 (정의만 — 사용 X)
 export const DEBUFF_LEVEL_MIN = 3 // 솔로 디버프 활성화 레벨
 
 // === 파티클 ===

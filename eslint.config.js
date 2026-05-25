@@ -32,7 +32,7 @@ export default defineConfig([
     // 게임 라우트: refs.current를 render에서 직접 읽고 useReducer forceRender(30fps)로
     // 동기화하는 패턴이 의도된 설계 (CLAUDE.md "React 게임 패턴" 1차 자료).
     // performance.now()도 게임 타임라인 기준값으로 빈번하게 호출됨.
-    files: ['src/routes/solo.tsx'],
+    files: ['src/routes/solo.tsx', 'src/routes/multi/local.tsx'],
     rules: {
       'react-hooks/refs': 'off',
       'react-hooks/purity': 'off',
