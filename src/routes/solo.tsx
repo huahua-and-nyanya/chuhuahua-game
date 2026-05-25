@@ -510,6 +510,8 @@ function SoloPage() {
   const catKissing = chiKissing // 같은 플래그 공유 (둘이 같이 뽀뽀 중)
   const catShielded = effects.catShield.until > now
   const catAngry = effects.catSpeedup.until > now // 오이 디버프 (cucumber)
+  // reference 2657 — 비둘기 등장 중(flying)이면 cat scared 스프라이트. 솔로 전용.
+  const catScared = r.pigeons.some((p) => p.state === 'flying')
 
   const chiFacing = chi.facing === 'right' ? -1 : 1
   const catFacing = cat.facing === 'right' ? -1 : 1
@@ -612,7 +614,12 @@ function SoloPage() {
               animation: catKissing ? 'kiss-bounce 500ms ease-out' : undefined,
             }}
           >
-            <Cat kissing={catKissing} shielded={catShielded} angry={catAngry} />
+            <Cat
+              kissing={catKissing}
+              shielded={catShielded}
+              angry={catAngry}
+              scared={catScared}
+            />
           </div>
         </div>
         {catShielded && (
