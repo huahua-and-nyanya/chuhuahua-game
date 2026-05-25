@@ -497,14 +497,7 @@ function PvpSetupModal({
           각자 자기 키를 한 번 눌러 준비!
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: 'var(--gap-sm)',
-            justifyContent: 'center',
-            width: '100%',
-          }}
-        >
+        <div className="flex w-full justify-center gap-4 md:gap-5 lg:gap-6">
           <PlayerReadyCard
             ready={chiReady}
             label="츄와와"
