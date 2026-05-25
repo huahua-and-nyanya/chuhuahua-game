@@ -404,11 +404,16 @@ function SoloPage() {
       getLevel: () => refs.current.scoreMirror.level,
       getNow: () => performance.now(),
       // 2단계 스폰 — 먼저 경고 마커를 push, PIGEON_WARN_DURATION 후 마커 제거 + 비둘기 실제 스폰.
+      // edge는 wave 시스템(spawn.ts)이 셔플해 전달. forcedEdge 없으면 spawnPigeonWarning이 랜덤 선택.
       // stopSpawnScheduler가 호출되면 trackedTimeout이 일괄 정리되어 마커 제거 콜백도 취소되므로,
       // 스폰 스케줄러는 stop 시 잔여 warnings를 함께 비운다(spawn.ts).
-      spawnPigeon: () => {
+      spawnPigeon: (edge) => {
         const now = performance.now()
-        const { wid, spawnX, spawnY } = spawnPigeonWarning(refs.current, now)
+        const { wid, spawnX, spawnY } = spawnPigeonWarning(
+          refs.current,
+          now,
+          edge,
+        )
         trackedTimeout(() => {
           removeWarning(refs.current, wid)
           commitPigeonAt(refs.current, spawnX, spawnY, performance.now())
@@ -416,6 +421,7 @@ function SoloPage() {
       },
       spawnItem: (kind: SoloSpawnKind) =>
         spawnItem(refs.current, kind, performance.now()),
+      showToast,
     })
 
     scheduleCatTarget({
@@ -428,7 +434,7 @@ function SoloPage() {
       stopSpawnScheduler()
       stopCatTargetScheduler()
     }
-  }, [gameState, isPlaying])
+  }, [gameState, isPlaying, showToast])
 
   // ── 메인 게임 루프 ─────────────────────────────────────────────────
   useGameLoop({

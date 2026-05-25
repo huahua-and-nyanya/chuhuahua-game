@@ -74,8 +74,9 @@ export type PigeonWarningSpawn = {
 export function spawnPigeonWarning(
   refs: GameRefs,
   now: number,
+  forcedEdge?: PigeonEdge,
 ): PigeonWarningSpawn {
-  const edge = EDGES[Math.floor(Math.random() * EDGES.length)]
+  const edge = forcedEdge ?? EDGES[Math.floor(Math.random() * EDGES.length)]
   let warnX: number
   let warnY: number
   let spawnX: number
