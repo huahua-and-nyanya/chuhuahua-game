@@ -611,28 +611,34 @@ function PvpGameOverModal({
           alt={imageAlt}
           className="h-[130px] w-auto shrink-0 object-contain"
         />
-        <div className="gap-xs flex flex-col items-center">
+        <div className="gap-sm flex flex-col items-center">
           <div
             className={clsx(
-              'animate-gameover-shake font-display text-4xl',
+              'animate-gameover-shake font-display text-4xl leading-none',
               isChi ? 'text-text-accent' : 'text-text-primary',
             )}
             style={{ textShadow: '3px 3px 0 var(--color-ink-base)' }}
           >
             {headerText}
           </div>
-          <div className="text-text-muted text-[13px]">{subText}</div>
+          <div className="text-text-muted text-[13px] leading-none">
+            {subText}
+          </div>
         </div>
 
-        <div className="gap-md flex w-full justify-center border-y-2 border-dashed border-pink-300 py-4 md:gap-5 lg:gap-6">
-          <div className="gap-xs flex flex-col items-center">
-            <div className="text-text-muted text-[11px]">걸린 시간</div>
+        <div className="flex w-full justify-around border-y-2 border-dashed border-pink-300 py-5">
+          <div className="gap-sm flex flex-col items-center">
+            <div className="text-text-muted text-[11px] leading-none">
+              걸린 시간
+            </div>
             <div className="text-text-accent text-[26px] leading-none">
               {(elapsed / 1000).toFixed(1)}초
             </div>
           </div>
-          <div className="gap-xs flex flex-col items-center">
-            <div className="text-text-muted text-[11px]">뽀뽀 횟수</div>
+          <div className="gap-sm flex flex-col items-center">
+            <div className="text-text-muted text-[11px] leading-none">
+              뽀뽀 횟수
+            </div>
             <div className="text-text-primary text-[26px] leading-none">
               💋 {kissCount}
             </div>
