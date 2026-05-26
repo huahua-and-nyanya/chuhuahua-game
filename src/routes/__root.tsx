@@ -51,7 +51,6 @@ function RootLayout() {
   const { coins } = useCoins()
   const [multiOpen, setMultiOpen] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
-  const [rankingOpen, setRankingOpen] = useState(false)
   const { scale, isMobile, dsFrameMaxWidth } = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
 
@@ -72,7 +71,7 @@ function RootLayout() {
       <IconNavButton
         icon={ICON_ASSETS.ranking}
         alt="랭킹"
-        onClick={() => setRankingOpen(true)}
+        onClick={() => navigate({ to: '/ranking' })}
       />
       <IconNavButton
         icon={ICON_ASSETS.help}
@@ -178,13 +177,6 @@ function RootLayout() {
         open={guideOpen}
         onClose={() => setGuideOpen(false)}
         title="게임 방법"
-      >
-        준비 중
-      </CenterModal>
-      <CenterModal
-        open={rankingOpen}
-        onClose={() => setRankingOpen(false)}
-        title="랭킹"
       >
         준비 중
       </CenterModal>
