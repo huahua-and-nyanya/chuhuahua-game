@@ -9,8 +9,9 @@ import '@/game/keyframes.css'
 // CenterModal의 closeOnEscape는 false — 라우트의 ESC 키 핸들러가 통합 토글 책임.
 //
 // mode 분기:
-//   - 'solo' (default): 자는 츄와와 + "잠깐 쉬는 중..." — 솔로 ESC 지원이라 ESC 안내 표시
-//   - 'pvp': 함께 자는 츄와/냐 + "잠시 휴전중..." — PvP ESC 미지원이라 ESC 안내 미표시
+//   - 'solo' (default): 자는 츄와와 + "잠깐 쉬는 중..."
+//   - 'pvp': 함께 자는 츄와/냐 + "잠시 휴전중..."
+// ESC 키 토글은 솔로/PvP 양쪽 라우트가 통합 핸들러로 처리 — 본 모달은 표시 안내만 공통 노출.
 
 export type PauseModalMode = 'solo' | 'pvp'
 
@@ -66,11 +67,9 @@ export function PauseModal({ open, onResume, mode = 'solo' }: PauseModalProps) {
               ▶ 다시 놀기
             </PixelButton>
           </div>
-          {!isPvp && (
-            <p className="mt-xs font-body text-[8px] text-[#BFBFBF]">
-              ESC 키로도 다시 시작
-            </p>
-          )}
+          <p className="mt-xs font-body text-[8px] text-[#BFBFBF]">
+            ESC 키로도 다시 시작
+          </p>
         </div>
       </div>
     </CenterModal>

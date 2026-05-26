@@ -225,6 +225,31 @@ function LocalPvpPage() {
     navigate({ to: '/' })
   }, [navigate])
 
+  // ESC 키 — playing↔paused 토글, confirmQuit 시 취소(=더 놀래). 솔로와 동일 패턴.
+  // gameover/pvpSetup에선 무시. input/textarea 포커스 중엔 무시(다른 모달 텍스트 입력 충돌 방지).
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      const target = e.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
+      ) {
+        return
+      }
+      const prev = gameStateRef.current
+      if (prev === 'playing' || prev === 'paused') {
+        e.preventDefault()
+        togglePause()
+      } else if (prev === 'confirmQuit') {
+        e.preventDefault()
+        cancelQuit()
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [togglePause, cancelQuit])
+
   // 마운트 1회 — pvp 게임 시작 타임스탬프 + chi/cat ref init.
   useEffect(() => {
     const r = refs.current
