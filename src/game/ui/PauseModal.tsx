@@ -27,7 +27,7 @@ export function PauseModal({ open, onResume, mode = 'solo' }: PauseModalProps) {
     ? CHARACTER_ASSETS.withSleep
     : CHARACTER_ASSETS.chihuahuaSleep
   const imageAlt = isPvp ? '함께 자는 츄와와와 고양이' : '자는 츄와와'
-  const subText = isPvp ? '둘 다 한숨 돌리는 중...' : '잠깐 쉬어가는 중'
+  const subText = isPvp ? '잠깐 쉬어가는 중' : '츄와와도 한숨 돌리고 있어요'
   return (
     <CenterModal
       open={open}
