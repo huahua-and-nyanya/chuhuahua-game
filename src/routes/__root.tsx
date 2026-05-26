@@ -150,16 +150,18 @@ function RootLayout() {
             ) : (
               <>
                 <GameFrameCard scale={scale}>{gameCardChildren}</GameFrameCard>
+                {/* 컨트롤 slot은 absolute로 normal flow에서 빼서 frameStack 높이에 영향 0.
+                    → 카드 위치가 메인/솔로/PvP 모두 viewport 정중앙에 고정 (위로 밀리지 않음). */}
                 {isSolo && (
                   <div
                     id="game-controls-slot"
-                    className="mt-md flex justify-center"
+                    className="mt-md absolute top-full right-0 left-0 flex justify-center"
                   />
                 )}
                 {isPvpLocal && (
                   <div
                     id="pvp-controls-slot"
-                    className="mt-md flex justify-center"
+                    className="mt-md absolute top-full right-0 left-0 flex justify-center"
                   />
                 )}
               </>
