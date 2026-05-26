@@ -46,6 +46,7 @@ function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const isMain = pathname === '/'
   const isSolo = pathname === '/solo'
+  const isPvpLocal = pathname === '/multi/local'
   const navigate = useNavigate()
   const { coins } = useCoins()
   const [multiOpen, setMultiOpen] = useState(false)
@@ -121,6 +122,8 @@ function RootLayout() {
       )
     } else if (isSolo) {
       dsMenuRow = <div id="game-controls-slot" className="w-full" />
+    } else if (isPvpLocal) {
+      dsMenuRow = <div id="pvp-controls-slot" className="w-full" />
     }
   }
 
@@ -150,6 +153,12 @@ function RootLayout() {
                 {isSolo && (
                   <div
                     id="game-controls-slot"
+                    className="mt-md flex justify-center"
+                  />
+                )}
+                {isPvpLocal && (
+                  <div
+                    id="pvp-controls-slot"
                     className="mt-md flex justify-center"
                   />
                 )}

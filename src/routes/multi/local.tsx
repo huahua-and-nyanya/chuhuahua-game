@@ -23,6 +23,7 @@ import {
   startPvpSpawnScheduler,
   stopPvpSpawnScheduler,
 } from '@/game/loop/pvp-spawn'
+import { adjustTimersByPauseDuration } from '@/game/loop/pause'
 import {
   createInitialState,
   expireTransients,
@@ -35,7 +36,10 @@ import { BgHearts } from '@/game/ui/BgHearts'
 import { FloatTexts } from '@/game/ui/FloatText'
 import { Mwah } from '@/game/ui/Mwah'
 import { Particles } from '@/game/ui/Particles'
+import { PauseModal } from '@/game/ui/PauseModal'
+import { PvpControlBar } from '@/game/ui/PvpControlBar'
 import { PvpHud } from '@/game/ui/PvpHud'
+import { QuitConfirmModal } from '@/game/ui/QuitConfirmModal'
 import { updateParticles } from '@/game/particles'
 
 import { usePvpHistory } from '@/features/pvp-history/usePvpHistory'
@@ -54,7 +58,12 @@ const CHARACTER_BOX = 150 // px — solo.tsx와 동일
 const ITEM_EXPIRE_WARN_MS = 2000
 const FLOAT_DURATION = 800 // FloatText 일치
 
-type PvpGameState = 'pvpSetup' | 'playing' | 'gameover'
+type PvpGameState =
+  | 'pvpSetup'
+  | 'playing'
+  | 'paused'
+  | 'confirmQuit'
+  | 'gameover'
 type PvpWinner = 'chi' | 'cat'
 type PvpResult = { winner: PvpWinner; kissCount: number; elapsed: number }
 
@@ -149,6 +158,72 @@ function LocalPvpPage() {
     pausedAtRef.current = 0
     setGameState('pvpSetup')
   }, [])
+
+  // ── 일시정지 / 그만두기 ─────────────────────────────────────────────
+  // 공용 adjustTimersByPauseDuration는 effects/transients/items/floatTexts/shockwaves/
+  // lastKissAt 등 모든 시간 필드를 보정함. PvP 전용 pvp.startedAt(종료 판정용)만 wrapping 추가.
+  // 단위: performance.now() (F-2.2a 게임오버 동결과 동일). 솔로 패턴 그대로.
+  const adjustPvpTimers = (pausedDuration: number) => {
+    if (pausedDuration <= 0) return
+    adjustTimersByPauseDuration(refs.current, pausedDuration)
+    if (refs.current.pvp.startedAt > 0) {
+      refs.current.pvp.startedAt += pausedDuration
+    }
+  }
+
+  // playing ↔ paused 토글. React 18 Strict Mode 더블 실행 회피를 위해 각 분기 idempotent 가드
+  // (pausedAtRef 값으로 1회만 적용). 솔로 togglePause와 동일 패턴.
+  const togglePause = useCallback(() => {
+    setGameState((prev) => {
+      if (prev === 'playing') {
+        if (pausedAtRef.current === 0) {
+          pausedAtRef.current = performance.now()
+        }
+        return 'paused'
+      }
+      if (prev === 'paused') {
+        if (pausedAtRef.current > 0) {
+          const pausedDuration = performance.now() - pausedAtRef.current
+          adjustPvpTimers(pausedDuration)
+          pausedAtRef.current = 0
+        }
+        return 'playing'
+      }
+      return prev
+    })
+  }, [])
+
+  // 그만두기 확인 모달 열기. paused에서 진입 시 paused 정산 후 confirmQuit 동안의 추가 freeze는
+  // 새 pausedAtRef로 측정 — 더 놀래 시 그만큼 또 보정. 솔로 openQuitConfirm 동일 패턴.
+  const openQuitConfirm = useCallback(() => {
+    setGameState((prev) => {
+      if (prev !== 'playing' && prev !== 'paused') return prev
+      if (prev === 'paused' && pausedAtRef.current > 0) {
+        const pausedDuration = performance.now() - pausedAtRef.current
+        adjustPvpTimers(pausedDuration)
+      }
+      pausedAtRef.current = performance.now()
+      return 'confirmQuit'
+    })
+  }, [])
+
+  // 그만두기 취소 — playing 직행 (paused 복귀 X). confirmQuit 동안 흐른 시간만큼 timer 보정.
+  const cancelQuit = useCallback(() => {
+    setGameState((prev) => {
+      if (prev !== 'confirmQuit') return prev
+      if (pausedAtRef.current > 0) {
+        const pausedDuration = performance.now() - pausedAtRef.current
+        adjustPvpTimers(pausedDuration)
+        pausedAtRef.current = 0
+      }
+      return 'playing'
+    })
+  }, [])
+
+  // 그만두기 확정 — PvP는 게임오버 화면 없이 바로 메인 복귀 (라우트 unmount되어 ref 상태 무관).
+  const confirmQuitGame = useCallback(() => {
+    navigate({ to: '/' })
+  }, [navigate])
 
   // 마운트 1회 — pvp 게임 시작 타임스탬프 + chi/cat ref init.
   useEffect(() => {
@@ -459,6 +534,24 @@ function LocalPvpPage() {
         onMain={() => navigate({ to: '/' })}
         onRetry={retryPvp}
       />
+
+      {/* 일시정지 / 그만두기 모달 — 솔로와 동일 컴포넌트 재사용 (props만 PvP 핸들러). */}
+      <PauseModal open={gameState === 'paused'} onResume={togglePause} />
+      <QuitConfirmModal
+        open={gameState === 'confirmQuit'}
+        onCancel={cancelQuit}
+        onConfirm={confirmQuitGame}
+      />
+
+      {/* 컨트롤 바 — playing/paused 동안만 표시. confirmQuit/gameover/pvpSetup은 모달이 입력 차단.
+          root layout의 #pvp-controls-slot에 portal로 마운트 (솔로 SoloControlBar 패턴 미러). */}
+      {(gameState === 'playing' || gameState === 'paused') && (
+        <PvpControlBar
+          paused={gameState === 'paused'}
+          onTogglePause={togglePause}
+          onQuit={openQuitConfirm}
+        />
+      )}
     </>
   )
 }
