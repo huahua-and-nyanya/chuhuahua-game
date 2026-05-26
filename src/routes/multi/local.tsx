@@ -211,6 +211,9 @@ function LocalPvpPage() {
     [],
   )
 
+  // 정상 픽업 부여 시 라벨 floatText. cancelled(상쇄/해제/막음)는 effects.ts / pvp-pickup.ts가
+  // "야호!"/"해제!"/"막음!" 등을 자체 push하므로 여기선 가드 return으로 중복 방지.
+  // sweetPotato 정상 슬로우 부여도 effects.ts가 "펑!"을 push하므로 제외 (중복 방지).
   const onPickup = useCallback(
     (kind: ItemKind, by: PickerSide, cancelled?: boolean) => {
       if (cancelled) return
@@ -220,15 +223,13 @@ function LocalPvpPage() {
       if (kind === 'kibble') {
         text = '부스트!'
       } else if (kind === 'fish') {
-        text = by === 'cat' ? '쉴드!' : '쉴드(준비)'
+        text = '쉴드!'
         color = 'var(--color-game-shield-blue)'
       } else if (kind === 'cucumber') {
         text = '오이!'
         color = 'var(--color-danger)'
-      } else if (kind === 'sweetPotato') {
-        text = '고구마!'
-        color = 'var(--color-danger)'
       }
+      // sweetPotato는 effects.ts에서 "펑!"(슬로우)/"힝..."(부스트 상쇄) 처리.
       if (text) pushFloatText(text, target.x, target.y - 30, color)
     },
     [pushFloatText],
