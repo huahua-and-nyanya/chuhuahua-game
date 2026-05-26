@@ -31,7 +31,6 @@ const COLOR_PRIMARY = '#D4537E' // 진한 핑크 — GAME OVER 제목/다시하�
 const COLOR_PINK_SOFT = '#FBEAF0' // 등록 후 영역 배경
 const COLOR_DASH = '#F4C0D1' // 결과 영역 위/아래 점선
 const COLOR_LABEL = '#888780' // 회색 라벨 / 부제
-const COLOR_TEXT_DARK = '#5F5E5A' // 메인으로 텍스트
 const COLOR_VALUE = '#2C2C2A' // 결과 값 / 닉네임 텍스트
 const COLOR_INPUT_BORDER = '#D3D1C7' // input border
 
@@ -166,21 +165,16 @@ export function GameOverModal(props: GameOverModalProps) {
           </div>
         )}
 
-        {/* 액션 — 메인으로(텍스트 + 영역 지정) + 다시하기(핑크 primary) */}
-        <div className="flex items-center justify-between gap-4">
-          <button
-            type="button"
-            onClick={onMain}
-            className="font-body h-button-md inline-flex w-24 items-center justify-center text-sm font-medium transition-opacity hover:opacity-70"
-            style={{ color: COLOR_TEXT_DARK }}
-          >
+        {/* 액션 — 메인으로(secondary) + 다시하기(primary), 가로 꽉 채움 */}
+        <div className="gap-sm flex w-full justify-center">
+          <PixelButton variant="secondary" size="lg" onClick={onMain}>
             메인으로
-          </button>
+          </PixelButton>
           <PixelButton
+            className="w-full"
             variant="primary"
             size="lg"
             onClick={onRestart}
-            className="max-w-55 flex-1"
           >
             다시하기
           </PixelButton>

@@ -38,11 +38,16 @@ export function QuitConfirmModal({
           <br />
           뽀뽀 도전이 끝나버려요!
         </p>
-        <div className="gap-md mt-sm flex">
-          <PixelButton variant="secondary" onClick={onCancel}>
+        <div className="gap-sm mt-sm flex w-full justify-center">
+          <PixelButton variant="secondary" size="lg" onClick={onCancel}>
             더 놀래
           </PixelButton>
-          <PixelButton variant="primary" onClick={onConfirm}>
+          <PixelButton
+            className="w-full"
+            variant="primary"
+            size="lg"
+            onClick={onConfirm}
+          >
             그만 둘래
           </PixelButton>
         </div>

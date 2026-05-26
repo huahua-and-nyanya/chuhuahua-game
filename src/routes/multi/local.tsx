@@ -508,15 +508,20 @@ function PvpSetupModal({
             keysText="↑ ↓ ← →"
           />
         </div>
-        <div className="flex w-full flex-col gap-1 md:gap-2 lg:gap-3">
+        <div className="mt-2 flex w-full flex-col gap-3">
           <div className="text-text-muted text-xs">
             각자 자기 키를 한 번 눌러 준비!
           </div>
-          <div className="gap-sm flex justify-center">
+          <div className="gap-sm flex w-full justify-center">
             <PixelButton variant="secondary" size="lg" onClick={onCancel}>
               취소
             </PixelButton>
-            <PixelButton size="lg" disabled={!bothReady} onClick={onStart}>
+            <PixelButton
+              className="w-full"
+              size="lg"
+              disabled={!bothReady}
+              onClick={onStart}
+            >
               {bothReady ? '시작 💥 (Enter)' : '둘 다 준비 필요'}
             </PixelButton>
           </div>
@@ -595,9 +600,9 @@ function PvpGameOverModal({
   const imageSrc = isChi
     ? CHARACTER_ASSETS.chihuahuaVictory
     : CHARACTER_ASSETS.catVictory
-  const imageAlt = isChi ? '츄와와 승리' : '고양이 승리'
-  const headerText = isChi ? '💋 뽀뽀 성공!' : '🐱 도망 성공!'
-  const subText = isChi ? '츄와와의 승리! 🐶' : '고양이의 승리! 😼'
+  const imageAlt = isChi ? '츄와와 승리' : '냐냐 승리'
+  const headerText = isChi ? '💋뽀뽀 성공!' : '✌️도망 성공!'
+  const subText = isChi ? '츄와와의 승리!' : '냐냐의 승리!'
   return (
     <CenterModal
       open={open}
@@ -609,15 +614,15 @@ function PvpGameOverModal({
         <img
           src={imageSrc}
           alt={imageAlt}
-          className="h-[130px] w-auto shrink-0 object-contain"
+          className="h-32.5 w-auto shrink-0 object-contain"
         />
-        <div className="gap-sm flex flex-col items-center">
+        <div className="flex flex-col items-center gap-4">
           <div
             className={clsx(
               'animate-gameover-shake font-display text-4xl leading-none',
               isChi ? 'text-text-accent' : 'text-text-primary',
             )}
-            style={{ textShadow: '3px 3px 0 var(--color-ink-base)' }}
+            style={{ textShadow: '2px 2px 0 var(--color-ink-base)' }}
           >
             {headerText}
           </div>
@@ -626,8 +631,8 @@ function PvpGameOverModal({
           </div>
         </div>
 
-        <div className="flex w-full justify-around border-y-2 border-dashed border-pink-300 py-5">
-          <div className="gap-sm flex flex-col items-center">
+        <div className="flex w-full items-center justify-around border-y-2 border-dashed border-pink-300 py-6">
+          <div className="flex flex-col items-center gap-3">
             <div className="text-text-muted text-[11px] leading-none">
               걸린 시간
             </div>
@@ -635,7 +640,7 @@ function PvpGameOverModal({
               {(elapsed / 1000).toFixed(1)}초
             </div>
           </div>
-          <div className="gap-sm flex flex-col items-center">
+          <div className="flex flex-col items-center gap-3">
             <div className="text-text-muted text-[11px] leading-none">
               뽀뽀 횟수
             </div>
@@ -645,11 +650,11 @@ function PvpGameOverModal({
           </div>
         </div>
 
-        <div className="gap-sm flex justify-center">
+        <div className="gap-sm flex w-full justify-center">
           <PixelButton variant="secondary" size="lg" onClick={onMain}>
             메인으로
           </PixelButton>
-          <PixelButton size="lg" onClick={onRetry}>
+          <PixelButton className="w-full" size="lg" onClick={onRetry}>
             다시 도전 💪
           </PixelButton>
         </div>

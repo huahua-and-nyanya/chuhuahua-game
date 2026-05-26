@@ -43,10 +43,17 @@ export function PauseModal({ open, onResume }: PauseModalProps) {
         <p className="text-text-muted font-body text-sm">
           츄와와도 한숨 돌리고 있어요
         </p>
-        <div className="flex flex-col items-center gap-2">
-          <PixelButton variant="primary" size="lg" onClick={onResume}>
-            ▶ 다시 놀기
-          </PixelButton>
+        <div className="flex w-full flex-col items-center gap-2">
+          <div className="gap-sm flex w-full justify-center">
+            <PixelButton
+              className="w-full"
+              variant="primary"
+              size="lg"
+              onClick={onResume}
+            >
+              ▶ 다시 놀기
+            </PixelButton>
+          </div>
           <p className="mt-xs font-body text-[8px] text-[#BFBFBF]">
             ESC 키로도 다시 시작
           </p>
