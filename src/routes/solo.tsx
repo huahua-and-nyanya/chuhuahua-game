@@ -319,7 +319,7 @@ function SoloPage() {
         toastText = '고양이 빨라짐!'
         color = 'var(--color-danger)'
       } else if (kind === 'sweetPotato') {
-        label = '무거움!'
+        // floatText("펑!"/"힝...")는 effects.ts가 자체 push — label 미설정으로 중복 방지. toast는 유지.
         toastText = '느려졌어요!'
         color = 'var(--color-danger)'
       }
