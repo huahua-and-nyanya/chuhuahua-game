@@ -38,6 +38,8 @@ import { Particles } from '@/game/ui/Particles'
 import { PvpHud } from '@/game/ui/PvpHud'
 import { updateParticles } from '@/game/particles'
 
+import { usePvpHistory } from '@/features/pvp-history/usePvpHistory'
+
 import { CenterModal } from '@/ui/CenterModal'
 import { PixelButton } from '@/ui/PixelButton'
 import { PixelChip } from '@/ui/PixelChip'
@@ -51,21 +53,25 @@ export const Route = createFileRoute('/multi/local')({
 const CHARACTER_BOX = 150 // px — solo.tsx와 동일
 const ITEM_EXPIRE_WARN_MS = 2000
 const FLOAT_DURATION = 800 // FloatText 일치
-const GAME_OVER_TO_MAIN_MS = 3000 // F-1 임시 — F-2에서 모달로 대체
 
 type PvpGameState = 'pvpSetup' | 'playing' | 'gameover'
 type PvpWinner = 'chi' | 'cat'
+type PvpResult = { winner: PvpWinner; kissCount: number; elapsed: number }
 
 function LocalPvpPage() {
   const navigate = useNavigate()
+  const pvpHistory = usePvpHistory()
 
   // refs / 모드 — 마운트 시 즉시 pvp.startedAt 채움.
   const refs = useRef<GameRefs>(createInitialState())
   const gameModeRef = useRef<'solo' | 'pvp'>('pvp')
+  // 게임오버 시 시각 멈춤(HUD 동결) 시점. 0이면 흐름 정상, >0이면 그 시각으로 now 고정.
+  // F-2.3에서 pause 시스템 추가 시 같은 분기에 pause 조건 얹음.
+  const pausedAtRef = useRef<number>(0)
 
   // Setup 모달부터 시작 — 양쪽 ready 후 startPvpGame()으로 'playing' 전환.
   const [gameState, setGameState] = useState<PvpGameState>('pvpSetup')
-  const [winner, setWinner] = useState<PvpWinner | null>(null)
+  const [pvpResult, setPvpResult] = useState<PvpResult | null>(null)
   // 배경은 진입 시 1회 픽 — 게임 중 변경 없음.
   const [bgUrl] = useState<string>(() => getRandomBackground())
 
@@ -99,10 +105,23 @@ function LocalPvpPage() {
     return () => window.clearTimeout(timer)
   }, [gameState, chiPlayerReady, catPlayerReady, navigate])
 
-  const triggerPvpGameOver = useCallback((w: PvpWinner) => {
-    setWinner(w)
-    setGameState('gameover')
-  }, [])
+  // 게임오버 트리거 — 결과 캡처(winner/kissCount/elapsed) + HUD 동결 + history 저장.
+  // 캡처는 startPvpGame이 다시 도전 시 r.pvp를 0으로 리셋하기 전에 해야 정확.
+  const triggerPvpGameOver = useCallback(
+    (w: PvpWinner) => {
+      const r = refs.current
+      const now = performance.now()
+      // cat 승은 시간 만료라 elapsed = TIME_LIMIT으로 고정 (now - startedAt에 미세 오차 가능).
+      const elapsed =
+        w === 'cat' ? PVP_TIME_LIMIT : Math.max(0, now - r.pvp.startedAt)
+      const kissCount = r.pvp.kissCount
+      setPvpResult({ winner: w, kissCount, elapsed })
+      pausedAtRef.current = now
+      setGameState('gameover')
+      pvpHistory.save({ winner: w, kissCount, elapsed })
+    },
+    [pvpHistory],
+  )
 
   // Setup 취소 — PvP는 별도 라우트라 메인 복귀로 매핑.
   const cancelPvpSetup = useCallback(() => {
@@ -120,21 +139,23 @@ function LocalPvpPage() {
     setGameState('playing')
   }, [])
 
+  // 다시 도전 — 잔여물(파티클/아이템/이펙트/비둘기 등) 일괄 리셋 후 Setup 모달로 복귀.
+  // createInitialState가 pvp.startedAt/kissCount도 0으로 초기화 → startPvpGame이 시작 시 재설정.
+  const retryPvp = useCallback(() => {
+    refs.current = createInitialState()
+    setPvpResult(null)
+    setChiPlayerReady(false)
+    setCatPlayerReady(false)
+    pausedAtRef.current = 0
+    setGameState('pvpSetup')
+  }, [])
+
   // 마운트 1회 — pvp 게임 시작 타임스탬프 + chi/cat ref init.
   useEffect(() => {
     const r = refs.current
     r.pvp.startedAt = performance.now()
     r.pvp.kissCount = 0
   }, [])
-
-  // 게임오버 후 3초 뒤 메인 라우트로 이동 (F-1 임시 — F-2에서 모달로 교체).
-  useEffect(() => {
-    if (gameState !== 'gameover') return
-    const t = window.setTimeout(() => {
-      navigate({ to: '/' })
-    }, GAME_OVER_TO_MAIN_MS)
-    return () => window.clearTimeout(t)
-  }, [gameState, navigate])
 
   // ── 입력 ───────────────────────────────────────────────────────────
   const isPlaying = useCallback(() => gameStateRef.current === 'playing', [])
@@ -272,7 +293,9 @@ function LocalPvpPage() {
   })
 
   // ── 렌더 ───────────────────────────────────────────────────────────
-  const now = performance.now()
+  // pausedAtRef > 0이면 그 시각으로 now 고정 → HUD 시간/효과 게이지가 종료 시점에서 멈춤.
+  // F-2.2a: 게임오버 진입 시 동결. F-2.3에서 pause 추가 시 같은 분기에 조건 얹음.
+  const now = pausedAtRef.current > 0 ? pausedAtRef.current : performance.now()
   const r = refs.current
   const chi = r.chi
   const cat = r.cat
@@ -417,15 +440,6 @@ function LocalPvpPage() {
 
         {/* 부유 텍스트 */}
         <FloatTexts items={r.floatTexts} now={now} />
-
-        {/* F-1 임시 — 게임오버 시 화면 중앙 텍스트로 승자 표시 (F-2에서 모달 교체). */}
-        {gameState === 'gameover' && winner !== null && (
-          <div className="bg-bg-modal-backdrop pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="font-display text-text-on-pink bg-ink-base px-xl py-lg shadow-card rounded-md text-2xl">
-              {winner === 'chi' ? '츄와와 승!' : '고양이 승!'}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Setup 모달 — pvpSetup 동안 표시. backdrop이 게임 영역을 가림. */}
@@ -435,6 +449,14 @@ function LocalPvpPage() {
         catReady={catPlayerReady}
         onCancel={cancelPvpSetup}
         onStart={startPvpGame}
+      />
+
+      {/* 게임오버 모달 — gameover 진입 + 결과 캡처 완료 시 표시. */}
+      <PvpGameOverModal
+        open={gameState === 'gameover' && pvpResult !== null}
+        result={pvpResult}
+        onMain={() => navigate({ to: '/' })}
+        onRetry={retryPvp}
       />
     </>
   )
@@ -547,5 +569,81 @@ function PlayerReadyCard({
         {ready ? '✓ 준비 완료' : '대기 중...'}
       </div>
     </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// 게임오버 모달 — 승자 이미지 + 헤더(animate-gameover-shake) + Stats + 액션 버튼.
+// 색상은 전부 토큰 클래스. textShadow는 토큰 없어 inline + var() 유지.
+// ─────────────────────────────────────────────────────────────────────
+interface PvpGameOverModalProps {
+  open: boolean
+  result: PvpResult | null
+  onMain: () => void
+  onRetry: () => void
+}
+
+function PvpGameOverModal({
+  open,
+  result,
+  onMain,
+  onRetry,
+}: PvpGameOverModalProps) {
+  if (!result) return null
+  const { winner, kissCount, elapsed } = result
+  const isChi = winner === 'chi'
+  const imageSrc = isChi
+    ? CHARACTER_ASSETS.chihuahuaVictory
+    : CHARACTER_ASSETS.catVictory
+  const imageAlt = isChi ? '츄와와 승리' : '고양이 승리'
+  const headerText = isChi ? '💋 뽀뽀 성공!' : '🐱 도망 성공!'
+  const subText = isChi ? '츄와와의 승리! 🐶' : '고양이의 승리! 😼'
+  return (
+    <CenterModal
+      open={open}
+      onClose={onMain}
+      closeOnBackdropClick={false}
+      closeOnEscape={false}
+    >
+      <div className="gap-md flex flex-col items-center text-center">
+        <img
+          src={imageSrc}
+          alt={imageAlt}
+          className="h-[130px] w-auto shrink-0 object-contain"
+        />
+        <div
+          className={clsx(
+            'animate-gameover-shake font-display text-4xl',
+            isChi ? 'text-text-accent' : 'text-text-primary',
+          )}
+          style={{ textShadow: '3px 3px 0 var(--color-ink-base)' }}
+        >
+          {headerText}
+        </div>
+        <div className="text-text-muted text-[13px]">{subText}</div>
+
+        <div className="flex w-full justify-center gap-6 border-y-2 border-dashed border-pink-300 py-3">
+          <div className="text-center">
+            <div className="text-text-muted text-[11px]">걸린 시간</div>
+            <div className="text-text-accent text-[26px]">
+              {(elapsed / 1000).toFixed(1)}초
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-text-muted text-[11px]">뽀뽀 횟수</div>
+            <div className="text-text-primary text-[26px]">💋 {kissCount}</div>
+          </div>
+        </div>
+
+        <div className="flex justify-center gap-2.5">
+          <PixelButton variant="secondary" size="lg" onClick={onMain}>
+            메인으로
+          </PixelButton>
+          <PixelButton size="lg" onClick={onRetry}>
+            다시 도전 💪
+          </PixelButton>
+        </div>
+      </div>
+    </CenterModal>
   )
 }
