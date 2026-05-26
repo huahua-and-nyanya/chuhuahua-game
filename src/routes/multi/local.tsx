@@ -535,8 +535,12 @@ function LocalPvpPage() {
         onRetry={retryPvp}
       />
 
-      {/* 일시정지 / 그만두기 모달 — 솔로와 동일 컴포넌트 재사용 (props만 PvP 핸들러). */}
-      <PauseModal open={gameState === 'paused'} onResume={togglePause} />
+      {/* 일시정지 / 그만두기 모달 — 솔로와 동일 컴포넌트 재사용 (mode='pvp'로 이미지/멘트 분기). */}
+      <PauseModal
+        open={gameState === 'paused'}
+        onResume={togglePause}
+        mode="pvp"
+      />
       <QuitConfirmModal
         open={gameState === 'confirmQuit'}
         onCancel={cancelQuit}

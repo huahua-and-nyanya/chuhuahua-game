@@ -5,6 +5,7 @@ export const CHARACTER_ASSETS = {
   chihuahuaSad: '/assets/characters/chihuahua-sad.png',
   chihuahuaVictory: '/assets/characters/chihuahua-victory.png',
   chihuahuaSleep: '/assets/characters/chihuahuaSleep.png',
+  withSleep: '/assets/characters/withSleep.png',
   cat: '/assets/characters/cat.png',
   catKissing: '/assets/characters/cat-kissing.png',
   catAngry: '/assets/characters/cat-angry.png',
