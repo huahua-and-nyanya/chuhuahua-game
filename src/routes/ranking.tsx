@@ -7,10 +7,7 @@ import { useHistory } from '@/features/history/useHistory'
 import type { SoloEntry } from '@/features/history/types'
 import { usePvpHistory } from '@/features/pvp-history/usePvpHistory'
 import type { PvpEntry } from '@/features/pvp-history/types'
-
-// 로컬 랭킹 페이지 — GameFrameCard 탈출, 자체 자유 레이아웃.
-// __root.tsx isContentRoute 분기로 GameFrameCard wrapper 없이 <Outlet /> 직접 렌더.
-// 영수증 디자인. 모든 padding/gap/margin은 4px 그리드 강제.
+import { QuitConfirmModal } from '@/game/ui/QuitConfirmModal'
 
 export const Route = createFileRoute('/ranking')({
   component: RankingPage,
@@ -27,6 +24,7 @@ function formatDate(ms: number): string {
 function RankingPage() {
   const [tab, setTab] = useState<Tab>('solo')
   const [soloSubTab, setSoloSubTab] = useState<SoloSubTab>('best')
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false)
   const solo = useHistory()
   const pvp = usePvpHistory()
 
@@ -37,55 +35,157 @@ function RankingPage() {
     return [...solo.entries].sort((a, b) => b.date - a.date)
   }, [solo.entries, soloSubTab])
 
+  const handleClearConfirm = () => {
+    if (tab === 'solo') solo.clear()
+    else pvp.clear()
+    setConfirmClearOpen(false)
+  }
+
   return (
-    <div className="mx-auto w-full max-w-[640px] bg-bg-card px-8 pt-8 pb-6 shadow-card">
-      {/* 헤더 */}
-      <h1 className="font-display text-text-accent mb-4 text-center text-[32px] leading-none tracking-[4px]">
-        플레이 기록
-      </h1>
+    <div className="px-4 py-4">
+      {/* 영수증 카드 — viewport 내부 스크롤, 헤더 침범 X */}
+      <div
+        className="relative mx-auto w-full max-w-[640px] overflow-y-auto bg-bg-card shadow-card"
+        style={{ maxHeight: 'calc(100dvh - 96px)' }}
+      >
+        {/* 4코너 분홍 도트 */}
+        <CornerDots />
+        {/* inset dashed 테두리 */}
+        <div className="pointer-events-none absolute inset-2 z-0 rounded-[12px] border border-dashed border-pink-300" />
 
-      <Dashed />
+        {/* 본문 z-1 (inset dashed 위) */}
+        <div className="relative z-[1] px-8 pt-8 pb-6 max-md:px-4 max-md:py-6">
+          {/* 헤더 */}
+          <h1 className="font-display text-text-accent mb-1 text-center text-[32px] leading-none tracking-[4px]">
+            플레이 기록
+          </h1>
+          <p className="text-text-muted text-center text-xs tracking-[4px]">
+            ~ 뽀뽀 돌격 영수증 ~
+          </p>
 
-      {/* 모드 탭 (underline) */}
-      <div className="mb-4 flex justify-center gap-6">
-        <UnderlineTab active={tab === 'solo'} onClick={() => setTab('solo')}>
-          혼자서
-        </UnderlineTab>
-        <UnderlineTab active={tab === 'pvp'} onClick={() => setTab('pvp')}>
-          둘이서
-        </UnderlineTab>
+          <Dashed />
+
+          {/* 모드 탭 (underline, w-full flex-1) */}
+          <div className="mb-4 flex w-full">
+            <UnderlineTab
+              active={tab === 'solo'}
+              onClick={() => setTab('solo')}
+            >
+              혼자서
+            </UnderlineTab>
+            <UnderlineTab
+              active={tab === 'pvp'}
+              onClick={() => setTab('pvp')}
+            >
+              둘이서
+            </UnderlineTab>
+          </div>
+
+          {/* 메타 박스 */}
+          <MetaBox mode={tab} count={entries.length} />
+
+          <Dashed />
+
+          {/* 콘텐츠 */}
+          {tab === 'solo' ? (
+            <SoloSection
+              entries={soloSorted}
+              subTab={soloSubTab}
+              onSubTab={setSoloSubTab}
+            />
+          ) : (
+            <PvpSection entries={pvp.entries} />
+          )}
+
+          {/* 물결 SVG */}
+          <ZigzagDivider />
+
+          {/* 푸터 */}
+          <Footer
+            mode={tab}
+            soloEntries={solo.entries}
+            pvpEntries={pvp.entries}
+          />
+
+          {/* 시리얼 */}
+          <div className="mt-6 text-center">
+            <p className="text-text-primary text-xs tracking-[4px]">
+              감사합니다 · 또 뽀뽀하러 와요
+            </p>
+            <p className="text-text-accent mt-1 text-[11px] font-bold tracking-[4px]">
+              CHUHUAHUA-GAME-2026
+            </p>
+          </div>
+
+          {/* 기록 초기화 버튼 */}
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setConfirmClearOpen(true)}
+              className="text-text-primary cursor-pointer rounded-full border-2 border-solid border-ink-base bg-transparent px-5 py-2 text-xs font-medium shadow-[2px_2px_0_var(--color-ink-base)] transition-[transform,box-shadow] duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
+            >
+              기록 초기화
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* 메타 박스 */}
-      <MetaBox mode={tab} count={entries.length} />
-
-      <Dashed />
-
-      {/* 콘텐츠 */}
-      {tab === 'solo' ? (
-        <SoloSection
-          entries={soloSorted}
-          subTab={soloSubTab}
-          onSubTab={setSoloSubTab}
-        />
-      ) : (
-        <PvpSection entries={pvp.entries} />
-      )}
-
-      {/* 푸터 */}
-      <Footer
-        mode={tab}
-        soloEntries={solo.entries}
-        pvpEntries={pvp.entries}
-      />
+      {/* 초기화 확인 모달 */}
+      <QuitConfirmModal
+        open={confirmClearOpen}
+        onCancel={() => setConfirmClearOpen(false)}
+        onConfirm={handleClearConfirm}
+        title={
+          tab === 'solo'
+            ? '솔로 기록을 초기화할까요?'
+            : 'PvP 기록을 초기화할까요?'
+        }
+        cancelLabel="취소"
+        confirmLabel="초기화"
+      >
+        <p className="text-text-primary font-body py-4 text-sm">
+          되돌릴 수 없어요
+        </p>
+      </QuitConfirmModal>
     </div>
   )
 }
 
 // ── 공용 ────────────────────────────────────────────────────────────
 
+function CornerDots() {
+  const base = 'absolute h-2 w-2 bg-pink-700'
+  return (
+    <>
+      <div className={clsx(base, 'top-4 left-4')} />
+      <div className={clsx(base, 'top-4 right-4')} />
+      <div className={clsx(base, 'bottom-4 left-4')} />
+      <div className={clsx(base, 'bottom-4 right-4')} />
+    </>
+  )
+}
+
 function Dashed() {
   return <div className="my-4 border-t border-dashed border-ink-base" />
+}
+
+function ZigzagDivider() {
+  return (
+    <svg
+      width="100%"
+      height="12"
+      viewBox="0 0 600 12"
+      preserveAspectRatio="none"
+      className="mt-4 mb-3 block"
+    >
+      <polyline
+        points="0,12 12,4 24,12 36,4 48,12 60,4 72,12 84,4 96,12 108,4 120,12 132,4 144,12 156,4 168,12 180,4 192,12 204,4 216,12 228,4 240,12 252,4 264,12 276,4 288,12 300,4 312,12 324,4 336,12 348,4 360,12 372,4 384,12 396,4 408,12 420,4 432,12 444,4 456,12 468,4 480,12 492,4 504,12 516,4 528,12 540,4 552,12 564,4 576,12 588,4 600,12"
+        fill="none"
+        stroke="var(--color-ink-base)"
+        strokeWidth="1.2"
+      />
+    </svg>
+  )
 }
 
 function UnderlineTab({
@@ -102,7 +202,7 @@ function UnderlineTab({
       type="button"
       onClick={onClick}
       className={clsx(
-        'cursor-pointer border-b-2 px-4 py-2 text-[16px] transition-[color,border-color,font-weight] duration-150',
+        'flex-1 cursor-pointer border-b-2 px-4 py-2 text-center text-[16px] transition-[color,border-color,font-weight] duration-150',
         active
           ? 'text-text-primary border-ink-base font-bold'
           : 'text-text-muted border-transparent font-normal',
@@ -116,7 +216,7 @@ function UnderlineTab({
 function MetaBox({ mode, count }: { mode: Tab; count: number }) {
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, '.')
   return (
-    <div className="text-text-primary grid grid-cols-2 gap-x-5 gap-y-1 py-2 text-xs leading-relaxed">
+    <div className="text-text-primary grid grid-cols-2 gap-x-6 gap-y-2 py-2 text-xs leading-relaxed">
       <span>발행일자 : {today}</span>
       <span>플레이어 : {mode === 'solo' ? 'YOU' : 'P1 vs P2'}</span>
       <span>기록번호 : #{String(count).padStart(3, '0')}</span>
@@ -226,7 +326,8 @@ function SoloRow({
     <div
       className={clsx(
         'text-text-primary relative grid items-center px-2 py-2 text-[13px]',
-        isRecord && 'my-2 rounded border border-solid border-pink-700 bg-[#fff0e8]',
+        isRecord &&
+          'my-2 rounded border border-solid border-pink-700 bg-[#fff0e8]',
       )}
       style={{ gridTemplateColumns: SOLO_COLS }}
     >
@@ -238,7 +339,7 @@ function SoloRow({
       <span className={clsx(isRecord && 'font-bold')}>#{rank}</span>
       <span
         className={clsx(
-          'truncate text-[11px]',
+          'min-w-0 truncate pr-1 text-[11px]',
           entry.name ? 'font-bold' : 'text-text-muted',
         )}
       >
@@ -345,7 +446,6 @@ function Footer({
 }) {
   return (
     <div className="mt-6 flex flex-col items-center gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
-      {/* 좌 — 일러스트 + 부제 */}
       <div className="flex flex-col items-center gap-2 md:items-start">
         <div className="flex h-[120px] shrink-0 items-center justify-center">
           <img
@@ -359,7 +459,6 @@ function Footer({
         </span>
       </div>
 
-      {/* 우 — 합계 */}
       {mode === 'solo' ? (
         <SoloSummary entries={soloEntries} />
       ) : (
@@ -378,7 +477,7 @@ function SoloSummary({ entries }: { entries: SoloEntry[] }) {
     <div className="text-text-primary w-full max-w-[280px] px-1 text-[13px]">
       <SummaryRow label="총 플레이" value={String(entries.length)} bold />
       <SummaryRow label="최고 점수" value={`${best} ♡`} bold accent />
-      <div className="mt-1 border-t border-solid border-ink-base px-0 pt-2 pb-1">
+      <div className="mt-1 border-t border-solid border-ink-base pt-2 pb-1">
         <SummaryRow label="최고 콤보" value={`×${bestCombo}`} bold />
       </div>
     </div>
@@ -397,7 +496,7 @@ function PvpSummary({ entries }: { entries: PvpEntry[] }) {
         bold
         accent
       />
-      <div className="mt-1 border-t border-solid border-ink-base px-0 pt-2 pb-1">
+      <div className="mt-1 border-t border-solid border-ink-base pt-2 pb-1">
         <SummaryRow label="🐱 고양이 승" value={String(catWins)} bold />
       </div>
     </div>
@@ -418,7 +517,9 @@ function SummaryRow({
   return (
     <div className="flex justify-between py-1">
       <span>{label}</span>
-      <span className={clsx(bold && 'font-bold', accent && 'text-text-accent')}>
+      <span
+        className={clsx(bold && 'font-bold', accent && 'text-text-accent')}
+      >
         {value}
       </span>
     </div>
