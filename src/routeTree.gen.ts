@@ -11,8 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WardrobeRouteImport } from './routes/wardrobe'
 import { Route as SoloRouteImport } from './routes/solo'
+import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
-import { Route as HistoryRouteImport } from './routes/history'
+import { Route as HowtoRouteImport } from './routes/howto'
 import { Route as GachaRouteImport } from './routes/gacha'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MultiIndexRouteImport } from './routes/multi/index'
@@ -32,14 +33,19 @@ const SoloRoute = SoloRouteImport.update({
   path: '/solo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RankingRoute = RankingRouteImport.update({
+  id: '/ranking',
+  path: '/ranking',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LeaderboardRoute = LeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HistoryRoute = HistoryRouteImport.update({
-  id: '/history',
-  path: '/history',
+const HowtoRoute = HowtoRouteImport.update({
+  id: '/howto',
+  path: '/howto',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GachaRoute = GachaRouteImport.update({
@@ -86,8 +92,9 @@ const DevGamePreviewRoute = DevGamePreviewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/gacha': typeof GachaRoute
-  '/history': typeof HistoryRoute
+  '/howto': typeof HowtoRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/ranking': typeof RankingRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
   '/dev/game-preview': typeof DevGamePreviewRoute
@@ -100,8 +107,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/gacha': typeof GachaRoute
-  '/history': typeof HistoryRoute
+  '/howto': typeof HowtoRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/ranking': typeof RankingRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
   '/dev/game-preview': typeof DevGamePreviewRoute
@@ -115,8 +123,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/gacha': typeof GachaRoute
-  '/history': typeof HistoryRoute
+  '/howto': typeof HowtoRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/ranking': typeof RankingRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
   '/dev/game-preview': typeof DevGamePreviewRoute
@@ -131,8 +140,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/gacha'
-    | '/history'
+    | '/howto'
     | '/leaderboard'
+    | '/ranking'
     | '/solo'
     | '/wardrobe'
     | '/dev/game-preview'
@@ -145,8 +155,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/gacha'
-    | '/history'
+    | '/howto'
     | '/leaderboard'
+    | '/ranking'
     | '/solo'
     | '/wardrobe'
     | '/dev/game-preview'
@@ -159,8 +170,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/gacha'
-    | '/history'
+    | '/howto'
     | '/leaderboard'
+    | '/ranking'
     | '/solo'
     | '/wardrobe'
     | '/dev/game-preview'
@@ -174,8 +186,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GachaRoute: typeof GachaRoute
-  HistoryRoute: typeof HistoryRoute
+  HowtoRoute: typeof HowtoRoute
   LeaderboardRoute: typeof LeaderboardRoute
+  RankingRoute: typeof RankingRoute
   SoloRoute: typeof SoloRoute
   WardrobeRoute: typeof WardrobeRoute
   DevGamePreviewRoute: typeof DevGamePreviewRoute
@@ -202,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SoloRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ranking': {
+      id: '/ranking'
+      path: '/ranking'
+      fullPath: '/ranking'
+      preLoaderRoute: typeof RankingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/leaderboard': {
       id: '/leaderboard'
       path: '/leaderboard'
@@ -209,11 +229,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/history': {
-      id: '/history'
-      path: '/history'
-      fullPath: '/history'
-      preLoaderRoute: typeof HistoryRouteImport
+    '/howto': {
+      id: '/howto'
+      path: '/howto'
+      fullPath: '/howto'
+      preLoaderRoute: typeof HowtoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gacha': {
@@ -278,8 +298,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GachaRoute: GachaRoute,
-  HistoryRoute: HistoryRoute,
+  HowtoRoute: HowtoRoute,
   LeaderboardRoute: LeaderboardRoute,
+  RankingRoute: RankingRoute,
   SoloRoute: SoloRoute,
   WardrobeRoute: WardrobeRoute,
   DevGamePreviewRoute: DevGamePreviewRoute,

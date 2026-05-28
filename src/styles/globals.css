@@ -57,6 +57,8 @@
   --text-sm: 14px;
   --text-md: 16px;
   --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
 
   /* === 스페이싱 — PixelButton 사이즈 (h-*, w-*, p-*, m-* 자동 생성) === */
   --spacing-button-sm: 32px;
@@ -100,9 +102,17 @@
   --color-bg-card: #ffffff;
   --color-border-card: var(--color-pink-300);
   --color-text-primary: var(--color-ink-base);
+  --color-text-muted: var(--color-ink-soft);
+  --color-text-accent: var(--color-pink-700);
 
   /* === PixelCard 그림자 === */
   --shadow-card: 3px 3px 0 var(--color-ink-base);
+
+  /* === 강조 카드 그림자 (rest / active — setup 모달 ready 분기 등) === */
+  --shadow-card-rest: 4px 4px 0 var(--color-ink-base);
+  --shadow-card-active:
+    0 0 0 4px color-mix(in srgb, var(--color-pink-700) 33%, transparent),
+    4px 4px 0 var(--color-pink-700);
 
   /* === NavButton (사이드 탭) 색상 === */
   --color-tab-default: var(--color-pink-600);
@@ -159,6 +169,25 @@
   /* === CenterModal 애니메이션 (keyframes는 animations.css) === */
   --animate-backdrop-in: backdrop-in 180ms ease-out;
   --animate-card-in: card-in 220ms ease-out;
+
+  /* === 게임 애니메이션 (keyframes는 src/game/keyframes.css) === */
+  --animate-kiss-shake: kiss-shake 400ms ease-out;
+  --animate-kiss-bounce: kiss-bounce 500ms ease-out;
+  --animate-gameover-shake: gameover-shake 600ms ease-out;
+  --animate-game-stage-shake: game-stage-shake 500ms ease-out;
+  --animate-game-stage-flash: game-stage-flash 500ms ease-out forwards;
+  --animate-mwah-pop: mwah-pop 0.7s ease-out forwards;
+  --animate-level-up-rays: level-up-rays 1.8s ease-out forwards;
+  --animate-level-up-burst: level-up-burst 1.8s ease-out forwards;
+  --animate-shockwave-expand: shockwave-expand 0.3s ease-out forwards;
+  --animate-shield-pulse: shield-pulse 0.8s ease-in-out infinite;
+  --animate-warn-pulse: warn-pulse 0.35s ease-in-out infinite;
+  --animate-item-bob: item-bob 1.4s ease-in-out infinite;
+  --animate-item-expire: item-expire 0.5s ease-in-out infinite;
+  --animate-pvp-time-pulse: pvp-time-pulse 600ms ease-in-out infinite;
+
+  /* === 상태 색상 (Tailwind utility 생성용 노출) === */
+  --color-danger: #d94747;
 
   /* === 게임 시각 토큰 (Tailwind utility 생성용 — bg-game-accent-gold 등) === */
   --color-game-accent-gold: #fbbf24;

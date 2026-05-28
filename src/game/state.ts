@@ -143,11 +143,3 @@ export type SoloHistoryEntry = {
   elapsed: number // ms
   date: string // ISO
 }
-
-export type PvpHistoryEntry = {
-  id: string
-  winner: 'chi' | 'cat' | 'draw'
-  kissCount: number
-  elapsed: number // ms
-  date: string // ISO
-}

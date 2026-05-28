@@ -1,4 +1,5 @@
 import { IconHeartFilled, IconShield, IconClock } from '@tabler/icons-react'
+import clsx from 'clsx'
 
 import { SHIELD_DURATION } from '@/game/constants'
 import type { EffectState } from '@/game/state'
@@ -41,29 +42,21 @@ export function PvpHud(props: PvpHudProps) {
       {/* 중앙 상단 stack — 시간 칩 + 카운트 칩 */}
       <div className="top-md gap-xs absolute left-1/2 flex -translate-x-1/2 flex-col items-center">
         <div
-          className={CHIP_BASE}
-          style={{
-            color: isDanger ? 'var(--color-danger)' : undefined,
-            borderColor: isDanger ? 'var(--color-danger)' : undefined,
-            animation: isDanger
-              ? 'pvp-time-pulse 600ms ease-in-out infinite'
-              : undefined,
-          }}
+          className={clsx(
+            CHIP_BASE,
+            isDanger && 'text-danger border-danger animate-pvp-time-pulse',
+          )}
         >
           <IconClock
             size={16}
             stroke={2.5}
-            style={{
-              color: isDanger ? 'var(--color-danger)' : 'var(--color-ink-base)',
-            }}
+            className={isDanger ? 'text-danger' : 'text-ink-base'}
           />
-          <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {formatMmss(remainingMs)}
-          </span>
+          <span className="tabular-nums">{formatMmss(remainingMs)}</span>
         </div>
         <div className={CHIP_BASE}>
           <IconHeartFilled size={16} className="text-pink-700" />
-          <span style={{ fontVariantNumeric: 'tabular-nums' }}>
+          <span className="tabular-nums">
             {kissCount} / {kissGoal}
           </span>
         </div>
@@ -85,17 +78,12 @@ export function PvpHud(props: PvpHudProps) {
 function ShieldGauge({ remaining }: { remaining: number }) {
   return (
     <div className="bg-bg-card border-ink-base gap-xs rounded-pill px-sm py-xs flex items-center border-2">
-      <IconShield
-        size={16}
-        stroke={2.5}
-        style={{ color: 'var(--color-game-shield-blue)' }}
-      />
+      <IconShield size={16} stroke={2.5} className="text-game-shield-blue" />
       <div className="rounded-pill h-1 w-9 overflow-hidden bg-pink-50">
         <div
-          className="rounded-pill h-full transition-[width] duration-150 ease-linear"
+          className="rounded-pill bg-game-shield-blue h-full transition-[width] duration-150 ease-linear"
           style={{
             width: `${Math.max(0, Math.min(1, remaining / SHIELD_DURATION)) * 100}%`,
-            background: 'var(--color-game-shield-blue)',
           }}
         />
       </div>

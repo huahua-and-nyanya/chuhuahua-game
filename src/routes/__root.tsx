@@ -15,7 +15,6 @@ import { useCoins } from '@/features/coins/useCoins'
 import { VirtualController } from '@/game/ui/VirtualController'
 import { useResponsiveScale } from '@/hooks/useResponsiveScale'
 import { getCurrentSeason } from '@/lib/season'
-import { CenterModal } from '@/ui/CenterModal'
 import { CoinChip } from '@/ui/CoinChip'
 import { IconNavButton } from '@/ui/IconNavButton'
 import { NavButton } from '@/ui/NavButton'
@@ -38,7 +37,7 @@ export const Route = createRootRoute({
 const TOP_LEFT_SLOT_CLASSES =
   'absolute top-frame-inner left-frame-inner flex flex-row gap-sm z-[2]'
 const CORNER_ACTIONS_SLOT_CLASSES =
-  'absolute top-frame-inner right-frame-inner flex flex-row gap-sm z-[2] max-md:hidden'
+  'absolute top-frame-inner right-frame-inner flex flex-row gap-sm z-[2]'
 const SIDE_MENU_SLOT_CLASSES =
   'absolute right-frame-inner bottom-frame-inner flex flex-col gap-nav-button-gap z-[2] max-md:hidden'
 
@@ -46,11 +45,13 @@ function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const isMain = pathname === '/'
   const isSolo = pathname === '/solo'
+  const isPvpLocal = pathname === '/multi/local'
+  const isContentRoute = ['/ranking', '/leaderboard', '/howto'].includes(
+    pathname,
+  )
   const navigate = useNavigate()
   const { coins } = useCoins()
   const [multiOpen, setMultiOpen] = useState(false)
-  const [guideOpen, setGuideOpen] = useState(false)
-  const [rankingOpen, setRankingOpen] = useState(false)
   const { scale, isMobile, dsFrameMaxWidth } = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
 
@@ -71,12 +72,12 @@ function RootLayout() {
       <IconNavButton
         icon={ICON_ASSETS.ranking}
         alt="랭킹"
-        onClick={() => setRankingOpen(true)}
+        onClick={() => navigate({ to: '/ranking' })}
       />
       <IconNavButton
         icon={ICON_ASSETS.help}
         alt="게임 방법"
-        onClick={() => setGuideOpen(true)}
+        onClick={() => navigate({ to: '/howto' })}
       />
     </>
   )
@@ -121,6 +122,8 @@ function RootLayout() {
       )
     } else if (isSolo) {
       dsMenuRow = <div id="game-controls-slot" className="w-full" />
+    } else if (isPvpLocal) {
+      dsMenuRow = <div id="pvp-controls-slot" className="w-full" />
     }
   }
 
@@ -138,7 +141,9 @@ function RootLayout() {
       <div className="page-bg" style={{ backgroundImage: `url(${seasonBg})` }}>
         <main className={styles.page}>
           <div className={styles.frameStack}>
-            {isMobile ? (
+            {isContentRoute ? (
+              <Outlet />
+            ) : isMobile ? (
               <DSFrame maxWidth={dsFrameMaxWidth}>
                 <GameFrameCard scale={scale}>{gameCardChildren}</GameFrameCard>
                 {dsMenuRow}
@@ -147,10 +152,18 @@ function RootLayout() {
             ) : (
               <>
                 <GameFrameCard scale={scale}>{gameCardChildren}</GameFrameCard>
+                {/* 컨트롤 slot은 absolute로 normal flow에서 빼서 frameStack 높이에 영향 0.
+                    → 카드 위치가 메인/솔로/PvP 모두 viewport 정중앙에 고정 (위로 밀리지 않음). */}
                 {isSolo && (
                   <div
                     id="game-controls-slot"
-                    className="mt-md flex justify-center"
+                    className="mt-md absolute top-full right-0 left-0 flex justify-center"
+                  />
+                )}
+                {isPvpLocal && (
+                  <div
+                    id="pvp-controls-slot"
+                    className="mt-md absolute top-full right-0 left-0 flex justify-center"
                   />
                 )}
               </>
@@ -163,20 +176,6 @@ function RootLayout() {
         open={multiOpen}
         onClose={() => setMultiOpen(false)}
       />
-      <CenterModal
-        open={guideOpen}
-        onClose={() => setGuideOpen(false)}
-        title="게임 방법"
-      >
-        준비 중
-      </CenterModal>
-      <CenterModal
-        open={rankingOpen}
-        onClose={() => setRankingOpen(false)}
-        title="랭킹"
-      >
-        준비 중
-      </CenterModal>
 
       {import.meta.env.DEV && (
         <TanStackRouterDevtools position="bottom-right" />

@@ -10,40 +10,57 @@ export type QuitConfirmModalProps = {
   open: boolean
   onCancel: () => void
   onConfirm: () => void
+  title?: string
+  children?: React.ReactNode
+  cancelLabel?: string
+  confirmLabel?: string
 }
 
 export function QuitConfirmModal({
   open,
   onCancel,
   onConfirm,
+  title = '정말 그만둘래?',
+  children,
+  cancelLabel = '더 놀래',
+  confirmLabel = '그만 둘래',
 }: QuitConfirmModalProps) {
   return (
     <CenterModal
       open={open}
       onClose={onCancel}
-      title="정말 그만둘래?"
+      title={title}
       closeOnBackdropClick={false}
       closeOnEscape={false}
     >
       <div className="gap-md p-md flex flex-col items-center text-center">
-        <div className="relative mx-auto h-40 w-40 overflow-hidden">
-          <img
-            src={CHARACTER_ASSETS.chihuahuaSad}
-            alt="슬픈 츄와와"
-            className="h-full w-full object-contain"
-          />
-        </div>
-        <p className="text-text-primary font-body text-sm leading-relaxed">
-          지금 그만두면
-          <br />
-          뽀뽀 도전이 끝나버려요!
-        </p>
-        <div className="gap-md mt-sm flex">
-          <PixelButton variant="secondary" onClick={onCancel}>
-            더 놀래
+        {children ?? (
+          <>
+            <div className="relative mx-auto h-40 w-40 overflow-hidden">
+              <img
+                src={CHARACTER_ASSETS.chihuahuaSad}
+                alt="슬픈 츄와와"
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <p className="text-text-primary font-body text-sm leading-relaxed">
+              지금 그만두면
+              <br />
+              뽀뽀 도전이 끝나버려요!
+            </p>
+          </>
+        )}
+        <div className="gap-sm mt-sm flex w-full justify-center">
+          <PixelButton variant="secondary" size="lg" onClick={onCancel}>
+            {cancelLabel}
           </PixelButton>
-          <PixelButton variant="primary" onClick={onConfirm}>
-            그만 둘래
+          <PixelButton
+            className="w-full"
+            variant="primary"
+            size="lg"
+            onClick={onConfirm}
+          >
+            {confirmLabel}
           </PixelButton>
         </div>
       </div>

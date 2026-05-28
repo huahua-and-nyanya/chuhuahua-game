@@ -96,6 +96,10 @@
   --shadow-button-hover: 4px 4px 0 var(--color-ink-base);
   --shadow-button-pressed: 1px 1px 0 var(--color-ink-base);
   --shadow-card: 3px 3px 0 var(--color-ink-base);
+  --shadow-card-rest: 4px 4px 0 var(--color-ink-base);
+  --shadow-card-active:
+    0 0 0 4px color-mix(in srgb, var(--color-pink-700) 33%, transparent),
+    4px 4px 0 var(--color-pink-700);
   --shadow-modal: 6px 6px 0 var(--color-ink-base);
   --shadow-nav-rest: 3px 3px 0 var(--color-ink-base);
   --shadow-nav-hover: 4px 4px 0 var(--color-ink-base);

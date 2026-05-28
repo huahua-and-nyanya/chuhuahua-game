@@ -1,0 +1,32 @@
+/*
+ * 영수증 페이지 그리드 — 데스크탑은 이름 1fr 가변, 모바일은 고정 폭(가로 스크롤).
+ * 4px 그리드 준수.
+ */
+
+.soloGrid {
+  display: grid;
+  align-items: center;
+  column-gap: 8px;
+  grid-template-columns:
+    minmax(0, 36px) minmax(0, 1fr) minmax(0, 56px) minmax(0, 52px)
+    minmax(0, 44px) minmax(0, 76px);
+}
+
+.pvpGrid {
+  display: grid;
+  align-items: center;
+  column-gap: 8px;
+  grid-template-columns:
+    minmax(0, 36px) minmax(0, 1fr) minmax(0, 60px) minmax(0, 76px)
+    minmax(0, 76px);
+}
+
+@media (max-width: 768px) {
+  /* 모바일 — 이름 칸 고정 160px. 칼럼 합 > 모바일 가용 폭 → 부모 wrapper에서 가로 스크롤 */
+  .soloGrid {
+    grid-template-columns: 36px 160px 56px 52px 44px 76px;
+  }
+  .pvpGrid {
+    grid-template-columns: 36px 160px 60px 76px 76px;
+  }
+}
