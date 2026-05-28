@@ -8,6 +8,9 @@ import type { SoloEntry } from '@/features/history/types'
 import { usePvpHistory } from '@/features/pvp-history/usePvpHistory'
 import type { PvpEntry } from '@/features/pvp-history/types'
 import { QuitConfirmModal } from '@/game/ui/QuitConfirmModal'
+import { PixelCard } from '@/ui/PixelCard'
+
+import styles from './-styles/ranking.module.css'
 
 export const Route = createFileRoute('/ranking')({
   component: RankingPage,
@@ -43,10 +46,10 @@ function RankingPage() {
 
   return (
     <div className="px-4 py-4">
-      {/* 영수증 카드 — viewport 내부 스크롤, 헤더 침범 X */}
-      <div
-        className="relative mx-auto w-full max-w-[640px] overflow-y-auto bg-bg-card shadow-card"
-        style={{ maxHeight: 'calc(100dvh - 96px)' }}
+      {/* 영수증 카드 — PixelCard padding=0, 내부에서 padding 직접 */}
+      <PixelCard
+        padding="0"
+        className="relative mx-auto max-h-[calc(100dvh-96px)] w-full max-w-[640px] overflow-y-auto"
       >
         {/* 4코너 분홍 도트 */}
         <CornerDots />
@@ -73,10 +76,7 @@ function RankingPage() {
             >
               혼자서
             </UnderlineTab>
-            <UnderlineTab
-              active={tab === 'pvp'}
-              onClick={() => setTab('pvp')}
-            >
+            <UnderlineTab active={tab === 'pvp'} onClick={() => setTab('pvp')}>
               둘이서
             </UnderlineTab>
           </div>
@@ -122,13 +122,13 @@ function RankingPage() {
             <button
               type="button"
               onClick={() => setConfirmClearOpen(true)}
-              className="text-text-primary cursor-pointer rounded-full border-2 border-solid border-ink-base bg-transparent px-5 py-2 text-xs font-medium shadow-[2px_2px_0_var(--color-ink-base)] transition-[transform,box-shadow] duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
+              className="text-text-primary border-ink-base cursor-pointer rounded-full border-2 border-solid bg-transparent px-5 py-2 text-xs font-medium shadow-[2px_2px_0_var(--color-ink-base)] transition-[transform,box-shadow] duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
             >
               기록 초기화
             </button>
           </div>
         </div>
-      </div>
+      </PixelCard>
 
       {/* 초기화 확인 모달 */}
       <QuitConfirmModal
@@ -160,13 +160,13 @@ function CornerDots() {
       <div className={clsx(base, 'top-4 left-4')} />
       <div className={clsx(base, 'top-4 right-4')} />
       <div className={clsx(base, 'bottom-4 left-4')} />
-      <div className={clsx(base, 'bottom-4 right-4')} />
+      <div className={clsx(base, 'right-4 bottom-4')} />
     </>
   )
 }
 
 function Dashed() {
-  return <div className="my-4 border-t border-dashed border-ink-base" />
+  return <div className="border-ink-base my-4 border-t border-dashed" />
 }
 
 function ZigzagDivider() {
@@ -227,8 +227,6 @@ function MetaBox({ mode, count }: { mode: Tab; count: number }) {
 
 // ── 솔로 ────────────────────────────────────────────────────────────
 
-const SOLO_COLS = '36px 72px 1fr 52px 44px 76px'
-
 function SoloSection({
   entries,
   subTab,
@@ -264,8 +262,10 @@ function SoloSection({
       ) : (
         <>
           <div
-            className="text-text-primary grid items-center border-b border-dashed border-ink-soft/50 px-2 py-2 text-[11px] tracking-[1.5px]"
-            style={{ gridTemplateColumns: SOLO_COLS }}
+            className={clsx(
+              styles.soloGrid,
+              'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] tracking-[1.5px]',
+            )}
           >
             <span>순위</span>
             <span>이름</span>
@@ -302,7 +302,7 @@ function StampButton({
       type="button"
       onClick={onClick}
       className={clsx(
-        'cursor-pointer rounded-full border-2 border-solid border-ink-base px-3 py-1 text-xs transition-[background,color,box-shadow,transform] duration-150',
+        'border-ink-base cursor-pointer rounded-full border-2 border-solid px-3 py-1 text-xs transition-[background,color,box-shadow,transform] duration-150',
         active
           ? 'bg-ink-base text-text-on-pink translate-x-0.5 translate-y-0.5 shadow-none'
           : 'bg-bg-card text-text-primary shadow-[2px_2px_0_var(--color-ink-base)]',
@@ -325,47 +325,46 @@ function SoloRow({
   return (
     <div
       className={clsx(
-        'text-text-primary relative grid items-center px-2 py-2 text-[13px]',
+        'relative px-2 py-2',
         isRecord &&
-          'my-2 rounded border border-solid border-pink-700 bg-[#fff0e8]',
+          '-mx-2 my-2 rounded border border-solid border-pink-700 bg-[#fff0e8]',
       )}
-      style={{ gridTemplateColumns: SOLO_COLS }}
     >
       {isRecord && (
-        <span className="bg-pink-700 text-text-on-pink absolute -top-2 -right-1 rounded px-2 py-1 text-[9px] font-bold tracking-[1px]">
+        <span className="text-text-on-pink absolute -top-2 -right-1 rounded bg-pink-700 px-2 py-1 text-[9px] font-bold tracking-[1px]">
           신기록
         </span>
       )}
-      <span className={clsx(isRecord && 'font-bold')}>#{rank}</span>
-      <span
-        className={clsx(
-          'min-w-0 truncate pr-1 text-[11px]',
-          entry.name ? 'font-bold' : 'text-text-muted',
-        )}
-      >
-        {entry.name || '—'}
-      </span>
-      <span
-        className={clsx(
-          isRecord
-            ? 'text-text-accent text-[16px] font-bold'
-            : 'text-[14px]',
-        )}
-      >
-        💕 {entry.score}
-      </span>
-      <span className="text-center text-xs">×{entry.maxCombo}</span>
-      <span className="text-center text-xs">{entry.maxLevel}</span>
-      <span className="text-text-muted text-right text-[11px]">
-        {formatDate(entry.date)}
-      </span>
+      <div className={clsx(styles.soloGrid, 'text-text-primary text-[13px]')}>
+        <span className={clsx(isRecord && 'font-bold')}>#{rank}</span>
+        <span
+          className={clsx(
+            'min-w-0 truncate pr-1 text-[11px]',
+            entry.name ? 'font-bold' : 'text-text-muted',
+          )}
+        >
+          {entry.name || '—'}
+        </span>
+        <span
+          className={clsx(
+            'inline-flex items-baseline gap-1',
+            isRecord ? 'text-text-accent text-[16px] font-bold' : 'text-[14px]',
+          )}
+        >
+          <span>💕</span>
+          <span>{entry.score}</span>
+        </span>
+        <span className="text-center text-xs">×{entry.maxCombo}</span>
+        <span className="text-center text-xs">{entry.maxLevel}</span>
+        <span className="text-text-muted text-right text-[11px]">
+          {formatDate(entry.date)}
+        </span>
+      </div>
     </div>
   )
 }
 
 // ── PvP ─────────────────────────────────────────────────────────────
-
-const PVP_COLS = '36px 1fr 60px 76px 76px'
 
 function PvpSection({ entries }: { entries: PvpEntry[] }) {
   if (entries.length === 0) {
@@ -380,8 +379,10 @@ function PvpSection({ entries }: { entries: PvpEntry[] }) {
   return (
     <>
       <div
-        className="text-text-primary grid items-center border-b border-dashed border-ink-soft/50 px-2 py-2 text-[11px] tracking-[1.5px]"
-        style={{ gridTemplateColumns: PVP_COLS }}
+        className={clsx(
+          styles.pvpGrid,
+          'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] tracking-[1.5px]',
+        )}
       >
         <span>순위</span>
         <span>승자</span>
@@ -399,26 +400,25 @@ function PvpSection({ entries }: { entries: PvpEntry[] }) {
 function PvpRow({ entry, rank }: { entry: PvpEntry; rank: number }) {
   const isChi = entry.winner === 'chi'
   return (
-    <div
-      className="text-text-primary grid items-center px-2 py-2 text-[13px]"
-      style={{ gridTemplateColumns: PVP_COLS }}
-    >
-      <span>#{rank}</span>
-      <span
-        className={clsx(
-          'truncate text-sm',
-          isChi ? 'text-text-accent' : 'text-text-primary',
-        )}
-      >
-        {isChi ? '츄와와 승 🐶' : '고양이 승 😼'}
-      </span>
-      <span className="text-center text-sm">💋 {entry.kissCount}</span>
-      <span className="text-center text-xs">
-        {(entry.elapsed / 1000).toFixed(1)}초
-      </span>
-      <span className="text-text-muted text-right text-[11px]">
-        {formatDate(entry.date)}
-      </span>
+    <div className="px-2 py-2">
+      <div className={clsx(styles.pvpGrid, 'text-text-primary text-[13px]')}>
+        <span>#{rank}</span>
+        <span
+          className={clsx(
+            'min-w-0 truncate text-sm',
+            isChi ? 'text-text-accent' : 'text-text-primary',
+          )}
+        >
+          {isChi ? '츄와와 승 🐶' : '고양이 승 😼'}
+        </span>
+        <span className="text-center text-sm">💋 {entry.kissCount}</span>
+        <span className="text-center text-xs">
+          {(entry.elapsed / 1000).toFixed(1)}초
+        </span>
+        <span className="text-text-muted text-right text-[11px]">
+          {formatDate(entry.date)}
+        </span>
+      </div>
     </div>
   )
 }
@@ -469,15 +469,14 @@ function Footer({
 }
 
 function SoloSummary({ entries }: { entries: SoloEntry[] }) {
-  const best =
-    entries.length > 0 ? Math.max(...entries.map((e) => e.score)) : 0
+  const best = entries.length > 0 ? Math.max(...entries.map((e) => e.score)) : 0
   const bestCombo =
     entries.length > 0 ? Math.max(...entries.map((e) => e.maxCombo)) : 0
   return (
     <div className="text-text-primary w-full max-w-[280px] px-1 text-[13px]">
       <SummaryRow label="총 플레이" value={String(entries.length)} bold />
       <SummaryRow label="최고 점수" value={`${best} ♡`} bold accent />
-      <div className="mt-1 border-t border-solid border-ink-base pt-2 pb-1">
+      <div className="border-ink-base mt-1 border-t border-solid pt-2 pb-1">
         <SummaryRow label="최고 콤보" value={`×${bestCombo}`} bold />
       </div>
     </div>
@@ -490,13 +489,8 @@ function PvpSummary({ entries }: { entries: PvpEntry[] }) {
   return (
     <div className="text-text-primary w-full max-w-[280px] px-1 text-[13px]">
       <SummaryRow label="총 플레이" value={String(entries.length)} bold />
-      <SummaryRow
-        label="💋 츄와와 승"
-        value={String(chiWins)}
-        bold
-        accent
-      />
-      <div className="mt-1 border-t border-solid border-ink-base pt-2 pb-1">
+      <SummaryRow label="💋 츄와와 승" value={String(chiWins)} bold accent />
+      <div className="border-ink-base mt-1 border-t border-solid pt-2 pb-1">
         <SummaryRow label="🐱 고양이 승" value={String(catWins)} bold />
       </div>
     </div>
@@ -515,11 +509,9 @@ function SummaryRow({
   accent?: boolean
 }) {
   return (
-    <div className="flex justify-between py-1">
+    <div className="flex justify-between py-2">
       <span>{label}</span>
-      <span
-        className={clsx(bold && 'font-bold', accent && 'text-text-accent')}
-      >
+      <span className={clsx(bold && 'font-bold', accent && 'text-text-accent')}>
         {value}
       </span>
     </div>

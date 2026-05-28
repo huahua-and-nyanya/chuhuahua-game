@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react'
 import clsx from 'clsx'
 
+type Padding = '0' | 'md' | 'lg'
+
 interface PixelCardProps {
   children: ReactNode
   header?: ReactNode
   className?: string
+  padding?: Padding
 }
 
 const ROOT_CLASSES =
@@ -19,13 +22,29 @@ const HEADER_CLASSES =
   'py-md px-lg ' +
   'border-b-2 border-dashed border-b-border-card'
 
-const BODY_CLASSES = 'p-lg font-body text-text-primary'
+const PADDING_CLASSES: Record<Padding, string> = {
+  '0': '',
+  md: 'p-md',
+  lg: 'p-lg',
+}
 
-export function PixelCard({ children, header, className }: PixelCardProps) {
+export function PixelCard({
+  children,
+  header,
+  className,
+  padding = 'lg',
+}: PixelCardProps) {
   return (
     <div className={clsx(ROOT_CLASSES, className)}>
       {header && <div className={HEADER_CLASSES}>{header}</div>}
-      <div className={BODY_CLASSES}>{children}</div>
+      <div
+        className={clsx(
+          'font-body text-text-primary',
+          PADDING_CLASSES[padding],
+        )}
+      >
+        {children}
+      </div>
     </div>
   )
 }
