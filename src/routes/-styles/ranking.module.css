@@ -1,6 +1,7 @@
 /*
- * 영수증 페이지 그리드 — minmax(0, ...) + 모바일 칼럼 축소
- * 4px 그리드 준수 (값 verbatim은 ranking.tsx 보고서 참조).
+ * 영수증 페이지 그리드 — 이름이 1fr(가변), 점수/콤보/레벨/날짜는 고정.
+ * 모바일은 칼럼 폭 축소.
+ * 4px 그리드 준수.
  */
 
 .soloGrid {
@@ -8,7 +9,7 @@
   align-items: center;
   column-gap: 8px;
   grid-template-columns:
-    minmax(0, 36px) minmax(0, 72px) minmax(0, 1fr) minmax(0, 52px)
+    minmax(0, 36px) minmax(0, 1fr) minmax(0, 56px) minmax(0, 52px)
     minmax(0, 44px) minmax(0, 76px);
 }
 
@@ -23,13 +24,15 @@
 
 @media (max-width: 768px) {
   .soloGrid {
+    column-gap: 4px;
     grid-template-columns:
-      minmax(0, 36px) minmax(0, 56px) minmax(0, 1fr) minmax(0, 44px)
-      minmax(0, 40px) minmax(0, 64px);
+      minmax(0, 28px) minmax(0, 1fr) minmax(0, 48px) minmax(0, 36px)
+      minmax(0, 24px) minmax(0, 56px);
   }
   .pvpGrid {
+    column-gap: 4px;
     grid-template-columns:
-      minmax(0, 36px) minmax(0, 1fr) minmax(0, 48px) minmax(0, 64px)
-      minmax(0, 64px);
+      minmax(0, 28px) minmax(0, 1fr) minmax(0, 40px) minmax(0, 56px)
+      minmax(0, 56px);
   }
 }

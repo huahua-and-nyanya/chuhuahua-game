@@ -34,17 +34,22 @@ export function PixelCard({
   className,
   padding = 'lg',
 }: PixelCardProps) {
+  const flush = padding === '0' && !header
   return (
     <div className={clsx(ROOT_CLASSES, className)}>
       {header && <div className={HEADER_CLASSES}>{header}</div>}
-      <div
-        className={clsx(
-          'font-body text-text-primary',
-          PADDING_CLASSES[padding],
-        )}
-      >
-        {children}
-      </div>
+      {flush ? (
+        children
+      ) : (
+        <div
+          className={clsx(
+            'font-body text-text-primary',
+            PADDING_CLASSES[padding],
+          )}
+        >
+          {children}
+        </div>
+      )}
     </div>
   )
 }

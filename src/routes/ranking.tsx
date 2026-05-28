@@ -24,6 +24,11 @@ function formatDate(ms: number): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
 }
 
+function formatDateShort(ms: number): string {
+  const d = new Date(ms)
+  return `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
+}
+
 function RankingPage() {
   const [tab, setTab] = useState<Tab>('solo')
   const [soloSubTab, setSoloSubTab] = useState<SoloSubTab>('best')
@@ -46,86 +51,90 @@ function RankingPage() {
 
   return (
     <div className="px-4 py-4">
-      {/* 영수증 카드 — PixelCard padding=0, 내부에서 padding 직접 */}
-      <PixelCard
-        padding="0"
-        className="relative mx-auto max-h-[calc(100dvh-96px)] w-full max-w-[640px] overflow-y-auto"
-      >
-        {/* 4코너 분홍 도트 */}
+      {/* 영수증 카드 — PixelCard padding=0 + 내부 scroll wrapper로 분리.
+          inset dashed/도트는 PixelCard 직접 자식 → scroll과 무관, viewport-bound */}
+      <PixelCard padding="0" className="relative mx-auto w-full max-w-[640px]">
+        {/* 4코너 분홍 도트 (dashed 안쪽) */}
         <CornerDots />
-        {/* inset dashed 테두리 */}
-        <div className="pointer-events-none absolute inset-2 z-0 rounded-[12px] border border-dashed border-pink-300" />
+        {/* inset dashed 테두리 (도트보다 바깥) */}
+        <div className="pointer-events-none absolute inset-4 z-0 rounded-[12px] border border-dashed border-pink-300" />
 
-        {/* 본문 z-1 (inset dashed 위) */}
-        <div className="relative z-[1] px-8 pt-8 pb-6 max-md:px-4 max-md:py-6">
-          {/* 헤더 */}
-          <h1 className="font-display text-text-accent mb-1 text-center text-[32px] leading-none tracking-[4px]">
-            플레이 기록
-          </h1>
-          <p className="text-text-muted text-center text-xs tracking-[4px]">
-            ~ 뽀뽀 돌격 영수증 ~
-          </p>
+        {/* 내부 scroll wrapper — viewport-bound height, 콘텐츠만 스크롤 */}
+        <div className="max-h-[calc(100dvh-96px)] overflow-y-auto">
+          {/* 본문 (dashed 안쪽) */}
+          <div className="relative z-[1] px-8 pt-8 pb-6 max-md:px-6 max-md:py-6">
+            {/* 헤더 */}
+            <h1 className="font-display text-text-accent mb-1 text-center text-[32px] leading-none tracking-[4px]">
+              플레이 기록
+            </h1>
+            <p className="text-text-muted text-center text-xs tracking-[4px]">
+              ~ 뽀뽀 돌격 영수증 ~
+            </p>
 
-          <Dashed />
+            <Dashed />
 
-          {/* 모드 탭 (underline, w-full flex-1) */}
-          <div className="mb-4 flex w-full">
-            <UnderlineTab
-              active={tab === 'solo'}
-              onClick={() => setTab('solo')}
-            >
-              혼자서
-            </UnderlineTab>
-            <UnderlineTab active={tab === 'pvp'} onClick={() => setTab('pvp')}>
-              둘이서
-            </UnderlineTab>
-          </div>
+            {/* 모드 탭 */}
+            <div className="mb-4 flex w-full">
+              <UnderlineTab
+                active={tab === 'solo'}
+                onClick={() => setTab('solo')}
+              >
+                혼자서
+              </UnderlineTab>
+              <UnderlineTab
+                active={tab === 'pvp'}
+                onClick={() => setTab('pvp')}
+              >
+                둘이서
+              </UnderlineTab>
+            </div>
 
-          {/* 메타 박스 */}
-          <MetaBox mode={tab} count={entries.length} />
+            {/* 메타 박스 — 모바일 col stack */}
+            <MetaBox mode={tab} count={entries.length} />
 
-          <Dashed />
+            <Dashed />
 
-          {/* 콘텐츠 */}
-          {tab === 'solo' ? (
-            <SoloSection
-              entries={soloSorted}
-              subTab={soloSubTab}
-              onSubTab={setSoloSubTab}
+            {/* 콘텐츠 */}
+            {tab === 'solo' ? (
+              <SoloSection
+                entries={soloSorted}
+                subTab={soloSubTab}
+                onSubTab={setSoloSubTab}
+              />
+            ) : (
+              <PvpSection entries={pvp.entries} />
+            )}
+
+            {/* 물결 SVG */}
+            <ZigzagDivider />
+
+            {/* 푸터 */}
+            <Footer
+              mode={tab}
+              soloEntries={solo.entries}
+              pvpEntries={pvp.entries}
             />
-          ) : (
-            <PvpSection entries={pvp.entries} />
-          )}
 
-          {/* 물결 SVG */}
-          <ZigzagDivider />
+            {/* 시리얼 */}
+            <div className="mt-6 text-center">
+              <p className="text-text-primary text-xs tracking-[4px]">
+                감사합니다 · 또 뽀뽀하러 와요
+              </p>
+              <p className="text-text-accent mt-1 text-[11px] font-bold tracking-[4px]">
+                CHUHUAHUA-GAME-2026
+              </p>
+            </div>
 
-          {/* 푸터 */}
-          <Footer
-            mode={tab}
-            soloEntries={solo.entries}
-            pvpEntries={pvp.entries}
-          />
-
-          {/* 시리얼 */}
-          <div className="mt-6 text-center">
-            <p className="text-text-primary text-xs tracking-[4px]">
-              감사합니다 · 또 뽀뽀하러 와요
-            </p>
-            <p className="text-text-accent mt-1 text-[11px] font-bold tracking-[4px]">
-              CHUHUAHUA-GAME-2026
-            </p>
-          </div>
-
-          {/* 기록 초기화 버튼 */}
-          <div className="mt-4 flex justify-center">
-            <button
-              type="button"
-              onClick={() => setConfirmClearOpen(true)}
-              className="text-text-primary border-ink-base cursor-pointer rounded-full border-2 border-solid bg-transparent px-5 py-2 text-xs font-medium shadow-[2px_2px_0_var(--color-ink-base)] transition-[transform,box-shadow] duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
-            >
-              기록 초기화
-            </button>
+            {/* 기록 초기화 버튼 */}
+            <div className="mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setConfirmClearOpen(true)}
+                className="text-text-primary border-ink-base cursor-pointer rounded-full border-2 border-solid bg-transparent px-5 py-2 text-xs font-medium shadow-[2px_2px_0_var(--color-ink-base)] transition-[transform,box-shadow] duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
+              >
+                기록 초기화
+              </button>
+            </div>
           </div>
         </div>
       </PixelCard>
@@ -154,13 +163,13 @@ function RankingPage() {
 // ── 공용 ────────────────────────────────────────────────────────────
 
 function CornerDots() {
-  const base = 'absolute h-2 w-2 bg-pink-700'
+  const base = 'absolute h-2 w-2 bg-pink-700 z-[1]'
   return (
     <>
-      <div className={clsx(base, 'top-4 left-4')} />
-      <div className={clsx(base, 'top-4 right-4')} />
-      <div className={clsx(base, 'bottom-4 left-4')} />
-      <div className={clsx(base, 'right-4 bottom-4')} />
+      <div className={clsx(base, 'top-6 left-6')} />
+      <div className={clsx(base, 'top-6 right-6')} />
+      <div className={clsx(base, 'bottom-6 left-6')} />
+      <div className={clsx(base, 'right-6 bottom-6')} />
     </>
   )
 }
@@ -216,7 +225,7 @@ function UnderlineTab({
 function MetaBox({ mode, count }: { mode: Tab; count: number }) {
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, '.')
   return (
-    <div className="text-text-primary grid grid-cols-2 gap-x-6 gap-y-2 py-2 text-xs leading-relaxed">
+    <div className="text-text-primary grid grid-cols-2 gap-x-6 gap-y-2 py-2 text-xs leading-relaxed max-md:grid-cols-1 max-md:gap-y-1">
       <span>발행일자 : {today}</span>
       <span>플레이어 : {mode === 'solo' ? 'YOU' : 'P1 vs P2'}</span>
       <span>기록번호 : #{String(count).padStart(3, '0')}</span>
@@ -339,7 +348,7 @@ function SoloRow({
         <span className={clsx(isRecord && 'font-bold')}>#{rank}</span>
         <span
           className={clsx(
-            'min-w-0 truncate pr-1 text-[11px]',
+            'block min-w-0 overflow-hidden text-[11px] leading-[1.8] text-ellipsis whitespace-nowrap',
             entry.name ? 'font-bold' : 'text-text-muted',
           )}
         >
@@ -356,8 +365,9 @@ function SoloRow({
         </span>
         <span className="text-center text-xs">×{entry.maxCombo}</span>
         <span className="text-center text-xs">{entry.maxLevel}</span>
-        <span className="text-text-muted text-right text-[11px]">
-          {formatDate(entry.date)}
+        <span className="text-text-muted text-right text-[11px] leading-[1.8]">
+          <span className="max-md:hidden">{formatDate(entry.date)}</span>
+          <span className="md:hidden">{formatDateShort(entry.date)}</span>
         </span>
       </div>
     </div>
@@ -405,18 +415,22 @@ function PvpRow({ entry, rank }: { entry: PvpEntry; rank: number }) {
         <span>#{rank}</span>
         <span
           className={clsx(
-            'min-w-0 truncate text-sm',
+            'block min-w-0 overflow-hidden text-sm leading-[1.8] text-ellipsis whitespace-nowrap',
             isChi ? 'text-text-accent' : 'text-text-primary',
           )}
         >
-          {isChi ? '츄와와 승 🐶' : '고양이 승 😼'}
+          <span className="max-md:hidden">
+            {isChi ? '츄와와 승 🐶' : '고양이 승 😼'}
+          </span>
+          <span className="md:hidden">{isChi ? '🐶 승' : '😼 승'}</span>
         </span>
         <span className="text-center text-sm">💋 {entry.kissCount}</span>
         <span className="text-center text-xs">
           {(entry.elapsed / 1000).toFixed(1)}초
         </span>
-        <span className="text-text-muted text-right text-[11px]">
-          {formatDate(entry.date)}
+        <span className="text-text-muted text-right text-[11px] leading-[1.8]">
+          <span className="max-md:hidden">{formatDate(entry.date)}</span>
+          <span className="md:hidden">{formatDateShort(entry.date)}</span>
         </span>
       </div>
     </div>
