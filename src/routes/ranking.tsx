@@ -51,18 +51,20 @@ function RankingPage() {
 
   return (
     <div className="px-4 py-4">
-      {/* 영수증 카드 — PixelCard padding=0 + 내부 scroll wrapper로 분리.
-          inset dashed/도트는 PixelCard 직접 자식 → scroll과 무관, viewport-bound */}
-      <PixelCard padding="0" className="relative mx-auto w-full max-w-[640px]">
-        {/* 4코너 분홍 도트 (dashed 안쪽) */}
+      {/* 영수증 카드 — ROOT은 viewport-bound max-h, 내부 scroll wrapper에 dashed border 통합.
+          콘텐츠가 dashed 박스 밖으로 절대 못 나감 */}
+      <PixelCard
+        padding="0"
+        className="relative mx-auto max-h-[calc(100dvh-96px)] w-full max-w-[640px]"
+      >
+        {/* 4코너 분홍 도트 (ROOT 자식 — dashed border 안쪽 8px 위치) */}
         <CornerDots />
-        {/* inset dashed 테두리 (도트보다 바깥) */}
-        <div className="pointer-events-none absolute inset-4 z-0 rounded-[12px] border border-dashed border-pink-300" />
 
-        {/* 내부 scroll wrapper — viewport-bound height, 콘텐츠만 스크롤 */}
-        <div className="max-h-[calc(100dvh-96px)] overflow-y-auto">
-          {/* 본문 (dashed 안쪽) */}
-          <div className="relative z-[1] px-8 pt-8 pb-6 max-md:px-6 max-md:py-6">
+        {/* dashed 박스 = scroll wrapper. dashed border + rounded + overflow + max-h
+            콘텐츠가 이 영역 밖으로 못 나감 */}
+        <div className="m-4 max-h-[calc(100dvh-128px)] overflow-y-auto rounded-[12px] border border-dashed border-pink-300">
+          {/* 본문 — py-5(20px) 휘게 명시 */}
+          <div className="px-8 py-5 max-md:px-4 max-md:py-5">
             {/* 헤더 */}
             <h1 className="font-display text-text-accent mb-1 text-center text-[32px] leading-none tracking-[4px]">
               플레이 기록
@@ -163,7 +165,8 @@ function RankingPage() {
 // ── 공용 ────────────────────────────────────────────────────────────
 
 function CornerDots() {
-  const base = 'absolute h-2 w-2 bg-pink-700 z-[1]'
+  // dashed border가 inset-4 (16px)이므로 도트는 그 안쪽 8px = top-6 (24px)
+  const base = 'absolute z-[2] h-2 w-2 bg-pink-700'
   return (
     <>
       <div className={clsx(base, 'top-6 left-6')} />
@@ -273,7 +276,7 @@ function SoloSection({
           <div
             className={clsx(
               styles.soloGrid,
-              'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] tracking-[1.5px]',
+              'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] leading-[28px] tracking-[1.5px]',
             )}
           >
             <span>순위</span>
@@ -344,11 +347,17 @@ function SoloRow({
           신기록
         </span>
       )}
-      <div className={clsx(styles.soloGrid, 'text-text-primary text-[13px]')}>
+      {/* row 자체에 leading-[32px] — 모든 자식 inherit, ascender/descender 잘림 방지 */}
+      <div
+        className={clsx(
+          styles.soloGrid,
+          'text-text-primary text-[13px] leading-[32px]',
+        )}
+      >
         <span className={clsx(isRecord && 'font-bold')}>#{rank}</span>
         <span
           className={clsx(
-            'block min-w-0 overflow-hidden text-[11px] leading-[1.8] text-ellipsis whitespace-nowrap',
+            'block min-w-0 overflow-hidden text-[11px] text-ellipsis whitespace-nowrap',
             entry.name ? 'font-bold' : 'text-text-muted',
           )}
         >
@@ -365,7 +374,7 @@ function SoloRow({
         </span>
         <span className="text-center text-xs">×{entry.maxCombo}</span>
         <span className="text-center text-xs">{entry.maxLevel}</span>
-        <span className="text-text-muted text-right text-[11px] leading-[1.8]">
+        <span className="text-text-muted text-right text-[11px]">
           <span className="max-md:hidden">{formatDate(entry.date)}</span>
           <span className="md:hidden">{formatDateShort(entry.date)}</span>
         </span>
@@ -391,7 +400,7 @@ function PvpSection({ entries }: { entries: PvpEntry[] }) {
       <div
         className={clsx(
           styles.pvpGrid,
-          'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] tracking-[1.5px]',
+          'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] leading-[28px] tracking-[1.5px]',
         )}
       >
         <span>순위</span>
@@ -411,11 +420,16 @@ function PvpRow({ entry, rank }: { entry: PvpEntry; rank: number }) {
   const isChi = entry.winner === 'chi'
   return (
     <div className="px-2 py-2">
-      <div className={clsx(styles.pvpGrid, 'text-text-primary text-[13px]')}>
+      <div
+        className={clsx(
+          styles.pvpGrid,
+          'text-text-primary text-[13px] leading-[32px]',
+        )}
+      >
         <span>#{rank}</span>
         <span
           className={clsx(
-            'block min-w-0 overflow-hidden text-sm leading-[1.8] text-ellipsis whitespace-nowrap',
+            'block min-w-0 overflow-hidden text-sm text-ellipsis whitespace-nowrap',
             isChi ? 'text-text-accent' : 'text-text-primary',
           )}
         >
@@ -428,7 +442,7 @@ function PvpRow({ entry, rank }: { entry: PvpEntry; rank: number }) {
         <span className="text-center text-xs">
           {(entry.elapsed / 1000).toFixed(1)}초
         </span>
-        <span className="text-text-muted text-right text-[11px] leading-[1.8]">
+        <span className="text-text-muted text-right text-[11px]">
           <span className="max-md:hidden">{formatDate(entry.date)}</span>
           <span className="md:hidden">{formatDateShort(entry.date)}</span>
         </span>
