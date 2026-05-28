@@ -268,8 +268,9 @@ function SoloSection({
           <span className="opacity-70">게임 탭에서 한판 도전해보세요 💪</span>
         </EmptyState>
       ) : (
-        // 모바일만 가로 스크롤 (데스크탑은 1fr 이름 칸으로 정상 fit)
-        <div className="max-md:overflow-x-auto">
+        // 모바일만 가로 스크롤. w-full + min-w-0으로 부모 chain의 width 강제 끊어
+        // inner.min-w-max가 카드 폭을 늘리지 못하게 막음
+        <div className="w-full min-w-0 max-md:overflow-x-auto">
           <div className="max-md:min-w-max">
             <div
               className={clsx(
@@ -394,8 +395,8 @@ function PvpSection({ entries }: { entries: PvpEntry[] }) {
     )
   }
   return (
-    // 모바일만 가로 스크롤
-    <div className="max-md:overflow-x-auto">
+    // 모바일만 가로 스크롤. w-full + min-w-0으로 부모 chain의 width 강제 끊어
+    <div className="w-full min-w-0 max-md:overflow-x-auto">
       <div className="max-md:min-w-max">
         <div
           className={clsx(
@@ -430,7 +431,7 @@ function PvpRow({ entry, rank }: { entry: PvpEntry; rank: number }) {
         <span>#{rank}</span>
         <span
           className={clsx(
-            'block min-w-0 overflow-hidden text-sm text-ellipsis whitespace-nowrap',
+            'block min-w-0 text-[14px] text-ellipsis whitespace-nowrap',
             isChi ? 'text-text-accent' : 'text-text-primary',
           )}
         >
