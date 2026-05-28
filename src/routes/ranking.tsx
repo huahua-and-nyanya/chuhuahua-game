@@ -24,11 +24,6 @@ function formatDate(ms: number): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
 }
 
-function formatDateShort(ms: number): string {
-  const d = new Date(ms)
-  return `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
-}
-
 function RankingPage() {
   const [tab, setTab] = useState<Tab>('solo')
   const [soloSubTab, setSoloSubTab] = useState<SoloSubTab>('best')
@@ -273,29 +268,31 @@ function SoloSection({
           <span className="opacity-70">게임 탭에서 한판 도전해보세요 💪</span>
         </EmptyState>
       ) : (
-        <>
-          <div
-            className={clsx(
-              styles.soloGrid,
-              'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] leading-7 tracking-[1.5px]',
-            )}
-          >
-            <span>순위</span>
-            <span>이름</span>
-            <span>점수</span>
-            <span className="text-center">콤보</span>
-            <span className="text-center">레벨</span>
-            <span className="text-right">날짜</span>
+        <div className="overflow-x-auto">
+          <div className="min-w-max">
+            <div
+              className={clsx(
+                styles.soloGrid,
+                'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] leading-7 tracking-[1.5px]',
+              )}
+            >
+              <span>순위</span>
+              <span>이름</span>
+              <span>점수</span>
+              <span className="text-center">콤보</span>
+              <span className="text-center">레벨</span>
+              <span className="text-right">날짜</span>
+            </div>
+            {entries.map((e, i) => (
+              <SoloRow
+                key={e.id}
+                entry={e}
+                rank={i + 1}
+                isRecord={subTab === 'best' && i === 0}
+              />
+            ))}
           </div>
-          {entries.map((e, i) => (
-            <SoloRow
-              key={e.id}
-              entry={e}
-              rank={i + 1}
-              isRecord={subTab === 'best' && i === 0}
-            />
-          ))}
-        </>
+        </div>
       )}
     </>
   )
@@ -340,7 +337,7 @@ function SoloRow({
       className={clsx(
         'relative px-2 py-2',
         isRecord &&
-          '-mx-2 my-2 rounded border border-solid border-pink-700 bg-[#fff0e8]',
+          'my-2 rounded border border-solid border-pink-700 bg-[#fff0e8]',
       )}
     >
       {isRecord && (
@@ -376,8 +373,7 @@ function SoloRow({
         <span className="text-center text-xs">×{entry.maxCombo}</span>
         <span className="text-center text-xs">{entry.maxLevel}</span>
         <span className="text-text-muted text-right text-[11px]">
-          <span className="max-md:hidden">{formatDate(entry.date)}</span>
-          <span className="md:hidden">{formatDateShort(entry.date)}</span>
+          {formatDate(entry.date)}
         </span>
       </div>
     </div>
@@ -397,23 +393,25 @@ function PvpSection({ entries }: { entries: PvpEntry[] }) {
     )
   }
   return (
-    <>
-      <div
-        className={clsx(
-          styles.pvpGrid,
-          'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] leading-[28px] tracking-[1.5px]',
-        )}
-      >
-        <span>순위</span>
-        <span>승자</span>
-        <span className="text-center">뽀뽀</span>
-        <span className="text-center">시간</span>
-        <span className="text-right">날짜</span>
+    <div className="overflow-x-auto">
+      <div className="min-w-max">
+        <div
+          className={clsx(
+            styles.pvpGrid,
+            'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] leading-[28px] tracking-[1.5px]',
+          )}
+        >
+          <span>순위</span>
+          <span>승자</span>
+          <span className="text-center">뽀뽀</span>
+          <span className="text-center">시간</span>
+          <span className="text-right">날짜</span>
+        </div>
+        {entries.map((e, i) => (
+          <PvpRow key={e.id} entry={e} rank={i + 1} />
+        ))}
       </div>
-      {entries.map((e, i) => (
-        <PvpRow key={e.id} entry={e} rank={i + 1} />
-      ))}
-    </>
+    </div>
   )
 }
 
@@ -434,18 +432,14 @@ function PvpRow({ entry, rank }: { entry: PvpEntry; rank: number }) {
             isChi ? 'text-text-accent' : 'text-text-primary',
           )}
         >
-          <span className="max-md:hidden">
-            {isChi ? '츄와와 승 🐶' : '고양이 승 😼'}
-          </span>
-          <span className="md:hidden">{isChi ? '🐶 승' : '😼 승'}</span>
+          {isChi ? '츄와와 승 🐶' : '고양이 승 😼'}
         </span>
         <span className="text-center text-sm">💋 {entry.kissCount}</span>
         <span className="text-center text-xs">
           {(entry.elapsed / 1000).toFixed(1)}초
         </span>
         <span className="text-text-muted text-right text-[11px]">
-          <span className="max-md:hidden">{formatDate(entry.date)}</span>
-          <span className="md:hidden">{formatDateShort(entry.date)}</span>
+          {formatDate(entry.date)}
         </span>
       </div>
     </div>
