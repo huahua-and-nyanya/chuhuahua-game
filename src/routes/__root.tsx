@@ -38,7 +38,7 @@ export const Route = createRootRoute({
 const TOP_LEFT_SLOT_CLASSES =
   'absolute top-frame-inner left-frame-inner flex flex-row gap-sm z-[2]'
 const CORNER_ACTIONS_SLOT_CLASSES =
-  'absolute top-frame-inner right-frame-inner flex flex-row gap-sm z-[2] max-md:hidden'
+  'absolute top-frame-inner right-frame-inner flex flex-row gap-sm z-[2]'
 const SIDE_MENU_SLOT_CLASSES =
   'absolute right-frame-inner bottom-frame-inner flex flex-col gap-nav-button-gap z-[2] max-md:hidden'
 
