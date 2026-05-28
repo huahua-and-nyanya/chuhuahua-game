@@ -21,7 +21,7 @@ function HowToPage() {
           <div className="px-8 py-5 max-md:px-4 max-md:py-5">
             {/* 헤더 */}
             <div className="mb-6 text-center">
-              <h1 className="font-display text-text-primary mb-1 text-[28px] leading-[1.1] font-bold">
+              <h1 className="font-display text-text-primary mb-2 text-[28px] leading-[1.1] font-bold">
                 ❓ 플레이 방법
               </h1>
               <p className="text-text-muted text-[13px]">
@@ -60,7 +60,7 @@ function HowToPage() {
               <div>
                 🐟 <b>물고기</b> — 고양이에게 쉴드 부여 (비둘기 1회 차단, 5초)
               </div>
-              <div className="text-text-muted mt-1 text-[11px]">
+              <div className="text-text-muted mt-2 text-[11px]">
                 ※ LV 3부터 디버프 아이템도 등장해요 (🥒 오이 / 🍠 고구마)
               </div>
             </ItemBox>
@@ -96,11 +96,11 @@ function HowToPage() {
             </ItemBox>
 
             {/* PvP 꿀팁 박스 */}
-            <div className="border-ink-base rounded-lg border-2 border-solid bg-pink-300 px-4 py-3">
-              <div className="text-text-primary mb-2 text-[13px] font-bold">
+            <div className="border-ink-base rounded-lg border-2 border-solid bg-pink-300 px-4 py-4">
+              <div className="text-text-primary mb-3 text-[13px] font-bold">
                 ✨ PvP 꿀팁
               </div>
-              <div className="text-text-primary flex flex-col gap-1 text-[12px] leading-[1.8]">
+              <div className="text-text-primary flex flex-col gap-2 text-[12px] leading-[1.8]">
                 <div>
                   • <b>실드</b>는 츄와와 뽀뽀 1회 또는 디버프 1회를 막아줘요
                 </div>
@@ -144,7 +144,7 @@ function SectionTitle({ children }: { children: ReactNode }) {
 
 function SectionItem({ children }: { children: ReactNode }) {
   return (
-    <div className="text-text-primary mb-2 text-[13px] leading-[1.6]">
+    <div className="text-text-primary mb-3 text-[13px] leading-[1.6]">
       {children}
     </div>
   )
@@ -152,11 +152,11 @@ function SectionItem({ children }: { children: ReactNode }) {
 
 function ItemBox({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="border-ink-base bg-bg-card mb-6 rounded-lg border-2 border-dashed px-4 py-3">
-      <div className="text-text-primary mb-2 text-[13px] font-bold">
+    <div className="border-ink-base bg-bg-card mb-6 rounded-lg border-2 border-dashed px-4 py-4">
+      <div className="text-text-primary mb-3 text-[13px] font-bold">
         {title}
       </div>
-      <div className="text-text-primary flex flex-col gap-1 text-[12px] leading-[1.8]">
+      <div className="text-text-primary flex flex-col gap-2 text-[12px] leading-[1.8]">
         {children}
       </div>
     </div>
