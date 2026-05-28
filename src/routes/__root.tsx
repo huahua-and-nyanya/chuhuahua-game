@@ -15,7 +15,6 @@ import { useCoins } from '@/features/coins/useCoins'
 import { VirtualController } from '@/game/ui/VirtualController'
 import { useResponsiveScale } from '@/hooks/useResponsiveScale'
 import { getCurrentSeason } from '@/lib/season'
-import { CenterModal } from '@/ui/CenterModal'
 import { CoinChip } from '@/ui/CoinChip'
 import { IconNavButton } from '@/ui/IconNavButton'
 import { NavButton } from '@/ui/NavButton'
@@ -47,11 +46,12 @@ function RootLayout() {
   const isMain = pathname === '/'
   const isSolo = pathname === '/solo'
   const isPvpLocal = pathname === '/multi/local'
-  const isContentRoute = ['/ranking', '/leaderboard'].includes(pathname)
+  const isContentRoute = ['/ranking', '/leaderboard', '/howto'].includes(
+    pathname,
+  )
   const navigate = useNavigate()
   const { coins } = useCoins()
   const [multiOpen, setMultiOpen] = useState(false)
-  const [guideOpen, setGuideOpen] = useState(false)
   const { scale, isMobile, dsFrameMaxWidth } = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
 
@@ -77,7 +77,7 @@ function RootLayout() {
       <IconNavButton
         icon={ICON_ASSETS.help}
         alt="게임 방법"
-        onClick={() => setGuideOpen(true)}
+        onClick={() => navigate({ to: '/howto' })}
       />
     </>
   )
@@ -176,13 +176,6 @@ function RootLayout() {
         open={multiOpen}
         onClose={() => setMultiOpen(false)}
       />
-      <CenterModal
-        open={guideOpen}
-        onClose={() => setGuideOpen(false)}
-        title="게임 방법"
-      >
-        준비 중
-      </CenterModal>
 
       {import.meta.env.DEV && (
         <TanStackRouterDevtools position="bottom-right" />

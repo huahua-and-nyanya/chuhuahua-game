@@ -13,6 +13,7 @@ import { Route as WardrobeRouteImport } from './routes/wardrobe'
 import { Route as SoloRouteImport } from './routes/solo'
 import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as HowtoRouteImport } from './routes/howto'
 import { Route as GachaRouteImport } from './routes/gacha'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MultiIndexRouteImport } from './routes/multi/index'
@@ -40,6 +41,11 @@ const RankingRoute = RankingRouteImport.update({
 const LeaderboardRoute = LeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowtoRoute = HowtoRouteImport.update({
+  id: '/howto',
+  path: '/howto',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GachaRoute = GachaRouteImport.update({
@@ -86,6 +92,7 @@ const DevGamePreviewRoute = DevGamePreviewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/gacha': typeof GachaRoute
+  '/howto': typeof HowtoRoute
   '/leaderboard': typeof LeaderboardRoute
   '/ranking': typeof RankingRoute
   '/solo': typeof SoloRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/gacha': typeof GachaRoute
+  '/howto': typeof HowtoRoute
   '/leaderboard': typeof LeaderboardRoute
   '/ranking': typeof RankingRoute
   '/solo': typeof SoloRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/gacha': typeof GachaRoute
+  '/howto': typeof HowtoRoute
   '/leaderboard': typeof LeaderboardRoute
   '/ranking': typeof RankingRoute
   '/solo': typeof SoloRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/gacha'
+    | '/howto'
     | '/leaderboard'
     | '/ranking'
     | '/solo'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/gacha'
+    | '/howto'
     | '/leaderboard'
     | '/ranking'
     | '/solo'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/gacha'
+    | '/howto'
     | '/leaderboard'
     | '/ranking'
     | '/solo'
@@ -174,6 +186,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GachaRoute: typeof GachaRoute
+  HowtoRoute: typeof HowtoRoute
   LeaderboardRoute: typeof LeaderboardRoute
   RankingRoute: typeof RankingRoute
   SoloRoute: typeof SoloRoute
@@ -214,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/leaderboard'
       fullPath: '/leaderboard'
       preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/howto': {
+      id: '/howto'
+      path: '/howto'
+      fullPath: '/howto'
+      preLoaderRoute: typeof HowtoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gacha': {
@@ -278,6 +298,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GachaRoute: GachaRoute,
+  HowtoRoute: HowtoRoute,
   LeaderboardRoute: LeaderboardRoute,
   RankingRoute: RankingRoute,
   SoloRoute: SoloRoute,
