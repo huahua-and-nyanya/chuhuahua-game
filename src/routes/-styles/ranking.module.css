@@ -1,6 +1,5 @@
 /*
- * 영수증 페이지 그리드 — 이름이 1fr(가변), 점수/콤보/레벨/날짜는 고정.
- * 모바일은 칼럼 폭 축소.
+ * 영수증 페이지 그리드 — 데스크탑은 이름 1fr 가변, 모바일은 고정 폭(가로 스크롤).
  * 4px 그리드 준수.
  */
 
@@ -23,16 +22,11 @@
 }
 
 @media (max-width: 768px) {
+  /* 모바일 — 이름 칸 고정 160px. 칼럼 합 > 모바일 가용 폭 → 부모 wrapper에서 가로 스크롤 */
   .soloGrid {
-    column-gap: 4px;
-    grid-template-columns:
-      minmax(0, 28px) minmax(0, 1fr) minmax(0, 48px) minmax(0, 32px)
-      minmax(0, 24px) minmax(0, 56px);
+    grid-template-columns: 36px 160px 56px 52px 44px 76px;
   }
   .pvpGrid {
-    column-gap: 4px;
-    grid-template-columns:
-      minmax(0, 28px) minmax(0, 1fr) minmax(0, 40px) minmax(0, 52px)
-      minmax(0, 52px);
+    grid-template-columns: 36px 160px 60px 76px 76px;
   }
 }
