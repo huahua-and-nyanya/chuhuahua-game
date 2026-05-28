@@ -62,17 +62,18 @@ function RankingPage() {
 
         {/* dashed 박스 = scroll wrapper. dashed border + rounded + overflow + max-h
             콘텐츠가 이 영역 밖으로 못 나감 */}
-        <div className="m-4 max-h-[calc(100dvh-128px)] overflow-y-auto rounded-[12px] border border-dashed border-pink-300">
+        <div className="m-4 max-h-[calc(100dvh-128px)] overflow-y-auto rounded-xl border border-dashed border-pink-300">
           {/* 본문 — py-5(20px) 휘게 명시 */}
           <div className="px-8 py-5 max-md:px-4 max-md:py-5">
             {/* 헤더 */}
-            <h1 className="font-display text-text-accent mb-1 text-center text-[32px] leading-none tracking-[4px]">
-              플레이 기록
-            </h1>
-            <p className="text-text-muted text-center text-xs tracking-[4px]">
-              ~ 뽀뽀 돌격 영수증 ~
-            </p>
-
+            <div className="flex flex-col items-center gap-3 py-4">
+              <h1 className="font-display text-text-accent mb-1 text-center text-xl leading-none tracking-[4px] md:text-[28px] lg:text-[32px]">
+                플레이 기록
+              </h1>
+              <p className="text-text-muted text-center text-xs tracking-[4px]">
+                ~ 뽀뽀 돌격 영수증 ~
+              </p>
+            </div>
             <Dashed />
 
             {/* 모드 탭 */}
@@ -118,7 +119,7 @@ function RankingPage() {
             />
 
             {/* 시리얼 */}
-            <div className="mt-6 text-center">
+            <div className="mt-6 flex flex-col gap-2 py-6 text-center">
               <p className="text-text-primary text-xs tracking-[4px]">
                 감사합니다 · 또 뽀뽀하러 와요
               </p>
@@ -214,7 +215,7 @@ function UnderlineTab({
       type="button"
       onClick={onClick}
       className={clsx(
-        'flex-1 cursor-pointer border-b-2 px-4 py-2 text-center text-[16px] transition-[color,border-color,font-weight] duration-150',
+        'lg:text-md flex-1 cursor-pointer border-b-2 px-4 py-2 text-center text-[12px] transition-[color,border-color,font-weight] duration-150',
         active
           ? 'text-text-primary border-ink-base font-bold'
           : 'text-text-muted border-transparent font-normal',
@@ -228,7 +229,7 @@ function UnderlineTab({
 function MetaBox({ mode, count }: { mode: Tab; count: number }) {
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, '.')
   return (
-    <div className="text-text-primary grid grid-cols-2 gap-x-6 gap-y-2 py-2 text-xs leading-relaxed max-md:grid-cols-1 max-md:gap-y-1">
+    <div className="text-text-primary grid grid-cols-2 gap-x-6 gap-y-4 py-3 text-xs leading-relaxed max-md:grid-cols-1 max-md:gap-y-1">
       <span>발행일자 : {today}</span>
       <span>플레이어 : {mode === 'solo' ? 'YOU' : 'P1 vs P2'}</span>
       <span>기록번호 : #{String(count).padStart(3, '0')}</span>
@@ -276,7 +277,7 @@ function SoloSection({
           <div
             className={clsx(
               styles.soloGrid,
-              'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] leading-[28px] tracking-[1.5px]',
+              'text-text-primary border-ink-soft/50 border-b border-dashed px-2 py-2 text-[11px] leading-7 tracking-[1.5px]',
             )}
           >
             <span>순위</span>
@@ -357,7 +358,7 @@ function SoloRow({
         <span className={clsx(isRecord && 'font-bold')}>#{rank}</span>
         <span
           className={clsx(
-            'block min-w-0 overflow-hidden text-[11px] text-ellipsis whitespace-nowrap',
+            'block min-w-0 text-[10px] text-ellipsis whitespace-nowrap',
             entry.name ? 'font-bold' : 'text-text-muted',
           )}
         >
@@ -366,7 +367,7 @@ function SoloRow({
         <span
           className={clsx(
             'inline-flex items-baseline gap-1',
-            isRecord ? 'text-text-accent text-[16px] font-bold' : 'text-[14px]',
+            isRecord ? 'text-text-accent text-md font-bold' : 'text-[14px]',
           )}
         >
           <span>💕</span>
