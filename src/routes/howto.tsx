@@ -56,21 +56,12 @@ function HowToPage() {
             </div>
 
             <ItemBox title="💎 솔로 아이템">
-              <div className="flex items-center">
-                <div className="flex w-15 items-center gap-1">
-                  🦴
-                  <b>사료</b>
-                </div>
-                <div className="mr-2">:</div>츄와와 부스트 (속도 ×1.55, 5초)
-              </div>
-              <div className="flex items-center">
-                <div className="flex w-15 items-center gap-1">
-                  🐟
-                  <b>물고기</b>
-                </div>
-                <div className="mr-2">:</div>고양이에게 쉴드 부여 (비둘기 1회
-                차단, 5초)
-              </div>
+              <ItemRow icon="🦴" name="사료">
+                츄와와 부스트 (속도 ×1.55, 5초)
+              </ItemRow>
+              <ItemRow icon="🐟" name="물고기">
+                고양이에게 쉴드 부여 (비둘기 1회 차단, 5초)
+              </ItemRow>
               <div className="text-text-muted mt-2 text-[11px]">
                 ※ LV 3부터 디버프 아이템도 등장해요 (🥒 오이 / 🍠 고구마)
               </div>
@@ -93,38 +84,18 @@ function HowToPage() {
               </div>
             </div>
             <ItemBox title="💎 PvP 아이템 (전용)">
-              <div className="flex items-center">
-                <div className="flex w-15 items-center gap-1">
-                  🦴
-                  <b>사료</b>
-                </div>
-                <div className="mr-2">:</div>츄와와만 픽업 가능. 부스트 ×1.55
-                (5초)
-              </div>
-              <div className="flex items-center">
-                <div className="flex w-15 items-center gap-1">
-                  🥒
-                  <b>오이</b>
-                </div>
-                <div className="mr-2">:</div>고양이만 픽업 가능. 고양이 부스트
-                ×1.85 (3초)
-              </div>
-              <div className="flex items-center">
-                <div className="flex w-15 items-center gap-1">
-                  🐟
-                  <b>물고기</b>
-                </div>
-                <div className="mr-2">:</div>둘 다 픽업 가능. 쉴드 부여 (또는
-                디버프 해제)
-              </div>
-              <div className="flex items-center">
-                <div className="flex w-15 items-center gap-1">
-                  🍠
-                  <b>고구마</b>
-                </div>
-                <div className="mr-2">:</div>둘 다 픽업 가능. 상대방 슬로우
-                ×0.55 (3초)
-              </div>
+              <ItemRow icon="🦴" name="사료">
+                츄와와만 픽업 가능. 부스트 ×1.55 (5초)
+              </ItemRow>
+              <ItemRow icon="🥒" name="오이">
+                고양이만 픽업 가능. 고양이 부스트 ×1.85 (3초)
+              </ItemRow>
+              <ItemRow icon="🐟" name="물고기">
+                둘 다 픽업 가능. 쉴드 부여 (또는 디버프 해제)
+              </ItemRow>
+              <ItemRow icon="🍠" name="고구마">
+                둘 다 픽업 가능. 상대방 슬로우 ×0.55 (3초)
+              </ItemRow>
             </ItemBox>
 
             {/* PvP 꿀팁 박스 */}
@@ -191,6 +162,28 @@ function ItemBox({ title, children }: { title: string; children: ReactNode }) {
       <div className="text-text-primary flex flex-col gap-2 text-[12px] leading-[1.8]">
         {children}
       </div>
+    </div>
+  )
+}
+
+// 아이템 row — 데스크탑은 한 줄(이모지+이름 : 설명), 모바일은 col stack + `:` 숨김
+function ItemRow({
+  icon,
+  name,
+  children,
+}: {
+  icon: string
+  name: string
+  children: ReactNode
+}) {
+  return (
+    <div className="flex items-center max-md:flex-col max-md:items-start max-md:gap-1">
+      <div className="flex w-15 items-center gap-1 max-md:w-auto">
+        {icon}
+        <b>{name}</b>
+      </div>
+      <div className="mr-2 max-md:hidden">:</div>
+      <span>{children}</span>
     </div>
   )
 }
