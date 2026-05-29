@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import clsx from 'clsx'
 import type { ClothEntry } from '@/features/wardrobe/types'
 import { GRADE_TOKENS } from '@/features/wardrobe/grades'
@@ -16,9 +17,6 @@ const ROOT_CLASSES =
   'bg-bg-card shadow-icon-button-rest pt-1.5 px-1.5 pb-6 ' +
   'flex flex-col items-center justify-center ' +
   'select-none transition-transform'
-
-const OWNED_CLASSES = 'cursor-pointer'
-const UNOWNED_CLASSES = 'opacity-70 cursor-default'
 
 const EQUIPPED_CLASSES = 'ring-2 ring-orange-500 -translate-y-0.5'
 
@@ -47,25 +45,28 @@ export function GridCard({
   onClick,
   className,
 }: GridCardProps) {
+  const [imgError, setImgError] = useState(false)
   const grade = GRADE_TOKENS[cloth.grade]
   const gradeChipClasses = owned
     ? clsx(grade.bg, grade.border, grade.text)
     : GRADE_CHIP_MUTED
 
-  const handleClick = owned ? onClick : undefined
+  const clickable = !!onClick
+  const showImage = owned && objectSrc && !imgError
 
   return (
     <div
       className={clsx(
         ROOT_CLASSES,
-        owned ? OWNED_CLASSES : UNOWNED_CLASSES,
+        clickable ? 'cursor-pointer' : 'cursor-default',
+        !owned && 'opacity-70',
         equipped && EQUIPPED_CLASSES,
         className,
       )}
-      onClick={handleClick}
-      role={owned ? 'button' : undefined}
-      tabIndex={owned ? 0 : undefined}
-      aria-pressed={owned ? equipped : undefined}
+      onClick={onClick}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      aria-pressed={clickable && owned ? equipped : undefined}
     >
       {cloth.pair && <div aria-hidden="true" className={PAIR_SLOT_CLASSES} />}
 
@@ -75,11 +76,12 @@ export function GridCard({
         </div>
       )}
 
-      {owned && objectSrc ? (
+      {showImage ? (
         <img
           src={objectSrc}
           alt=""
           draggable={false}
+          onError={() => setImgError(true)}
           className="pointer-events-none h-14 w-14 object-contain"
         />
       ) : (
@@ -90,7 +92,7 @@ export function GridCard({
             !owned && 'opacity-60 grayscale',
           )}
         >
-          ?
+          {owned ? '👕' : '❔'}
         </div>
       )}
       <div className="absolute bottom-1.5 left-1/2 flex w-fit -translate-x-1/2 flex-row items-center gap-1.5 rounded-full border-[1.5px] border-gray-200 pr-2 whitespace-nowrap">

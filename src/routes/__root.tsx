@@ -46,9 +46,12 @@ function RootLayout() {
   const isMain = pathname === '/'
   const isSolo = pathname === '/solo'
   const isPvpLocal = pathname === '/multi/local'
-  const isContentRoute = ['/ranking', '/leaderboard', '/howto'].includes(
-    pathname,
-  )
+  const isContentRoute = [
+    '/ranking',
+    '/leaderboard',
+    '/howto',
+    '/wardrobe',
+  ].includes(pathname)
   const navigate = useNavigate()
   const { coins } = useCoins()
   const [multiOpen, setMultiOpen] = useState(false)
