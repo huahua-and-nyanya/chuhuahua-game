@@ -8,7 +8,11 @@ import {
   FITTING_ROOM_BG_PATH,
   clothPath,
 } from '@/assets/clothes'
-import type { ClothEffects, ClothEntry } from '@/features/wardrobe/types'
+import type {
+  ClothEffects,
+  ClothEntry,
+  GachaResult,
+} from '@/features/wardrobe/types'
 import { CLOTHES } from '@/features/wardrobe/clothes'
 import { GRADE_TOKENS } from '@/features/wardrobe/grades'
 import { useWardrobe } from '@/features/wardrobe/useWardrobe'
@@ -71,8 +75,13 @@ function FallbackImage({
 }
 
 function WardrobePage() {
-  const { coins, owned, equipped, toggleEquip } = useWardrobe()
+  const { coins, pity, owned, equipped, toggleEquip, pullGacha } = useWardrobe()
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [gachaResult, setGachaResult] = useState<GachaResult | null>(null)
+
+  const handleGacha = () => {
+    setGachaResult(pullGacha())
+  }
 
   const selected = selectedId ? CLOTHES[selectedId] : null
   const selectedOwned = selectedId ? owned.includes(selectedId) : false
@@ -149,14 +158,19 @@ function WardrobePage() {
           </div>
         </div>
 
-        {/* 가챠 버튼 (자리만 — W-3 연결) */}
-        <div className="absolute right-4 bottom-4 z-[2]">
+        {/* 가챠 버튼 + 천장 카운터 */}
+        <div className="absolute right-4 bottom-4 z-[2] flex flex-col items-end gap-1">
+          {pity > 0 && (
+            <span className="bg-bg-card/90 text-text-muted rounded-full px-2 py-0.5 text-[10px]">
+              B {pity}연속 / 10회 천장
+            </span>
+          )}
           <IconCostButton
             iconSrc={CAPSULE_ICON_PATH}
             iconAlt="가챠"
             label="가챠"
             cost={GACHA_COST}
-            onClick={() => console.log('gacha — W-3에서 연결')}
+            onClick={handleGacha}
           />
         </div>
       </PixelCard>
@@ -175,6 +189,18 @@ function WardrobePage() {
           ) : (
             <UnownedDetail onClose={() => setSelectedId(null)} />
           ))}
+      </CenterModal>
+
+      <CenterModal
+        open={gachaResult !== null}
+        onClose={() => setGachaResult(null)}
+      >
+        {gachaResult && (
+          <GachaResultModal
+            result={gachaResult}
+            onClose={() => setGachaResult(null)}
+          />
+        )}
       </CenterModal>
     </div>
   )
@@ -301,6 +327,109 @@ function ClothDetail({
         </PixelButton>
         <PixelButton onClick={onClose}>닫기</PixelButton>
       </div>
+    </div>
+  )
+}
+
+// 오브젝트 이미지 — 자산 없으면 이모지 폴백.
+function ObjectImage({ src, className }: { src: string; className?: string }) {
+  const [errored, setErrored] = useState(false)
+  if (errored) {
+    return (
+      <div
+        aria-hidden="true"
+        className={clsx('flex items-center justify-center', className)}
+      >
+        <span className="text-4xl leading-none">👕</span>
+      </div>
+    )
+  }
+  return (
+    <img
+      src={src}
+      alt=""
+      draggable={false}
+      onError={() => setErrored(true)}
+      className={className}
+    />
+  )
+}
+
+// 가챠 결과 팝업 — 코인 부족 / 뽑기 성공.
+function GachaResultModal({
+  result,
+  onClose,
+}: {
+  result: GachaResult
+  onClose: () => void
+}) {
+  if (result.error) {
+    return (
+      <div className="gap-lg flex flex-col items-center text-center">
+        <div className="text-5xl leading-none">😢</div>
+        <div className="text-ink-base text-sm whitespace-pre-line">
+          {result.message}
+        </div>
+        <PixelButton onClick={onClose}>닫기</PixelButton>
+      </div>
+    )
+  }
+
+  const { cloth, alreadyOwned } = result
+  const grade = GRADE_TOKENS[cloth.grade]
+  const effects = cloth.effects ? effectLabel(cloth.effects) : []
+  const fancy = cloth.grade === 'S' || cloth.grade === 'S+'
+
+  return (
+    <div className="gap-lg flex flex-col items-center text-center">
+      <span
+        className={clsx(
+          'inline-flex items-center justify-center rounded-full border-2 border-solid px-2.5 py-0.5 text-xs font-bold',
+          grade.bg,
+          grade.border,
+          grade.text,
+        )}
+      >
+        {fancy ? `✨ ${cloth.grade} ✨` : cloth.grade}
+      </span>
+
+      <ObjectImage
+        src={clothPath('chi', cloth.id, 'object')}
+        className="h-18 w-18 object-contain"
+      />
+
+      <div className="flex flex-col gap-1">
+        <div className="text-ink-base text-lg font-bold">{cloth.name}</div>
+        {cloth.description && (
+          <div className="text-text-muted text-sm">{cloth.description}</div>
+        )}
+      </div>
+
+      {(effects.length > 0 || cloth.pair) && (
+        <div className="flex flex-col gap-1">
+          {effects.map((line) => (
+            <div key={line} className="text-text-accent text-sm font-bold">
+              {line}
+            </div>
+          ))}
+          {cloth.pair && (
+            <div className="text-text-muted text-xs">냐냐도 같이 입어요 🐱</div>
+          )}
+        </div>
+      )}
+
+      {alreadyOwned ? (
+        <div className="text-text-muted text-sm">(이미 보유 중)</div>
+      ) : (
+        <div
+          className="text-sm font-bold"
+          style={{ color: 'var(--color-game-warn)' }}
+        >
+          획득!
+        </div>
+      )}
+
+      <PixelButton onClick={onClose}>닫기</PixelButton>
     </div>
   )
 }

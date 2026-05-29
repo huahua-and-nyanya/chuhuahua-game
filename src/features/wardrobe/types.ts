@@ -33,3 +33,7 @@ export interface WardrobeState {
 export interface PlayStats {
   proposeEndingCleared: boolean
 }
+
+export type GachaResult =
+  | { error: true; message: string }
+  | { error: false; cloth: ClothEntry; alreadyOwned: boolean }
