@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import type { ClothEntry } from '@/features/wardrobe/clothes'
+import type { ClothEntry } from '@/features/wardrobe/types'
 import { GRADE_TOKENS } from '@/features/wardrobe/grades'
 
 interface GridCardProps {

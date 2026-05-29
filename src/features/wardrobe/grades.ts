@@ -1,15 +1,4 @@
-export type Grade = 'B' | 'A' | 'S' | 'S+'
-export type ApplyTo = 'idle' | 'all'
-
-export type ClothEffects = {
-  chiSpeedMul?: number
-  catSpeedMul?: number
-  pigeonSpawnMul?: number
-  itemSpawnMul?: number
-  pigeonDisabled?: boolean
-  backgroundOverride?: string
-  triggerEnding?: string
-}
+import type { ClothEffects, Grade } from './types'
 
 export const GRADE_POLICY = {
   B: { label: 'Common', maxEffects: 0, allowedFields: [] },
