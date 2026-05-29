@@ -32,6 +32,15 @@ const GACHA_COST = 100
 
 const ALL_CLOTHES = Object.values(CLOTHES)
 
+type CatalogFilter = 'all' | 'B' | 'A' | 'S'
+
+const CATALOG_FILTERS: { key: CatalogFilter; label: string }[] = [
+  { key: 'all', label: '전체' },
+  { key: 'B', label: 'B' },
+  { key: 'A', label: 'A' },
+  { key: 'S', label: 'S' },
+]
+
 // 효과를 한국어 문구로 변환.
 function effectLabel(effects: ClothEffects): string[] {
   const lines: string[] = []
@@ -78,11 +87,17 @@ function WardrobePage() {
   const { coins, pity, owned, equipped, toggleEquip, pullGacha } = useWardrobe()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [gachaResult, setGachaResult] = useState<GachaResult | null>(null)
+  const [catalogOpen, setCatalogOpen] = useState(false)
+  const [catalogFilter, setCatalogFilter] = useState<CatalogFilter>('all')
+  const [catalogDetail, setCatalogDetail] = useState<
+    ClothEntry | 'locked' | null
+  >(null)
 
   const handleGacha = () => {
     setGachaResult(pullGacha())
   }
 
+  const ownedClothes = ALL_CLOTHES.filter((c) => owned.includes(c.id))
   const selected = selectedId ? CLOTHES[selectedId] : null
   const selectedOwned = selectedId ? owned.includes(selectedId) : false
 
@@ -141,25 +156,37 @@ function WardrobePage() {
           />
         </div>
 
-        {/* 그리드 (스크롤) */}
+        {/* 그리드 (스크롤) — 보유 옷만 */}
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          <div className="grid grid-cols-3 gap-2 pb-20">
+          <div className="grid grid-cols-3 gap-2 pb-28">
             <DefaultCard active={equipped === null} onClick={unequip} />
-            {ALL_CLOTHES.map((cloth) => (
+            {ownedClothes.map((cloth) => (
               <GridCard
                 key={cloth.id}
                 cloth={cloth}
-                owned={owned.includes(cloth.id)}
+                owned
                 equipped={equipped === cloth.id}
                 objectSrc={clothPath('chi', cloth.id, 'object')}
                 onClick={() => handleClothClick(cloth)}
               />
             ))}
           </div>
+          {owned.length === 0 && (
+            <div className="text-text-muted mt-6 text-center text-[13px] leading-relaxed">
+              아직 뽑은 옷이 없어요!
+              <br />
+              가챠를 돌려보세요 🎰
+            </div>
+          )}
         </div>
 
-        {/* 가챠 버튼 + 천장 카운터 */}
-        <div className="absolute right-4 bottom-4 z-[2] flex flex-col items-end gap-1">
+        {/* 도감 버튼 + 가챠 버튼 + 천장 카운터 */}
+        <div className="absolute right-4 bottom-4 z-[2] flex flex-col items-end gap-1.5">
+          <CatalogButton
+            ownedCount={owned.length}
+            total={ALL_CLOTHES.length}
+            onClick={() => setCatalogOpen(true)}
+          />
           {pity > 0 && (
             <span className="bg-bg-card/90 text-text-muted rounded-full px-2 py-0.5 text-[10px]">
               B {pity}연속 / 10회 천장
@@ -198,7 +225,38 @@ function WardrobePage() {
         {gachaResult && (
           <GachaResultModal
             result={gachaResult}
+            onEquip={(id) => {
+              toggleEquip(id)
+              setGachaResult(null)
+            }}
             onClose={() => setGachaResult(null)}
+          />
+        )}
+      </CenterModal>
+
+      <CenterModal
+        open={catalogOpen}
+        onClose={() => setCatalogOpen(false)}
+        title="도감"
+        zIndex={70}
+      >
+        <CatalogContent
+          owned={owned}
+          filter={catalogFilter}
+          setFilter={setCatalogFilter}
+          onSelect={(d) => setCatalogDetail(d)}
+        />
+      </CenterModal>
+
+      <CenterModal
+        open={catalogDetail !== null}
+        onClose={() => setCatalogDetail(null)}
+        zIndex={80}
+      >
+        {catalogDetail && (
+          <CatalogDetail
+            detail={catalogDetail}
+            onClose={() => setCatalogDetail(null)}
           />
         )}
       </CenterModal>
@@ -266,21 +324,22 @@ function UnownedDetail({ onClose }: { onClose: () => void }) {
   )
 }
 
-// 보유 + 장착 중 상세 팝업.
-function ClothDetail({
+// 옷 정보 블록 (등급/이미지/이름/설명/효과/페어) — 상세·가챠·도감 공용.
+function ClothInfo({
   cloth,
-  onUnequip,
-  onClose,
+  imageKind = 'full',
+  imageClass = 'h-20 w-20 object-contain',
 }: {
   cloth: ClothEntry
-  onUnequip: () => void
-  onClose: () => void
+  imageKind?: 'full' | 'object'
+  imageClass?: string
 }) {
   const grade = GRADE_TOKENS[cloth.grade]
   const effects = cloth.effects ? effectLabel(cloth.effects) : []
+  const fancy = cloth.grade === 'S' || cloth.grade === 'S+'
 
   return (
-    <div className="gap-lg flex flex-col items-center text-center">
+    <>
       <span
         className={clsx(
           'inline-flex items-center justify-center rounded-full border-2 border-solid px-2.5 py-0.5 text-xs font-bold',
@@ -289,14 +348,12 @@ function ClothDetail({
           grade.text,
         )}
       >
-        {cloth.grade}
+        {fancy ? `✨ ${cloth.grade} ✨` : cloth.grade}
       </span>
 
-      <FallbackImage
-        src={clothPath('chi', cloth.id, 'full')}
-        fallbackSrc={CHARACTER_ASSETS.chihuahua}
-        alt={cloth.name}
-        className="h-20 w-20 object-contain"
+      <ObjectImage
+        src={clothPath('chi', cloth.id, imageKind)}
+        className={imageClass}
       />
 
       <div className="flex flex-col gap-1">
@@ -320,13 +377,163 @@ function ClothDetail({
           <div className="text-text-muted text-xs">냐냐도 같이 입어요 🐱</div>
         )}
       </div>
+    </>
+  )
+}
 
+// 보유 + 장착 중 상세 팝업.
+function ClothDetail({
+  cloth,
+  onUnequip,
+  onClose,
+}: {
+  cloth: ClothEntry
+  onUnequip: () => void
+  onClose: () => void
+}) {
+  return (
+    <div className="gap-lg flex flex-col items-center text-center">
+      <ClothInfo cloth={cloth} />
       <div className="gap-md flex flex-row">
         <PixelButton variant="secondary" onClick={onUnequip}>
           해제하기
         </PixelButton>
         <PixelButton onClick={onClose}>닫기</PixelButton>
       </div>
+    </div>
+  )
+}
+
+// 도감 진입 버튼 (가챠 버튼 위).
+function CatalogButton({
+  ownedCount,
+  total,
+  onClick,
+}: {
+  ownedCount: number
+  total: number
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="border-ink-base bg-bg-icon-button flex cursor-pointer items-center gap-2 rounded-xl border-2 border-solid px-3 py-2 shadow-[2px_2px_0_var(--color-ink-base)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
+    >
+      <span className="text-xl leading-none">📖</span>
+      <span className="flex flex-col items-start leading-tight">
+        <span className="text-ink-base text-sm font-bold">도감</span>
+        <span className="text-text-muted text-xs">
+          {ownedCount} / {total}
+        </span>
+      </span>
+    </button>
+  )
+}
+
+// 도감 등급 필터 탭.
+function FilterTabs({
+  filter,
+  setFilter,
+}: {
+  filter: CatalogFilter
+  setFilter: (f: CatalogFilter) => void
+}) {
+  return (
+    <div className="flex flex-row justify-center gap-1.5">
+      {CATALOG_FILTERS.map(({ key, label }) => {
+        const selected = filter === key
+        const selectedClass =
+          key === 'all'
+            ? 'border-ink-base bg-pink-300 text-ink-base'
+            : clsx(
+                GRADE_TOKENS[key].bg,
+                GRADE_TOKENS[key].border,
+                GRADE_TOKENS[key].text,
+              )
+        return (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setFilter(key)}
+            className={clsx(
+              'cursor-pointer rounded-full border-2 border-solid px-3 py-1 text-xs font-bold',
+              selected ? selectedClass : 'text-text-muted border-transparent',
+            )}
+          >
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// 도감 모달 내용 — 필터 탭 + 전체 26벌 수집 현황 그리드.
+function CatalogContent({
+  owned,
+  filter,
+  setFilter,
+  onSelect,
+}: {
+  owned: string[]
+  filter: CatalogFilter
+  setFilter: (f: CatalogFilter) => void
+  onSelect: (detail: ClothEntry | 'locked') => void
+}) {
+  const filtered = ALL_CLOTHES.filter((c) => {
+    if (filter === 'all') return true
+    if (filter === 'S') return c.grade === 'S' || c.grade === 'S+'
+    return c.grade === filter
+  })
+
+  return (
+    <div className="gap-md flex flex-col">
+      <FilterTabs filter={filter} setFilter={setFilter} />
+      <div className="grid max-h-[360px] grid-cols-3 gap-2 overflow-y-auto pr-1">
+        {filtered.map((cloth) => {
+          const isOwned = owned.includes(cloth.id)
+          return (
+            <GridCard
+              key={cloth.id}
+              cloth={cloth}
+              owned={isOwned}
+              equipped={false}
+              objectSrc={clothPath('chi', cloth.id, 'object')}
+              onClick={() => onSelect(isOwned ? cloth : 'locked')}
+            />
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// 도감 설명 팝업 (보기 전용 — 장착 버튼 없음).
+function CatalogDetail({
+  detail,
+  onClose,
+}: {
+  detail: ClothEntry | 'locked'
+  onClose: () => void
+}) {
+  if (detail === 'locked') {
+    return (
+      <div className="gap-lg flex flex-col items-center text-center">
+        <div className="text-5xl leading-none">🔒</div>
+        <div className="flex flex-col gap-1">
+          <div className="text-ink-base text-lg font-bold">???</div>
+          <div className="text-text-muted text-sm">???</div>
+        </div>
+        <PixelButton onClick={onClose}>닫기</PixelButton>
+      </div>
+    )
+  }
+
+  return (
+    <div className="gap-lg flex flex-col items-center text-center">
+      <ClothInfo cloth={detail} />
+      <PixelButton onClick={onClose}>닫기</PixelButton>
     </div>
   )
 }
@@ -358,9 +565,11 @@ function ObjectImage({ src, className }: { src: string; className?: string }) {
 // 가챠 결과 팝업 — 코인 부족 / 뽑기 성공.
 function GachaResultModal({
   result,
+  onEquip,
   onClose,
 }: {
   result: GachaResult
+  onEquip: (id: string) => void
   onClose: () => void
 }) {
   if (result.error) {
@@ -376,47 +585,14 @@ function GachaResultModal({
   }
 
   const { cloth, alreadyOwned } = result
-  const grade = GRADE_TOKENS[cloth.grade]
-  const effects = cloth.effects ? effectLabel(cloth.effects) : []
-  const fancy = cloth.grade === 'S' || cloth.grade === 'S+'
 
   return (
     <div className="gap-lg flex flex-col items-center text-center">
-      <span
-        className={clsx(
-          'inline-flex items-center justify-center rounded-full border-2 border-solid px-2.5 py-0.5 text-xs font-bold',
-          grade.bg,
-          grade.border,
-          grade.text,
-        )}
-      >
-        {fancy ? `✨ ${cloth.grade} ✨` : cloth.grade}
-      </span>
-
-      <ObjectImage
-        src={clothPath('chi', cloth.id, 'object')}
-        className="h-18 w-18 object-contain"
+      <ClothInfo
+        cloth={cloth}
+        imageKind="object"
+        imageClass="h-18 w-18 object-contain"
       />
-
-      <div className="flex flex-col gap-1">
-        <div className="text-ink-base text-lg font-bold">{cloth.name}</div>
-        {cloth.description && (
-          <div className="text-text-muted text-sm">{cloth.description}</div>
-        )}
-      </div>
-
-      {(effects.length > 0 || cloth.pair) && (
-        <div className="flex flex-col gap-1">
-          {effects.map((line) => (
-            <div key={line} className="text-text-accent text-sm font-bold">
-              {line}
-            </div>
-          ))}
-          {cloth.pair && (
-            <div className="text-text-muted text-xs">냐냐도 같이 입어요 🐱</div>
-          )}
-        </div>
-      )}
 
       {alreadyOwned ? (
         <div className="text-text-muted text-sm">(이미 보유 중)</div>
@@ -429,7 +605,14 @@ function GachaResultModal({
         </div>
       )}
 
-      <PixelButton onClick={onClose}>닫기</PixelButton>
+      <div className="gap-md flex flex-row">
+        {!alreadyOwned && (
+          <PixelButton variant="secondary" onClick={() => onEquip(cloth.id)}>
+            바로 입기
+          </PixelButton>
+        )}
+        <PixelButton onClick={onClose}>닫기</PixelButton>
+      </div>
     </div>
   )
 }

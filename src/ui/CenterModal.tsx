@@ -8,6 +8,8 @@ interface CenterModalProps {
   children: ReactNode
   closeOnBackdropClick?: boolean
   closeOnEscape?: boolean
+  // 기본 z-index(100) 위로 모달을 쌓을 때 사용. 인라인 style이 클래스 z를 덮어씀.
+  zIndex?: number
 }
 
 const BACKDROP_CLASSES =
@@ -36,6 +38,7 @@ export function CenterModal({
   children,
   closeOnBackdropClick = true,
   closeOnEscape = true,
+  zIndex,
 }: CenterModalProps) {
   useEffect(() => {
     if (!open) return
@@ -59,6 +62,7 @@ export function CenterModal({
   return (
     <div
       className={BACKDROP_CLASSES}
+      style={zIndex !== undefined ? { zIndex } : undefined}
       onClick={closeOnBackdropClick ? onClose : undefined}
       role="presentation"
     >
