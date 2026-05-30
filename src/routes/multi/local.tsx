@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useBlocker, useNavigate } from '@tanstack/react-router'
 import clsx from 'clsx'
 
 import { CHARACTER_ASSETS } from '@/assets'
@@ -102,6 +102,17 @@ function LocalPvpPage() {
   useEffect(() => {
     gameStateRef.current = gameState
   }, [gameState])
+
+  // 게임 진행 중(playing/paused) 이탈 차단 — 헤더 "메인으로"/뒤로가기/경로 이동을 가로채 confirm.
+  // pvpSetup(취소→메인)/gameover(결과→메인)/confirmQuit(자체 모달 + confirmQuitGame이 navigate)은
+  // 제외 — 특히 confirmQuit 차단 시 그만두기 동선이 blocker에 걸려버림. solo와 동일 패턴.
+  const isInProgress = () =>
+    gameStateRef.current === 'playing' || gameStateRef.current === 'paused'
+  const leaveBlocker = useBlocker({
+    shouldBlockFn: isInProgress,
+    enableBeforeUnload: isInProgress,
+    withResolver: true,
+  })
 
   // pvpSetup 30초간 상호작용 없으면 자동으로 메인 복귀.
   // chiPlayerReady/catPlayerReady가 dependency라 ready 토글 시 effect 재실행 → 타이머 리셋.
@@ -573,6 +584,23 @@ function LocalPvpPage() {
         onCancel={cancelQuit}
         onConfirm={confirmQuitGame}
       />
+
+      {/* 이탈 confirm — blocker가 잡은 페이지 이탈 시도용. 승패 판정 없이 그냥 나감.
+          "더 놀래"=reset(이동 취소), "나가기"=proceed(이동 진행). */}
+      <QuitConfirmModal
+        open={leaveBlocker.status === 'blocked'}
+        onCancel={() => leaveBlocker.reset?.()}
+        onConfirm={() => leaveBlocker.proceed?.()}
+        title="게임을 나갈까요?"
+        cancelLabel="더 놀래"
+        confirmLabel="나가기"
+      >
+        <p className="text-text-primary font-body py-2 text-sm leading-relaxed">
+          지금 나가면 대결이
+          <br />
+          중간에 끝나버려요
+        </p>
+      </QuitConfirmModal>
 
       {/* 컨트롤 바 — playing/paused 동안만 표시. confirmQuit/gameover/pvpSetup은 모달이 입력 차단.
           root layout의 #pvp-controls-slot에 portal로 마운트 (솔로 SoloControlBar 패턴 미러). */}
