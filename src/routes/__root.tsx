@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import {
   createRootRoute,
   Link,
@@ -20,7 +20,6 @@ import { IconNavButton } from '@/ui/IconNavButton'
 import { NavButton } from '@/ui/NavButton'
 import { PixelButton } from '@/ui/PixelButton'
 
-import { MultiplayerSelectModal } from './-components/MultiplayerSelectModal'
 import styles from './-styles/HomePage.module.css'
 
 export const Route = createRootRoute({
@@ -56,7 +55,6 @@ function RootLayout() {
   useEffect(() => {
     refreshCoins()
   }, [pathname, refreshCoins])
-  const [multiOpen, setMultiOpen] = useState(false)
   const { scale, isMobile, dsFrameMaxWidth } = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
 
@@ -90,7 +88,7 @@ function RootLayout() {
   const sideMenu = (
     <>
       <NavButton label="혼자서" onClick={() => navigate({ to: '/solo' })} />
-      <NavButton label="둘이서" onClick={() => setMultiOpen(true)} />
+      <NavButton label="둘이서" onClick={() => navigate({ to: '/multi/local' })} />
       <NavButton label="옷장" onClick={() => navigate({ to: '/wardrobe' })} />
     </>
   )
@@ -176,11 +174,6 @@ function RootLayout() {
           </div>
         </main>
       </div>
-
-      <MultiplayerSelectModal
-        open={multiOpen}
-        onClose={() => setMultiOpen(false)}
-      />
 
       {import.meta.env.DEV && (
         <TanStackRouterDevtools position="bottom-right" />

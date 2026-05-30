@@ -16,9 +16,6 @@ import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as HowtoRouteImport } from './routes/howto'
 import { Route as GachaRouteImport } from './routes/gacha'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as MultiIndexRouteImport } from './routes/multi/index'
-import { Route as MultiRoomRouteImport } from './routes/multi/room'
-import { Route as MultiRandomRouteImport } from './routes/multi/random'
 import { Route as MultiLocalRouteImport } from './routes/multi/local'
 import { Route as DevUiPreviewRouteImport } from './routes/dev/ui-preview'
 import { Route as DevGamePreviewRouteImport } from './routes/dev/game-preview'
@@ -58,21 +55,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MultiIndexRoute = MultiIndexRouteImport.update({
-  id: '/multi/',
-  path: '/multi/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MultiRoomRoute = MultiRoomRouteImport.update({
-  id: '/multi/room',
-  path: '/multi/room',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MultiRandomRoute = MultiRandomRouteImport.update({
-  id: '/multi/random',
-  path: '/multi/random',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const MultiLocalRoute = MultiLocalRouteImport.update({
   id: '/multi/local',
   path: '/multi/local',
@@ -100,9 +82,6 @@ export interface FileRoutesByFullPath {
   '/dev/game-preview': typeof DevGamePreviewRoute
   '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
-  '/multi/random': typeof MultiRandomRoute
-  '/multi/room': typeof MultiRoomRoute
-  '/multi/': typeof MultiIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -115,9 +94,6 @@ export interface FileRoutesByTo {
   '/dev/game-preview': typeof DevGamePreviewRoute
   '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
-  '/multi/random': typeof MultiRandomRoute
-  '/multi/room': typeof MultiRoomRoute
-  '/multi': typeof MultiIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -131,9 +107,6 @@ export interface FileRoutesById {
   '/dev/game-preview': typeof DevGamePreviewRoute
   '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
-  '/multi/random': typeof MultiRandomRoute
-  '/multi/room': typeof MultiRoomRoute
-  '/multi/': typeof MultiIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -148,9 +121,6 @@ export interface FileRouteTypes {
     | '/dev/game-preview'
     | '/dev/ui-preview'
     | '/multi/local'
-    | '/multi/random'
-    | '/multi/room'
-    | '/multi/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -163,9 +133,6 @@ export interface FileRouteTypes {
     | '/dev/game-preview'
     | '/dev/ui-preview'
     | '/multi/local'
-    | '/multi/random'
-    | '/multi/room'
-    | '/multi'
   id:
     | '__root__'
     | '/'
@@ -178,9 +145,6 @@ export interface FileRouteTypes {
     | '/dev/game-preview'
     | '/dev/ui-preview'
     | '/multi/local'
-    | '/multi/random'
-    | '/multi/room'
-    | '/multi/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -194,9 +158,6 @@ export interface RootRouteChildren {
   DevGamePreviewRoute: typeof DevGamePreviewRoute
   DevUiPreviewRoute: typeof DevUiPreviewRoute
   MultiLocalRoute: typeof MultiLocalRoute
-  MultiRandomRoute: typeof MultiRandomRoute
-  MultiRoomRoute: typeof MultiRoomRoute
-  MultiIndexRoute: typeof MultiIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -250,27 +211,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/multi/': {
-      id: '/multi/'
-      path: '/multi'
-      fullPath: '/multi/'
-      preLoaderRoute: typeof MultiIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/multi/room': {
-      id: '/multi/room'
-      path: '/multi/room'
-      fullPath: '/multi/room'
-      preLoaderRoute: typeof MultiRoomRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/multi/random': {
-      id: '/multi/random'
-      path: '/multi/random'
-      fullPath: '/multi/random'
-      preLoaderRoute: typeof MultiRandomRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/multi/local': {
       id: '/multi/local'
       path: '/multi/local'
@@ -306,9 +246,6 @@ const rootRouteChildren: RootRouteChildren = {
   DevGamePreviewRoute: DevGamePreviewRoute,
   DevUiPreviewRoute: DevUiPreviewRoute,
   MultiLocalRoute: MultiLocalRoute,
-  MultiRandomRoute: MultiRandomRoute,
-  MultiRoomRoute: MultiRoomRoute,
-  MultiIndexRoute: MultiIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
