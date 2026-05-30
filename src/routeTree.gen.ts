@@ -12,13 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WardrobeRouteImport } from './routes/wardrobe'
 import { Route as SoloRouteImport } from './routes/solo'
 import { Route as RankingRouteImport } from './routes/ranking'
-import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as HowtoRouteImport } from './routes/howto'
-import { Route as GachaRouteImport } from './routes/gacha'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as MultiIndexRouteImport } from './routes/multi/index'
-import { Route as MultiRoomRouteImport } from './routes/multi/room'
-import { Route as MultiRandomRouteImport } from './routes/multi/random'
 import { Route as MultiLocalRouteImport } from './routes/multi/local'
 import { Route as DevUiPreviewRouteImport } from './routes/dev/ui-preview'
 import { Route as DevGamePreviewRouteImport } from './routes/dev/game-preview'
@@ -38,39 +33,14 @@ const RankingRoute = RankingRouteImport.update({
   path: '/ranking',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LeaderboardRoute = LeaderboardRouteImport.update({
-  id: '/leaderboard',
-  path: '/leaderboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const HowtoRoute = HowtoRouteImport.update({
   id: '/howto',
   path: '/howto',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GachaRoute = GachaRouteImport.update({
-  id: '/gacha',
-  path: '/gacha',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MultiIndexRoute = MultiIndexRouteImport.update({
-  id: '/multi/',
-  path: '/multi/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MultiRoomRoute = MultiRoomRouteImport.update({
-  id: '/multi/room',
-  path: '/multi/room',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MultiRandomRoute = MultiRandomRouteImport.update({
-  id: '/multi/random',
-  path: '/multi/random',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MultiLocalRoute = MultiLocalRouteImport.update({
@@ -91,112 +61,77 @@ const DevGamePreviewRoute = DevGamePreviewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/gacha': typeof GachaRoute
   '/howto': typeof HowtoRoute
-  '/leaderboard': typeof LeaderboardRoute
   '/ranking': typeof RankingRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
   '/dev/game-preview': typeof DevGamePreviewRoute
   '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
-  '/multi/random': typeof MultiRandomRoute
-  '/multi/room': typeof MultiRoomRoute
-  '/multi/': typeof MultiIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/gacha': typeof GachaRoute
   '/howto': typeof HowtoRoute
-  '/leaderboard': typeof LeaderboardRoute
   '/ranking': typeof RankingRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
   '/dev/game-preview': typeof DevGamePreviewRoute
   '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
-  '/multi/random': typeof MultiRandomRoute
-  '/multi/room': typeof MultiRoomRoute
-  '/multi': typeof MultiIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/gacha': typeof GachaRoute
   '/howto': typeof HowtoRoute
-  '/leaderboard': typeof LeaderboardRoute
   '/ranking': typeof RankingRoute
   '/solo': typeof SoloRoute
   '/wardrobe': typeof WardrobeRoute
   '/dev/game-preview': typeof DevGamePreviewRoute
   '/dev/ui-preview': typeof DevUiPreviewRoute
   '/multi/local': typeof MultiLocalRoute
-  '/multi/random': typeof MultiRandomRoute
-  '/multi/room': typeof MultiRoomRoute
-  '/multi/': typeof MultiIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/gacha'
     | '/howto'
-    | '/leaderboard'
     | '/ranking'
     | '/solo'
     | '/wardrobe'
     | '/dev/game-preview'
     | '/dev/ui-preview'
     | '/multi/local'
-    | '/multi/random'
-    | '/multi/room'
-    | '/multi/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/gacha'
     | '/howto'
-    | '/leaderboard'
     | '/ranking'
     | '/solo'
     | '/wardrobe'
     | '/dev/game-preview'
     | '/dev/ui-preview'
     | '/multi/local'
-    | '/multi/random'
-    | '/multi/room'
-    | '/multi'
   id:
     | '__root__'
     | '/'
-    | '/gacha'
     | '/howto'
-    | '/leaderboard'
     | '/ranking'
     | '/solo'
     | '/wardrobe'
     | '/dev/game-preview'
     | '/dev/ui-preview'
     | '/multi/local'
-    | '/multi/random'
-    | '/multi/room'
-    | '/multi/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  GachaRoute: typeof GachaRoute
   HowtoRoute: typeof HowtoRoute
-  LeaderboardRoute: typeof LeaderboardRoute
   RankingRoute: typeof RankingRoute
   SoloRoute: typeof SoloRoute
   WardrobeRoute: typeof WardrobeRoute
   DevGamePreviewRoute: typeof DevGamePreviewRoute
   DevUiPreviewRoute: typeof DevUiPreviewRoute
   MultiLocalRoute: typeof MultiLocalRoute
-  MultiRandomRoute: typeof MultiRandomRoute
-  MultiRoomRoute: typeof MultiRoomRoute
-  MultiIndexRoute: typeof MultiIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -222,13 +157,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RankingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/leaderboard': {
-      id: '/leaderboard'
-      path: '/leaderboard'
-      fullPath: '/leaderboard'
-      preLoaderRoute: typeof LeaderboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/howto': {
       id: '/howto'
       path: '/howto'
@@ -236,39 +164,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HowtoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gacha': {
-      id: '/gacha'
-      path: '/gacha'
-      fullPath: '/gacha'
-      preLoaderRoute: typeof GachaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/multi/': {
-      id: '/multi/'
-      path: '/multi'
-      fullPath: '/multi/'
-      preLoaderRoute: typeof MultiIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/multi/room': {
-      id: '/multi/room'
-      path: '/multi/room'
-      fullPath: '/multi/room'
-      preLoaderRoute: typeof MultiRoomRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/multi/random': {
-      id: '/multi/random'
-      path: '/multi/random'
-      fullPath: '/multi/random'
-      preLoaderRoute: typeof MultiRandomRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/multi/local': {
@@ -297,18 +197,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  GachaRoute: GachaRoute,
   HowtoRoute: HowtoRoute,
-  LeaderboardRoute: LeaderboardRoute,
   RankingRoute: RankingRoute,
   SoloRoute: SoloRoute,
   WardrobeRoute: WardrobeRoute,
   DevGamePreviewRoute: DevGamePreviewRoute,
   DevUiPreviewRoute: DevUiPreviewRoute,
   MultiLocalRoute: MultiLocalRoute,
-  MultiRandomRoute: MultiRandomRoute,
-  MultiRoomRoute: MultiRoomRoute,
-  MultiIndexRoute: MultiIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

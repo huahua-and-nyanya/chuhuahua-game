@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  useBlocker,
+  useNavigate,
+} from '@tanstack/react-router'
 import clsx from 'clsx'
 
 import { CHARACTER_ASSETS } from '@/assets'
@@ -102,6 +106,17 @@ function LocalPvpPage() {
   useEffect(() => {
     gameStateRef.current = gameState
   }, [gameState])
+
+  // 게임 진행 중(playing/paused) 이탈 차단 — 헤더 "메인으로"/뒤로가기/경로 이동을 가로채 confirm.
+  // pvpSetup(취소→메인)/gameover(결과→메인)/confirmQuit(자체 모달 + confirmQuitGame이 navigate)은
+  // 제외 — 특히 confirmQuit 차단 시 그만두기 동선이 blocker에 걸려버림. solo와 동일 패턴.
+  const isInProgress = () =>
+    gameStateRef.current === 'playing' || gameStateRef.current === 'paused'
+  const leaveBlocker = useBlocker({
+    shouldBlockFn: isInProgress,
+    enableBeforeUnload: isInProgress,
+    withResolver: true,
+  })
 
   // pvpSetup 30초간 상호작용 없으면 자동으로 메인 복귀.
   // chiPlayerReady/catPlayerReady가 dependency라 ready 토글 시 effect 재실행 → 타이머 리셋.
@@ -548,6 +563,8 @@ function LocalPvpPage() {
         open={gameState === 'pvpSetup'}
         chiReady={chiPlayerReady}
         catReady={catPlayerReady}
+        onToggleChi={() => setChiPlayerReady((v) => !v)}
+        onToggleCat={() => setCatPlayerReady((v) => !v)}
         onCancel={cancelPvpSetup}
         onStart={startPvpGame}
       />
@@ -572,6 +589,23 @@ function LocalPvpPage() {
         onConfirm={confirmQuitGame}
       />
 
+      {/* 이탈 confirm — blocker가 잡은 페이지 이탈 시도용. 승패 판정 없이 그냥 나감.
+          "더 놀래"=reset(이동 취소), "나가기"=proceed(이동 진행). */}
+      <QuitConfirmModal
+        open={leaveBlocker.status === 'blocked'}
+        onCancel={() => leaveBlocker.reset?.()}
+        onConfirm={() => leaveBlocker.proceed?.()}
+        title="게임을 나갈까요?"
+        cancelLabel="더 놀래"
+        confirmLabel="나가기"
+      >
+        <p className="text-text-primary font-body py-2 text-sm leading-relaxed">
+          지금 나가면 대결이
+          <br />
+          중간에 끝나버려요
+        </p>
+      </QuitConfirmModal>
+
       {/* 컨트롤 바 — playing/paused 동안만 표시. confirmQuit/gameover/pvpSetup은 모달이 입력 차단.
           root layout의 #pvp-controls-slot에 portal로 마운트 (솔로 SoloControlBar 패턴 미러). */}
       {(gameState === 'playing' || gameState === 'paused') && (
@@ -586,14 +620,27 @@ function LocalPvpPage() {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Setup 모달 — "둘이서 모드" 시작 전 각자 자기 키를 한 번 눌러 준비.
+// Setup 모달 — "둘이서 모드" 시작 전 각자 준비.
+// 데스크톱: 자기 키 입력(WASD/방향키)으로 준비. 터치 기기: 캐릭터 카드 탭으로 준비(토글).
+// 카드 탭/키 입력은 디바이스 무관 둘 다 항상 허용 — isTouch는 안내 문구/표시 분기용일 뿐.
 // 좌/우 카드 ready 강조는 카드 외곽 스타일(배경/테두리/그림자)만으로 표현.
 // 색상은 전부 토큰 변수 사용 (하드코딩 hex 금지).
 // ─────────────────────────────────────────────────────────────────────
+
+// 터치(coarse pointer) 기기 감지 — 안내 문구/키 표시 분기용. CSR이라 window 접근 OK지만 가드.
+function detectTouch(): boolean {
+  if (typeof window === 'undefined') return false
+  return (
+    window.matchMedia?.('(pointer: coarse)').matches || 'ontouchstart' in window
+  )
+}
+
 interface PvpSetupModalProps {
   open: boolean
   chiReady: boolean
   catReady: boolean
+  onToggleChi: () => void
+  onToggleCat: () => void
   onCancel: () => void
   onStart: () => void
 }
@@ -602,10 +649,13 @@ function PvpSetupModal({
   open,
   chiReady,
   catReady,
+  onToggleChi,
+  onToggleCat,
   onCancel,
   onStart,
 }: PvpSetupModalProps) {
   const bothReady = chiReady && catReady
+  const isTouch = detectTouch()
   return (
     <CenterModal
       open={open}
@@ -622,6 +672,8 @@ function PvpSetupModal({
             imageSrc={CHARACTER_ASSETS.chihuahua}
             imageAlt="츄와와"
             keysText="W A S D"
+            isTouch={isTouch}
+            onToggleReady={onToggleChi}
           />
           <PlayerReadyCard
             ready={catReady}
@@ -629,11 +681,15 @@ function PvpSetupModal({
             imageSrc={CHARACTER_ASSETS.cat}
             imageAlt="고양이"
             keysText="↑ ↓ ← →"
+            isTouch={isTouch}
+            onToggleReady={onToggleCat}
           />
         </div>
         <div className="mt-2 flex w-full flex-col gap-3">
           <div className="text-text-muted text-xs">
-            각자 자기 키를 한 번 눌러 준비!
+            {isTouch
+              ? '각자 캐릭터를 터치해 준비!'
+              : '각자 자기 키를 한 번 눌러 준비!'}
           </div>
           <div className="gap-sm flex w-full justify-center">
             <PixelButton variant="secondary" size="lg" onClick={onCancel}>
@@ -645,7 +701,11 @@ function PvpSetupModal({
               disabled={!bothReady}
               onClick={onStart}
             >
-              {bothReady ? '시작 💥 (Enter)' : '둘 다 준비 필요'}
+              {bothReady
+                ? isTouch
+                  ? '시작'
+                  : '시작 💥 (Enter)'
+                : '둘 다 준비 필요'}
             </PixelButton>
           </div>
         </div>
@@ -660,6 +720,10 @@ interface PlayerReadyCardProps {
   imageSrc: string
   imageAlt: string
   keysText: string
+  // 터치 기기면 키 표시(keysText)를 숨긴다 — 키보드 없는 기기엔 의미 없음.
+  isTouch: boolean
+  // 카드 탭 토글 — 키 입력과 별개의 추가 준비 경로. 누르면 ON, 다시 누르면 OFF.
+  onToggleReady: () => void
 }
 
 function PlayerReadyCard({
@@ -668,12 +732,27 @@ function PlayerReadyCard({
   imageSrc,
   imageAlt,
   keysText,
+  isTouch,
+  onToggleReady,
 }: PlayerReadyCardProps) {
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={ready}
+      onClick={onToggleReady}
+      onKeyDown={(e) => {
+        // Enter/Space로도 토글. stopPropagation으로 window의 Enter(시작) 핸들러와 충돌 차단.
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          onToggleReady()
+        }
+      }}
       className={clsx(
-        'gap-sm p-lg flex min-w-0 flex-1 flex-col items-center rounded-md border-[3px] border-solid text-center',
-        'transition-[background,border-color,box-shadow] duration-150',
+        'gap-sm p-lg flex min-w-0 flex-1 cursor-pointer flex-col items-center rounded-md border-[3px] border-solid text-center select-none',
+        'transition-[background,border-color,box-shadow,transform] duration-150',
+        'hover:-translate-y-0.5 active:translate-y-0',
         ready
           ? 'shadow-card-active border-pink-700 bg-pink-100'
           : 'border-ink-base bg-bg-card shadow-card-rest',
@@ -683,11 +762,12 @@ function PlayerReadyCard({
         <img
           src={imageSrc}
           alt={imageAlt}
+          draggable={false}
           className="h-18 w-18 shrink-0 object-contain"
         />
       </div>
       <div className="text-text-primary text-sm">{label}</div>
-      <PixelChip>{keysText}</PixelChip>
+      {!isTouch && <PixelChip>{keysText}</PixelChip>}
       <div
         className={clsx(
           'text-xs',

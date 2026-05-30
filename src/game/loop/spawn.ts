@@ -8,6 +8,7 @@ import {
   PIGEON_WAVE_BASE_DELAY,
   PIGEON_WAVE_DELAY_JITTER,
   PIGEON_WAVE_DELAY_PER_LEVEL,
+  PIGEON_WAVE_MAX_SIZE,
   PIGEON_WAVE_MEMBER_SPACING,
   PIGEON_WAVE_MIN_DELAY,
 } from '@/game/constants'
@@ -53,11 +54,13 @@ export function startSpawnScheduler(deps: SpawnDeps): void {
   const itemMul = deps.getItemSpawnMul?.() ?? 1
   trackedTimeout(() => {
     if (currentDeps !== deps) return
+    if (!canSpawnItem(deps.refs, 'kibble')) return
     deps.spawnItem('kibble')
   }, KIBBLE_FIRST_DELAY * itemMul)
 
   trackedTimeout(() => {
     if (currentDeps !== deps) return
+    if (!canSpawnItem(deps.refs, 'fish')) return
     deps.spawnItem('fish')
   }, FISH_FIRST_DELAY * itemMul)
 
@@ -87,6 +90,7 @@ export function scheduleDebuffFirstSpawn(
   const itemMul = deps.getItemSpawnMul?.() ?? 1
   trackedTimeout(() => {
     if (currentDeps !== deps) return
+    if (!canSpawnItem(deps.refs, kind)) return
     deps.spawnItem(kind)
   }, delay * itemMul)
 }
@@ -100,9 +104,17 @@ const AID_FACTOR_PER_LEVEL = 0.06
 const AID_FACTOR_MIN = 0.4
 const DEBUFF_FACTOR_PER_LEVEL = 0.12
 const DEBUFF_FACTOR_MIN = 0.3
-const ITEM_FIELD_CAP = 3
+// fish(실드) 전용 — 같은 도움템이지만 후반엔 귀해지게 재스폰 간격을 늘린다.
+// 솔로 실드는 비둘기 1회 무효라(무적 아님), 후반에 자주 나오면 게임이 안 끝나는 문제가 있었음.
+// LV0 1.0배 → LV10 2.0배(재스폰 2배 느림). kibble은 기존 AID factor 그대로 유지.
+const FISH_FACTOR_PER_LEVEL = 0.1
+const FISH_FACTOR_MAX = 2.0
+const ITEM_FIELD_CAP = 3 // 같은 종류 동시 상한
+const ITEM_TOTAL_CAP = 5 // 필드 전체 동시 상한
 
-function canSpawnKind(refs: GameRefs, kind: SoloSpawnKind): boolean {
+// 모든 스폰 경로 공용 — 전체 상한과 종류별 상한을 함께 검사.
+function canSpawnItem(refs: GameRefs, kind: SoloSpawnKind): boolean {
+  if (refs.items.length >= ITEM_TOTAL_CAP) return false
   let n = 0
   for (const it of refs.items) {
     if (it.kind === kind) n++
@@ -124,7 +136,13 @@ export function scheduleItemRespawn(kind: SoloSpawnKind): void {
     )
     min = DEBUFF_RESPAWN_MIN * factor
     max = DEBUFF_RESPAWN_MAX * factor
+  } else if (kind === 'fish') {
+    // 후반엔 느려짐 = 실드 귀해짐.
+    const factor = Math.min(FISH_FACTOR_MAX, 1 + level * FISH_FACTOR_PER_LEVEL)
+    min = ITEM_RESPAWN_MIN * factor
+    max = ITEM_RESPAWN_MAX * factor
   } else {
+    // kibble — 후반엔 더 자주(기존 도움 factor).
     const factor = Math.max(AID_FACTOR_MIN, 1 - level * AID_FACTOR_PER_LEVEL)
     min = ITEM_RESPAWN_MIN * factor
     max = ITEM_RESPAWN_MAX * factor
@@ -133,7 +151,7 @@ export function scheduleItemRespawn(kind: SoloSpawnKind): void {
   const delay = (min + Math.random() * (max - min)) * itemMul
   trackedTimeout(() => {
     if (currentDeps !== deps) return
-    if (!canSpawnKind(deps.refs, kind)) return
+    if (!canSpawnItem(deps.refs, kind)) return
     deps.spawnItem(kind)
   }, delay)
 }
@@ -144,19 +162,14 @@ export function scheduleItemRespawn(kind: SoloSpawnKind): void {
 // edges 셔플 후 i % 4로 선택하므로 같은 wave 안 첫 4마리는 서로 다른 가장자리 보장.
 const WAVE_EDGES: PigeonEdge[] = ['top', 'left', 'right', 'bottom']
 
-// 레벨별 waveSize 분포 (reference line 1115~1133):
-//   LV0    : 항상 1
-//   LV1~2  : r<0.15 → 2, else 1
-//   LV3~4  : r<0.45 → 1, r<0.85 → 2, else 3
-//   LV5~6  : r<0.30 → 1, r<0.70 → 2, else 3
-//   LV7+   : r<0.15 → 1, r<0.50 → 2, else 3
+// waveSize = 레벨을 상한으로, 하한~상한 사이 랜덤. 매 wave 변주를 위함.
+//   상한 = min(level, MAX), 하한 = ceil(상한/2). LV0~1은 최소 1 보장.
+//   하한을 cap 적용된 maxSize 기준으로 계산 → LV11+ 구간도 5~10 유지.
+//   예) LV6 → 3~6, LV10 → 5~10, LV2 → 1~2, LV1 → 1.
 function pickWaveSize(level: number): number {
-  const r = Math.random()
-  if (level >= 7) return r < 0.15 ? 1 : r < 0.5 ? 2 : 3
-  if (level >= 5) return r < 0.3 ? 1 : r < 0.7 ? 2 : 3
-  if (level >= 3) return r < 0.45 ? 1 : r < 0.85 ? 2 : 3
-  if (level >= 1) return r < 0.15 ? 2 : 1
-  return 1
+  const maxSize = Math.min(level, PIGEON_WAVE_MAX_SIZE)
+  const minSize = Math.max(1, Math.ceil(maxSize / 2))
+  return minSize + Math.floor(Math.random() * (maxSize - minSize + 1))
 }
 
 // in-place Fisher-Yates 셔플 — 짧은 4-요소 배열에 충분.

@@ -13,7 +13,6 @@ import { IconNavButton } from '@/ui/IconNavButton'
 import type { ClothEntry } from '@/features/wardrobe/types'
 import { COIN_ICON_PATH, CAPSULE_ICON_PATH } from '@/assets/clothes'
 import { ICON_ASSETS, MAIN_HERO } from '@/assets'
-import { MultiplayerSelectModal } from '../-components/MultiplayerSelectModal'
 import { PreviewSection, PreviewRow } from './-components/PreviewLayout'
 
 export const Route = createFileRoute('/dev/ui-preview')({
@@ -56,7 +55,6 @@ const DEMO_CLOTHES = {
 
 function UiPreviewPage() {
   const [modalOpen, setModalOpen] = useState(false)
-  const [multiOpen, setMultiOpen] = useState(false)
   return (
     <main
       style={{
@@ -317,18 +315,6 @@ function UiPreviewPage() {
             열려있는 동안 body 스크롤 잠김
           </p>
         </CenterModal>
-      </PreviewSection>
-
-      <PreviewSection title="MultiplayerSelectModal">
-        <PreviewRow label="trigger">
-          <PixelButton onClick={() => setMultiOpen(true)}>
-            둘이서 모달
-          </PixelButton>
-        </PreviewRow>
-        <MultiplayerSelectModal
-          open={multiOpen}
-          onClose={() => setMultiOpen(false)}
-        />
       </PreviewSection>
     </main>
   )

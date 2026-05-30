@@ -41,6 +41,8 @@ export const PIGEON_WAVE_DELAY_PER_LEVEL = 1200 // ms, 레벨당 단축
 export const PIGEON_WAVE_MIN_DELAY = 5000 // ms, 최소 wave 간격
 export const PIGEON_WAVE_DELAY_JITTER = 1800 // ms, base에 더해지는 랜덤 jitter 상한
 export const PIGEON_WAVE_MEMBER_SPACING = 600 // ms, 같은 wave 안 비둘기 간 간격
+export const PIGEON_WAVE_MAX_SIZE = 10 // wave당 비둘기 상한 — waveSize = min(level, N)
+export const PIGEON_HARD_CAP = 50 // 필드 비둘기 성능 안전망 (게임플레이 상한 아님, DOM/충돌검사 폭주 방지)
 export const PIGEON_SCARE_DIST = 60 // px, 츄와의 접근 시 도망 거리
 export const PIGEON_HIT_DIST = 30 // px, 피격 판정 거리
 

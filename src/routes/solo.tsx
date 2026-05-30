@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  useBlocker,
+  useNavigate,
+} from '@tanstack/react-router'
 import clsx from 'clsx'
 
 import { Cat } from '@/game/characters/Cat'
@@ -120,6 +124,19 @@ function SoloPage() {
   useEffect(() => {
     gameStateRef.current = gameState
   }, [gameState])
+
+  // 게임 진행 중(playing/paused) 이탈 차단 — 헤더 "메인으로"/브라우저 뒤로가기/경로 이동 모두
+  // 가로채 confirm. blocked 시 leaveBlocker.status로 이탈 confirm 모달 노출.
+  // 게임 내 "그만두기"(triggerGameOver → gameover)와는 별개 경로. confirmQuit은 자체 모달이
+  // 떠 있어 제외(이중 모달 방지), gameover는 결과 모달의 메인 이동을 막지 않도록 제외.
+  // enableBeforeUnload로 새로고침/탭 닫기도 네이티브 경고. shouldBlockFn은 ref로 최신 state 참조.
+  const isInProgress = () =>
+    gameStateRef.current === 'playing' || gameStateRef.current === 'paused'
+  const leaveBlocker = useBlocker({
+    shouldBlockFn: isInProgress,
+    enableBeforeUnload: isInProgress,
+    withResolver: true,
+  })
 
   // 토스트는 매 프레임 setState 회피 — 200ms 폴링으로 만료 정리.
   useEffect(() => {
@@ -734,6 +751,23 @@ function SoloPage() {
         onCancel={cancelQuit}
         onConfirm={confirmQuitGame}
       />
+
+      {/* 이탈 confirm — blocker가 잡은 페이지 이탈 시도용. 게임오버 처리 없이 그냥 나감.
+          "더 놀래"=reset(이동 취소), "나가기"=proceed(이동 진행, 기록 저장 X). */}
+      <QuitConfirmModal
+        open={leaveBlocker.status === 'blocked'}
+        onCancel={() => leaveBlocker.reset?.()}
+        onConfirm={() => leaveBlocker.proceed?.()}
+        title="게임을 나갈까요?"
+        cancelLabel="더 놀래"
+        confirmLabel="나가기"
+      >
+        <p className="text-text-primary font-body py-2 text-sm leading-relaxed">
+          지금 나가면 이번 판 점수가
+          <br />
+          저장되지 않아요
+        </p>
+      </QuitConfirmModal>
 
       {/* DSFrame/GameFrameCard 외부 컨트롤 바 — root layout의 #game-controls-slot에 portal.
           playing/paused 동안만 표시 (confirmQuit/gameover는 모달이 입력 차단). */}

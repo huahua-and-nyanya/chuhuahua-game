@@ -1,15 +1,12 @@
 # 츄와와 게임 — CLAUDE.md
 
-> 츄와와가 도망가는 고양이에게 뽀뽀하는 브라우저 게임. 솔로 엔드리스 + 로컬/온라인 PvP + 옷장/가챠/랭킹.
+> 츄와와가 도망가는 고양이에게 뽀뽀하는 브라우저 게임. 솔로 엔드리스 + 로컬 PvP + 옷장/가챠/랭킹.
 
 ---
 
 ## 일정 (공모전)
 
-- **5월 26일 오전 10시** — 기획서 PDF 제출
-- **6월 8일 오전 10시** — 배포 URL + GitHub 링크 + 시연영상(YouTube) 제출
-
-오늘 5월 13일 기준 4주.
+- **마감: 6월 8일 오전 10시** — 배포 URL + GitHub 링크 + 시연영상(YouTube) 제출
 
 ---
 
@@ -25,16 +22,13 @@
 
 - **솔로 엔드리스** — 속도 무한 증가, 맵 무제한. 비둘기 회피. 점수/코인 누적.
 - **로컬 PvP** — 한 키보드 2인 (WASD + 방향키). 비둘기 비활성.
-- **온라인 랜덤 매칭** — 최대 3분 대기, 실패 시 메인 또는 AI 봇.
-- **온라인 방 매칭** — 방 만들기 / 입장 / 초대 링크.
 
 ### 메타 진행
 
-- 익명 로그인 (Supabase Anonymous Auth, 첫 진입 시 자동)
 - 코인 누적 — 솔로 엔드리스에서만
 - 옷 가챠 — 코인 소모, 등급별 확률 공개, 천장 시스템
 - 옷 효과 — 외형 + 솔로 스킬. PvP 적용은 후속 결정.
-- 전체 랭킹 (Supabase) + 내 로컬 기록 별도
+- 랭킹/기록 = localStorage 기반 (솔로/PvP 각각)
 
 ---
 
@@ -43,10 +37,9 @@
 모든 PR에서 다음 확인:
 
 - 회원가입 / 본인인증 / 결제 / 광고 X
-- "데이팅 / 매칭 서비스" 인상 회피 — UI 문구는 게임 어휘만 ("대전 상대", "랜덤 매치"). 금지: "운명", "마음에 드는", "이상형" 등
+- "데이팅 / 매칭 서비스" 인상 회피 — UI 문구는 게임 어휘만. 금지: "운명", "마음에 드는", "이상형" 등
 - 가챠 사행성 회피 — 확률 공개, 천장 시스템, "잭팟" 연출 X
 - 폭력성/선정성 회피 — 거부 연출도 코미디 톤
-- 백엔드 다운 대비 — Supabase 실패해도 로컬 모드는 동작해야 함 (오프라인 폴백)
 - Chrome / Edge / Safari / Firefox 정상 동작
 
 ---
@@ -55,7 +48,7 @@
 
 1. **약관 준수** — 위 체크리스트 위반 즉시 실격
 2. **사용자 경험** — 시각 일관성, 60fps, 입력 반응성, 게임 즉시 진입
-3. **모듈 경계** — game / modes / features / backend 분리 유지
+3. **모듈 경계** — game / modes / features 분리 유지
 4. **코드 단순성** — 오버엔지니어링 회피, 추상화는 두 번째 사례부터
 5. **배포 안정성** — 빌드 / 타입체크 통과
 
@@ -69,7 +62,7 @@
 - 포맷: **Prettier** + `prettier-plugin-tailwindcss`
 - 린트: **ESLint** (Vite 기본 + `eslint-config-prettier`)
 - 패키지 매니저: **pnpm**
-- 백엔드: **Supabase** (PostgreSQL + Anonymous Auth + Realtime + RLS)
+- 저장: **localStorage** (백엔드 없음 — 코인/옷장/기록 전부 클라이언트 로컬)
 - 배포: **Vercel** (예정)
 - path alias: `@/` → `src/`
 
@@ -80,42 +73,36 @@
 ```
 src/
   routes/        # TanStack Router file-based (얇게, 진입점만)
-  game/          # 게임 코어 (백엔드 무관, 순수 로직)
+                 #   solo / multi/local / wardrobe / ranking / howto / dev
+  game/          # 게임 코어 (저장소 무관, 순수 로직)
     characters/  # Chihuahua, Cat, Pigeon
     items/       # Kibble, Cucumber, Fish, SweetPotato
     skills/      # 옷 스킬 정의
+    ai/ collision/ loop/ progression/ ui/   # AI·충돌·게임루프·점수·게임 UI
   modes/         # 모드별 묶음
     endless/     # 솔로 엔드리스
     local-pvp/   # 로컬 PvP
-    online-pvp/  # 온라인 PvP (랜덤/방 공용)
-  features/      # 기능 단위 (백엔드 의존)
-    auth/        # 익명 로그인
-    wardrobe/    # 옷 인벤토리
-    gacha/       # 가챠
-    coins/       # 코인
-    leaderboard/ # 전체 랭킹
-    history/     # 로컬 기록
-    matchmaking/ # 랜덤 매칭
-    rooms/       # 방 매칭
-  backend/       # Supabase
-    queries/     # 테이블별 쿼리 함수
-    realtime/    # Realtime 구독
+  features/      # 부가 기능 (localStorage 기반)
+    wardrobe/    # 옷 인벤토리 + 가챠(useWardrobe.pullGacha) + 코인 적립
+    coins/       # 코인 표시 hook
+    history/     # 솔로 로컬 기록
+    pvp-history/ # PvP 로컬 기록
+  components/    # 레이아웃 (DSFrame, GameFrameCard 등)
   ui/            # PixelButton/Card/Chip, CenterModal, NavButton 등
   hooks/         # useGameLoop, trackedTimeout, useInput
-  lib/           # math, storage 등 순수 유틸
+  lib/           # season 등 순수 유틸
   styles/        # tokens.css, globals.css
   assets/        # 카테고리별 lookup (characters/items/backgrounds + index.ts re-export)
 public/assets/   # characters / items / effects / clothes
 public/fonts/    # moneygraphy.woff2
-docs/            # assets-guide.md, schema.md, adr/
-supabase/        # CLI migrations (선택)
+docs/            # assets-guide.md, wardrobe_spec.md, ENDING_SPEC.md 등
 ```
 
 ### 경계 원칙
 
 - `game/` = 백엔드 모름, 순수 로직
 - `modes/` = `game/`을 묶어 모드 단위 컴포넌트
-- `features/` = 백엔드 / 부가 기능. 컴포넌트는 `backend/` 직접 import 금지 → 항상 `use*` hook 경유
+- `features/` = 부가 기능 (localStorage 등). 컴포넌트는 storage 직접 import 금지 → 항상 `use*` hook 경유
 - `routes/` = 진입점만, 실제 UI는 `modes/` / `features/`에서 import
 - `routes/-components/` = `-` 접두 → 라우트로 등록 안 됨, 라우트 공용 컴포넌트 co-locate 용
 
@@ -149,7 +136,7 @@ supabase/        # CLI migrations (선택)
 1. AI 산출물을 1차 자료로 인용 금지 — 라이브러리 동작은 공식 문서 또는 소스 직접 확인
 2. 가설 확정 시 `node_modules` grep 또는 GitHub 저장소 직접 확인
 3. 자료 / 실 자산 / 타입 정의 3중 cross-check
-4. 타입과 스키마(Supabase 테이블 / Zod) 항상 같이 변경
+4. 타입과 저장 구조(localStorage 스키마 등) 항상 같이 변경
 
 ---
 
@@ -305,23 +292,19 @@ type InputState = {
 
 ---
 
-## 백엔드 (Supabase) 정책
+## 저장 정책 (localStorage)
 
-- **익명 로그인 자동** — 첫 진입 시 백그라운드 처리, 사용자 인지 없음
-- **세션 토큰**은 Supabase SDK가 localStorage에 자동 보존 → 직접 저장 X
-- **닉네임만 localStorage 별도 캐시** (`chuhuahua:nickname`)
-- **컴포넌트는 `backend/` 직접 import 금지** — 항상 `features/<X>/use<X>.ts` hook 경유
-- **RLS 필수** — 모든 테이블에 정책. 자기 데이터만 읽기/쓰기.
-- **랭킹 점수는 서버 검증** — Edge Function 또는 RPC. 클라이언트 직접 INSERT 금지 (조작 방지).
-- **오프라인 폴백** — Supabase 실패해도 `/solo`, `/multi/local`은 동작해야 함.
+- 백엔드 없음 — 코인/옷장/천장/기록/닉네임 전부 클라이언트 localStorage.
+- **컴포넌트는 storage 직접 import 금지** — 항상 `features/<X>/use<X>.ts` hook 경유.
+- 닉네임 캐시 키: `chuhuahua:nickname`. 그 외 코인/옷장/기록도 `chuhuahua:*` 키.
+- 타입과 저장 구조는 항상 같이 변경 (운영 규율 4).
 
 ---
 
 ## 닉네임 UX
 
 - **첫 진입**: 닉네임 요청 안 함. 게임 즉시 진입.
-- **솔로 엔드리스 게임 오버**: 모달로 닉네임 요청. 입력 → 랭킹 등록 / 건너뛰기 → 스킵.
-- **온라인 PvP 진입**: 닉네임 모달. 입력 → 그 닉네임 / 건너뛰기 → `익명_xxxx` 자동.
+- **솔로 엔드리스 게임 오버**: 모달로 닉네임 요청. 입력 → 기록 등록 / 건너뛰기 → 스킵.
 - 한 번 입력하면 localStorage 저장, 다음부터 모달 기본값으로.
 
 ---
@@ -331,13 +314,13 @@ type InputState = {
 **게임 로직 / 자산 / 캐릭터 상태 / 아이템 효과 / 메커니즘 관련 작업 시 본 reference 파일을 1차 자료로 참조한다.** 작업 전 해당 부분을 `grep` 또는 파일 검색으로 찾아 기존 동작을 먼저 파악한 후 진행한다. 추측으로 재구현 금지 — 휘게가 검증한 패턴(캐릭터 상태 우선순위, 아이템 효과 분기, CSS 키프레임 분리 등)이 1차 자료다.
 
 - **참조 파일**: `reference/ChihuahuaCatKissGame.txt` (저장소 루트 기준, 약 3,580라인 1.5MB). 게임 로직 + 모든 자산(base64 인라인) + UI + 스타일이 한 파일에 있음. `.gitignore`에 포함되어 원격엔 안 올라감.
-- **리팩토링 방향**: 그대로 옮기지 말고 본 문서 정책에 맞게 재구성.
-  - 자산: base64 → `public/assets/` 정적 파일로 추출 (kebab-case)
-  - 게임 로직: `game/` 모듈로 추출 (캐릭터, 아이템, 물리, 효과, 상수)
-  - UI: Tailwind + 토큰 변수로 재작성. 인라인 hex / rgba 금지.
+- **재구성 원칙** (대부분 이관 완료 — 신규/수정 작업도 아래 구조 유지):
+  - 자산: base64 → `public/assets/` 정적 파일 (kebab-case)
+  - 게임 로직: `game/` 모듈 (캐릭터, 아이템, 물리, 효과, 상수)
+  - UI: Tailwind + 토큰 변수. 인라인 hex / rgba 금지.
   - 입력: `hooks/useInput.ts` 추상화 거쳐 게임 로직에 전달
-  - 모드: 솔로/PvP를 `modes/` 하위로 분리 (현 코드는 한 컴포넌트에 분기 박혀있음)
-- **단계적 마이그레이션** — 한 사이클에 한 영역. 빅뱅 리팩토링 금지.
+  - 모드: 솔로/PvP는 `modes/`(endless / local-pvp) + `routes/`(solo / multi/local)로 분리 완료
+- **단계적 작업** — 한 사이클에 한 영역. 빅뱅 리팩토링 금지.
 - **기존 동작 보존** — 캐릭터 상태 전환 우선순위, 아이템 효과 분기(picker), CSS 키프레임 분리(bubble-pulse / shield-pulse) 등 휘게가 검증한 패턴은 그대로 유지.
 
 ---
