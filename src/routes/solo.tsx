@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createFileRoute, useBlocker, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  useBlocker,
+  useNavigate,
+} from '@tanstack/react-router'
 import clsx from 'clsx'
 
 import { Cat } from '@/game/characters/Cat'

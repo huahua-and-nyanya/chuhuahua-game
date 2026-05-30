@@ -86,7 +86,10 @@ function RootLayout() {
   const sideMenu = (
     <>
       <NavButton label="혼자서" onClick={() => navigate({ to: '/solo' })} />
-      <NavButton label="둘이서" onClick={() => navigate({ to: '/multi/local' })} />
+      <NavButton
+        label="둘이서"
+        onClick={() => navigate({ to: '/multi/local' })}
+      />
       <NavButton label="옷장" onClick={() => navigate({ to: '/wardrobe' })} />
     </>
   )

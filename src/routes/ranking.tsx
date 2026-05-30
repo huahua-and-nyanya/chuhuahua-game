@@ -428,7 +428,10 @@ function PvpSection({ entries }: { entries: PvpEntry[] }) {
   return (
     // 모바일만 가로 스크롤. w-full + min-w-0으로 부모 chain의 width 강제 끊어. 스크롤바 숨김.
     <div
-      className={clsx(styles.noScrollbar, 'w-full min-w-0 max-md:overflow-x-auto')}
+      className={clsx(
+        styles.noScrollbar,
+        'w-full min-w-0 max-md:overflow-x-auto',
+      )}
     >
       <div className="max-md:min-w-max">
         <div
