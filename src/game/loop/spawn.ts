@@ -176,7 +176,8 @@ function schedulePigeonWave(deps: SpawnDeps): void {
     PIGEON_WAVE_BASE_DELAY - level * PIGEON_WAVE_DELAY_PER_LEVEL,
   )
   const pigeonMul = deps.getPigeonSpawnMul?.() ?? 1
-  const delay = (baseDelay + Math.random() * PIGEON_WAVE_DELAY_JITTER) * pigeonMul
+  const delay =
+    (baseDelay + Math.random() * PIGEON_WAVE_DELAY_JITTER) * pigeonMul
   trackedTimeout(() => {
     if (currentDeps !== deps) return
     const waveSize = pickWaveSize(deps.getLevel())
