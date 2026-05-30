@@ -371,7 +371,6 @@ function ClothInfo({
   imageClass = 'h-28 w-28 object-contain',
   showName = false,
   halo = false,
-  storyBadge = false,
 }: {
   cloth: ClothEntry
   imageKind?: 'full' | 'object'
@@ -380,11 +379,11 @@ function ClothInfo({
   showName?: boolean
   // 가챠 reveal 시 아이템 뒤 레벨업과 동일한 후광(회전 conic rays) 표시.
   halo?: boolean
-  // 도감 설명 모달 전용 — 스토리 필수 옷에 등급칩 옆 📖 칩 표시.
-  storyBadge?: boolean
 }) {
   const grade = GRADE_TOKENS[cloth.grade]
   const effects = cloth.effects ? effectLabel(cloth.effects) : []
+  // 스토리 필수 옷이면 등급칩 옆 📖 칩 — 자체 판정이라 상세/도감/가챠 모든 사용처에 자동 표시.
+  const isStory = isStoryCloth(cloth)
 
   return (
     <>
@@ -399,7 +398,7 @@ function ClothInfo({
         >
           {cloth.grade}
         </span>
-        {storyBadge && (
+        {isStory && (
           <span className="inline-flex items-center justify-center rounded-full border-2 border-solid border-pink-400 bg-pink-100 px-2.5 py-0.5 text-xs font-bold text-pink-700">
             📖 스토리
           </span>
@@ -632,7 +631,7 @@ function CatalogDetail({
 
   return (
     <div className="gap-lg flex flex-col items-center text-center">
-      <ClothInfo cloth={detail} storyBadge={isStoryCloth(detail)} />
+      <ClothInfo cloth={detail} />
       <PixelButton className="w-full" onClick={onClose}>
         닫기
       </PixelButton>
