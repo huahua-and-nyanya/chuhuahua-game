@@ -34,6 +34,13 @@ const CATALOG_FILTERS: { key: CatalogFilter; label: string }[] = [
   { key: 'S', label: 'S' },
 ]
 
+// 스토리(웨딩 해금) 필수 옷 — 데이터에 별도 플래그가 없어 id 화이트리스트로 판별.
+// 도감 설명 모달에서만 📖 칩 표시 (다른 사용처엔 미노출).
+const STORY_CLOTH_IDS = ['rose', 'vacation', 'propose']
+function isStoryCloth(cloth: ClothEntry): boolean {
+  return STORY_CLOTH_IDS.includes(cloth.id)
+}
+
 // 등급 필터 매칭 — 'S' 탭은 S/S+ 모두 포함. 그리드·도감 공용.
 function matchesFilter(cloth: ClothEntry, filter: CatalogFilter): boolean {
   if (filter === 'all') return true
@@ -364,6 +371,7 @@ function ClothInfo({
   imageClass = 'h-28 w-28 object-contain',
   showName = false,
   halo = false,
+  storyBadge = false,
 }: {
   cloth: ClothEntry
   imageKind?: 'full' | 'object'
@@ -372,23 +380,31 @@ function ClothInfo({
   showName?: boolean
   // 가챠 reveal 시 아이템 뒤 레벨업과 동일한 후광(회전 conic rays) 표시.
   halo?: boolean
+  // 도감 설명 모달 전용 — 스토리 필수 옷에 등급칩 옆 📖 칩 표시.
+  storyBadge?: boolean
 }) {
   const grade = GRADE_TOKENS[cloth.grade]
   const effects = cloth.effects ? effectLabel(cloth.effects) : []
-  const fancy = cloth.grade === 'S' || cloth.grade === 'S+'
 
   return (
     <>
-      <span
-        className={clsx(
-          'inline-flex items-center justify-center rounded-full border-2 border-solid px-2.5 py-0.5 text-xs font-bold',
-          grade.bg,
-          grade.border,
-          grade.text,
+      <div className="flex flex-row items-center gap-2">
+        <span
+          className={clsx(
+            'inline-flex items-center justify-center rounded-full border-2 border-solid px-2.5 py-0.5 text-xs font-bold',
+            grade.bg,
+            grade.border,
+            grade.text,
+          )}
+        >
+          {cloth.grade}
+        </span>
+        {storyBadge && (
+          <span className="inline-flex items-center justify-center rounded-full border-2 border-solid border-pink-400 bg-pink-100 px-2.5 py-0.5 text-xs font-bold text-pink-700">
+            📖 스토리
+          </span>
         )}
-      >
-        {fancy ? `✨ ${cloth.grade} ✨` : cloth.grade}
-      </span>
+      </div>
 
       {/* 이미지 (+ halo: 가챠 reveal 시 레벨업과 동일 후광).
           conic-gradient rgba는 alpha 미세조정이 필요해 토큰화 어려움 →
@@ -424,10 +440,13 @@ function ClothInfo({
       <div className="border-border-card w-full border-t border-dashed" />
 
       {/* 효과 영역 — 옅은 배경 패널로 '효과'를 별도 영역으로 구분 (선이 아닌 영역 구분감) */}
-      <div className="flex w-full flex-col gap-1 rounded-lg bg-pink-50 px-3 py-2.5">
+      <div className="flex w-full flex-col gap-2.5 rounded-lg bg-pink-50 px-4 py-3.5">
         {effects.length > 0 ? (
           effects.map((line) => (
-            <div key={line} className="text-text-accent text-sm font-bold">
+            <div
+              key={line}
+              className="text-text-accent text-sm leading-snug font-bold"
+            >
               {line}
             </div>
           ))
@@ -435,7 +454,9 @@ function ClothInfo({
           <div className="text-text-muted text-sm">효과 없음</div>
         )}
         {cloth.pair && (
-          <div className="text-text-muted text-xs">냐냐도 같이 입어요 🐱</div>
+          <div className="text-text-muted text-xs leading-snug">
+            냐냐도 같이 입어요 🐱
+          </div>
         )}
       </div>
     </>
@@ -611,7 +632,7 @@ function CatalogDetail({
 
   return (
     <div className="gap-lg flex flex-col items-center text-center">
-      <ClothInfo cloth={detail} />
+      <ClothInfo cloth={detail} storyBadge={isStoryCloth(detail)} />
       <PixelButton className="w-full" onClick={onClose}>
         닫기
       </PixelButton>
