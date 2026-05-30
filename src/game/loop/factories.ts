@@ -2,6 +2,7 @@ import {
   GAME_HEIGHT,
   GAME_WIDTH,
   ITEM_LIFETIME,
+  PIGEON_HARD_CAP,
   PIGEON_SPEED_BASE,
   PIGEON_SPEED_PER_LEVEL,
 } from '@/game/constants'
@@ -122,6 +123,8 @@ export function commitPigeonAt(
   spawnY: number,
   now: number,
 ): void {
+  // 성능 안전망 — 필드 비둘기가 하드 캡에 닿으면 조용히 스킵 (정상 플레이에선 도달 안 함).
+  if (refs.pigeons.length >= PIGEON_HARD_CAP) return
   const dx = refs.cat.x - spawnX
   const dy = refs.cat.y - spawnY
   const d = Math.hypot(dx, dy) || 1
