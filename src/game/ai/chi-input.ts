@@ -115,6 +115,7 @@ export function applyChiPhysics(
   dt: number,
   getLevel: () => number,
   getMode?: () => 'solo' | 'pvp',
+  chiSpeedMul = 1,
 ): void {
   void dt
   void getLevel
@@ -136,7 +137,8 @@ export function applyChiPhysics(
   else if (tvx < -FACING_DEADZONE) chi.facing = 'left'
 
   // boost/mega는 effects에서 (chiBoost.until > now 시 1.55 또는 2.0).
-  const speed = MAX_SPEED * getChiSpeedMul(refs, now)
+  // 옷 효과 chiSpeedMul은 부스트/슬로우 배율과 곱연산 (덮어쓰기 아님).
+  const speed = MAX_SPEED * getChiSpeedMul(refs, now) * chiSpeedMul
 
   const len = Math.hypot(tvx, tvy)
   if (len > 0) {

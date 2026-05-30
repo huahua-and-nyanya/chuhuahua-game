@@ -67,6 +67,8 @@ import { updateParticles } from '@/game/particles'
 import { trackedTimeout } from '@/hooks/trackedTimeout'
 
 import { useHistory } from '@/features/history/useHistory'
+import { useWardrobe } from '@/features/wardrobe'
+import type { ClothEffects } from '@/features/wardrobe/types'
 
 import '@/game/keyframes.css'
 
@@ -89,6 +91,9 @@ type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover'
 function SoloPage() {
   const navigate = useNavigate()
   const history = useHistory()
+  const { getEquippedEffects, earnCoins } = useWardrobe()
+  // 장착 옷 효과는 게임 시작 시 1회 스냅샷 (솔로 중 옷 변경 불가) — 매 프레임 ref만 읽음.
+  const equippedEffectsRef = useRef<ClothEffects>(getEquippedEffects())
 
   // 게임 객체는 ref. React state는 표시 트리거만.
   // gameStartRef는 마운트 useEffect에서 performance.now()로 채움 (initializer 안에서 impure 함수 호출 금지).
@@ -146,27 +151,32 @@ function SoloPage() {
     [],
   )
 
-  const triggerGameOver = useCallback((cause: GameOverInfo['cause']) => {
-    const sm = refs.current.scoreMirror
-    setGameOverInfo({
-      finalScore: sm.score,
-      maxLevel: sm.level,
-      maxCombo: sm.maxCombo,
-      elapsedMs: performance.now() - gameStartRef.current,
-      cause,
-    })
-    setGameState('gameover')
-  }, [])
+  const triggerGameOver = useCallback(
+    (cause: GameOverInfo['cause']) => {
+      const sm = refs.current.scoreMirror
+      earnCoins(sm.score)
+      setGameOverInfo({
+        finalScore: sm.score,
+        maxLevel: sm.level,
+        maxCombo: sm.maxCombo,
+        elapsedMs: performance.now() - gameStartRef.current,
+        cause,
+      })
+      setGameState('gameover')
+    },
+    [earnCoins],
+  )
 
   const startGame = useCallback(() => {
     refs.current = createInitialState()
+    equippedEffectsRef.current = getEquippedEffects()
     gameStartRef.current = performance.now()
     setGameOverInfo(null)
     setShowGameOverModal(false)
     setToasts([])
     pausedAtRef.current = 0
     setGameState('playing')
-  }, [])
+  }, [getEquippedEffects])
 
   // gameover 진입 → shake/flash가 ~500ms 동안 보인 뒤 모달 등장.
   // gameover 이탈은 startGame()/onMain만 가능, 둘 다 showGameOverModal을 명시 리셋.
@@ -423,6 +433,8 @@ function SoloPage() {
       spawnItem: (kind: SoloSpawnKind) =>
         spawnItem(refs.current, kind, performance.now()),
       showToast,
+      getPigeonSpawnMul: () => equippedEffectsRef.current.pigeonSpawnMul ?? 1,
+      getItemSpawnMul: () => equippedEffectsRef.current.itemSpawnMul ?? 1,
     })
 
     scheduleCatTarget({
@@ -443,9 +455,10 @@ function SoloPage() {
     update: (dt, now) => {
       const r = refs.current
       const level = r.scoreMirror.level
+      const fx = equippedEffectsRef.current
 
-      applyChiPhysics(r, now, dt, () => level)
-      updateCatFlee(r, level, now, dt)
+      applyChiPhysics(r, now, dt, () => level, undefined, fx.chiSpeedMul ?? 1)
+      updateCatFlee(r, level, now, dt, fx.catSpeedMul ?? 1)
       updatePigeons(r, level, dt)
 
       checkKiss({ refs: r, now, onKiss })

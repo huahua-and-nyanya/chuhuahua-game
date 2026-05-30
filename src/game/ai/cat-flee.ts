@@ -37,6 +37,7 @@ export function updateCatFlee(
   level: number,
   now: number,
   dt: number,
+  catSpeedMul = 1,
 ): void {
   void dt
   const { cat, chi, pigeons, ai } = refs
@@ -153,7 +154,8 @@ export function updateCatFlee(
 
   // cucumber 가속 / sweetPotato 슬로우 곱셈을 effects에서 읽어 적용.
   // 솔로엔 둘 다 안 스폰되므로 PvP F에서만 실제 영향.
-  const speedMul = getCatSpeedMul(refs, now)
+  // 옷 효과 catSpeedMul은 디버프 배율과 곱연산.
+  const speedMul = getCatSpeedMul(refs, now) * catSpeedMul
   cat.x += (target.x - cat.x) * activeLerp * speedMul
   cat.y += (target.y - cat.y) * activeLerp * speedMul
 
