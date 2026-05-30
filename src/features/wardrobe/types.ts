@@ -35,5 +35,6 @@ export interface PlayStats {
 }
 
 export type GachaResult =
-  | { error: true; message: string }
-  | { error: false; cloth: ClothEntry; alreadyOwned: boolean }
+  | { error: true; cost: number; have: number } // 코인 부족 — 필요/보유 코인
+  // refund: 중복(alreadyOwned) 시 등급별 환불 코인 (신규면 0)
+  | { error: false; cloth: ClothEntry; alreadyOwned: boolean; refund: number }

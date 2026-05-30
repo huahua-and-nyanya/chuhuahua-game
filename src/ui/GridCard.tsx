@@ -82,20 +82,20 @@ export function GridCard({
           alt=""
           draggable={false}
           onError={() => setImgError(true)}
-          className="pointer-events-none h-14 w-14 object-contain"
+          className="pointer-events-none h-24 w-24 object-contain"
         />
       ) : (
         <div
           aria-hidden="true"
           className={clsx(
-            'flex h-14 w-14 items-center justify-center text-3xl leading-none',
+            'flex h-24 w-24 items-center justify-center text-5xl leading-none',
             !owned && 'opacity-60 grayscale',
           )}
         >
           {owned ? '👕' : '❔'}
         </div>
       )}
-      <div className="absolute bottom-1.5 left-1/2 flex w-fit -translate-x-1/2 flex-row items-center gap-1.5 rounded-full border-[1.5px] border-gray-200 pr-2 whitespace-nowrap">
+      <div className="bg-bg-card absolute bottom-1.5 left-1/2 flex w-fit -translate-x-1/2 flex-row items-center gap-1.5 rounded-full border-[1.5px] border-gray-200 pr-2 whitespace-nowrap">
         <span className={clsx(GRADE_CHIP_BASE, gradeChipClasses)}>
           {cloth.grade}
         </span>
