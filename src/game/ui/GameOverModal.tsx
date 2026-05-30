@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { COIN_ICON_PATH } from '@/assets/clothes'
 import { CenterModal } from '@/ui/CenterModal'
 import { PixelButton } from '@/ui/PixelButton'
 
@@ -11,6 +12,8 @@ export type GameOverInfo = {
   maxCombo: number
   elapsedMs: number
   cause: GameOverCause
+  earnedCoins: number // 이번 판 획득 코인
+  walletFull: boolean // 지갑(999) 가득 — true면 코인 수 대신 "지갑이 다 찼어" 표시
 }
 
 export type GameOverModalProps = {
@@ -97,6 +100,34 @@ export function GameOverModal(props: GameOverModalProps) {
           <ResultRow label="최고 레벨" value={`LV ${info.maxLevel}`} />
           <ResultRow label="최대 콤보" value={`×${info.maxCombo}`} />
           <ResultRow label="플레이 시간" value={formatTime(info.elapsedMs)} />
+        </div>
+
+        {/* 코인 — 이번 판 획득(+N). 지갑(999) 가득이면 수 대신 "지갑이 다 찼어". */}
+        <div className="mb-5.5 flex items-center justify-between px-1 py-1">
+          <span className="font-body text-sm" style={{ color: COLOR_LABEL }}>
+            획득 코인
+          </span>
+          {info.walletFull ? (
+            <span
+              className="font-body text-sm font-bold"
+              style={{ color: 'var(--color-danger)' }}
+            >
+              지갑이 다 찼어
+            </span>
+          ) : (
+            <span
+              className="font-body inline-flex items-center gap-1 text-base font-bold"
+              style={{ color: 'var(--color-game-warn)' }}
+            >
+              <img
+                src={COIN_ICON_PATH}
+                alt=""
+                aria-hidden="true"
+                className="h-4 w-4 object-contain"
+              />
+              +{info.earnedCoins}
+            </span>
+          )}
         </div>
 
         {/* 닉네임 입력 / 등록 후 — rank가 있을 때만 */}

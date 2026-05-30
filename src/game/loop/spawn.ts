@@ -34,11 +34,12 @@ export type SpawnDeps = {
   spawnItem: (kind: SoloSpawnKind) => void
   // wave 사이즈 ≥ 2 시 우상단 토스트 표시 — 옵셔널 (PvP는 비둘기 미스폰이라 미사용).
   showToast?: (text: string, color: string) => void
+  // 옷 효과 곱셈 배율 getter (사이클 W). 미지정 시 1.
+  // pigeonSpawnMul: 비둘기 wave 간격 × 배율 (클수록 비둘기 적게 등장).
+  // itemSpawnMul: 아이템 첫/재스폰 간격 × 배율 (작을수록 아이템 자주 등장).
+  getPigeonSpawnMul?: () => number
+  getItemSpawnMul?: () => number
 }
-
-// 옷 효과 곱셈 자리 — 사이클 W에서 옷 효과로 주입한다.
-// C 범위에선 1 하드코딩.
-const ITEM_SPAWN_MUL = 1
 
 // 모듈 스코프 단일 인스턴스 (사이클 C: 동시에 진행되는 게임 하나).
 // 멈춤 후 새 게임 시작 시 stale closure가 살아남는 걸 막기 위해 currentDeps !== deps 체크.
@@ -49,15 +50,16 @@ export function startSpawnScheduler(deps: SpawnDeps): void {
   currentDeps = deps
 
   // 첫 아이템 1회씩. respawn은 픽업 처리 측(C-3)이 scheduleItemRespawn으로 트리거.
+  const itemMul = deps.getItemSpawnMul?.() ?? 1
   trackedTimeout(() => {
     if (currentDeps !== deps) return
     deps.spawnItem('kibble')
-  }, KIBBLE_FIRST_DELAY * ITEM_SPAWN_MUL)
+  }, KIBBLE_FIRST_DELAY * itemMul)
 
   trackedTimeout(() => {
     if (currentDeps !== deps) return
     deps.spawnItem('fish')
-  }, FISH_FIRST_DELAY * ITEM_SPAWN_MUL)
+  }, FISH_FIRST_DELAY * itemMul)
 
   schedulePigeonWave(deps)
 }
@@ -82,10 +84,11 @@ export function scheduleDebuffFirstSpawn(
 ): void {
   const deps = currentDeps
   if (!deps) return
+  const itemMul = deps.getItemSpawnMul?.() ?? 1
   trackedTimeout(() => {
     if (currentDeps !== deps) return
     deps.spawnItem(kind)
-  }, delay * ITEM_SPAWN_MUL)
+  }, delay * itemMul)
 }
 
 // 픽업 후 외부에서 호출 — 아이템 1개를 재스폰. kind/level에 따라 분기:
@@ -126,7 +129,8 @@ export function scheduleItemRespawn(kind: SoloSpawnKind): void {
     min = ITEM_RESPAWN_MIN * factor
     max = ITEM_RESPAWN_MAX * factor
   }
-  const delay = (min + Math.random() * (max - min)) * ITEM_SPAWN_MUL
+  const itemMul = deps.getItemSpawnMul?.() ?? 1
+  const delay = (min + Math.random() * (max - min)) * itemMul
   trackedTimeout(() => {
     if (currentDeps !== deps) return
     if (!canSpawnKind(deps.refs, kind)) return
@@ -171,7 +175,9 @@ function schedulePigeonWave(deps: SpawnDeps): void {
     PIGEON_WAVE_MIN_DELAY,
     PIGEON_WAVE_BASE_DELAY - level * PIGEON_WAVE_DELAY_PER_LEVEL,
   )
-  const delay = baseDelay + Math.random() * PIGEON_WAVE_DELAY_JITTER
+  const pigeonMul = deps.getPigeonSpawnMul?.() ?? 1
+  const delay =
+    (baseDelay + Math.random() * PIGEON_WAVE_DELAY_JITTER) * pigeonMul
   trackedTimeout(() => {
     if (currentDeps !== deps) return
     const waveSize = pickWaveSize(deps.getLevel())

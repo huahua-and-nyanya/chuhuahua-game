@@ -1,0 +1,40 @@
+export type Grade = 'B' | 'A' | 'S' | 'S+'
+
+export type ApplyTo = 'idle' | 'all'
+
+export interface ClothEffects {
+  chiSpeedMul?: number
+  catSpeedMul?: number
+  pigeonSpawnMul?: number
+  itemSpawnMul?: number
+  // S+ 전용 게임변형 필드
+  pigeonDisabled?: boolean
+  backgroundOverride?: string
+  triggerEnding?: string
+}
+
+export interface ClothEntry {
+  id: string
+  name: string
+  grade: Grade
+  pair: boolean
+  applyTo: ApplyTo
+  effects?: ClothEffects
+  description?: string
+  kissingAsset?: boolean // true면 chi/cat-{id}-kissing.png 존재 (현재 propose만)
+  endingId?: string // LV10 도달 시 엔딩 컷신 트리거 마커
+}
+
+export interface WardrobeState {
+  owned: string[] // 보유 옷 id 배열
+  equipped: string | null // 장착 옷 id
+}
+
+export interface PlayStats {
+  proposeEndingCleared: boolean
+}
+
+export type GachaResult =
+  | { error: true; cost: number; have: number } // 코인 부족 — 필요/보유 코인
+  // refund: 중복(alreadyOwned) 시 등급별 환불 코인 (신규면 0)
+  | { error: false; cloth: ClothEntry; alreadyOwned: boolean; refund: number }

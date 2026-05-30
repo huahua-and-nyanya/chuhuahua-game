@@ -23,3 +23,6 @@ export const GAME_BGS = [
 ] as const
 
 export const SPACE_BG = '/assets/backgrounds/bg-space.png' as const
+
+// 옷장 피팅룸 배경 — 자산 미존재 시 인라인 fallback(--color-bg-frame) 유지.
+export const WARDROBE_BG = '/assets/backgrounds/bg-wardrobe.png' as const

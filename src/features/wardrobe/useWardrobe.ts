@@ -1,0 +1,162 @@
+import { useCallback, useRef, useState } from 'react'
+import { clothPath } from '@/assets/clothes'
+import type { ClothEffects, GachaResult, Grade, WardrobeState } from './types'
+import { CLOTHES, CLOTHES_BY_GRADE } from './clothes'
+import {
+  coinsStorage,
+  pityStorage,
+  playStatsStorage,
+  wardrobeStorage,
+} from './storage'
+
+// 가챠 상수
+const COIN_PER_SCORE = 50 // 솔로 점수 50점당 코인 1개
+export const GACHA_COST = 15 // 가챠 1회 비용 (코인 적립 50점당 1개 → 3~4판당 1회)
+const GACHA_PITY = 10 // 천장: B 10연속 → 다음은 A 이상 보장
+const MAX_COINS = 999 // 지갑 상한 — 초과 적립분은 버려지고 게임오버에서 "지갑이 다 찼어" 안내
+
+const GACHA_RATES = { B: 0.7, A: 0.2, S: 0.099, 'S+': 0.001 }
+
+// 중복(이미 보유) 추첨 시 등급별 코인 환불. S+는 가챠 풀 비대상이라 환불 케이스 없음.
+const REFUND_BY_GRADE: Partial<Record<Grade, number>> = { B: 1, A: 3, S: 5 }
+// S+는 proposeEndingCleared === true 일 때만 풀에 진입
+
+export function useWardrobe() {
+  const wardrobeRef = useRef<WardrobeState>(wardrobeStorage.load())
+  const coinsRef = useRef<number>(coinsStorage.load())
+  const pityRef = useRef<number>(pityStorage.load())
+  const [coins, setCoins] = useState(() => coinsStorage.load())
+  // 렌더에서 ref를 직접 읽지 않도록 보유/장착/천장 스냅샷은 state로 노출.
+  const [wardrobe, setWardrobe] = useState(() => wardrobeStorage.load())
+  const [pity, setPity] = useState(() => pityStorage.load())
+
+  const persistAll = useCallback(() => {
+    wardrobeStorage.save(wardrobeRef.current)
+    coinsStorage.save(coinsRef.current)
+    pityStorage.save(pityRef.current)
+    setCoins(coinsRef.current)
+    setWardrobe(wardrobeRef.current)
+    setPity(pityRef.current)
+  }, [])
+
+  // 옷 장착 토글
+  const toggleEquip = useCallback(
+    (id: string) => {
+      if (!wardrobeRef.current.owned.includes(id)) return
+      wardrobeRef.current = {
+        ...wardrobeRef.current,
+        equipped: wardrobeRef.current.equipped === id ? null : id,
+      }
+      persistAll()
+    },
+    [persistAll],
+  )
+
+  // 현재 장착 옷의 효과 반환 (없으면 빈 객체)
+  const getEquippedEffects = useCallback((): ClothEffects => {
+    const eq = wardrobeRef.current.equipped
+    if (!eq) return {}
+    return CLOTHES[eq]?.effects ?? {}
+  }, [])
+
+  // 현재 장착 옷의 게임 내 스킨(츄 풀바디) 경로. 미장착이면 undefined → 기본 츄.
+  // 적용 범위는 idle 스프라이트만 (Chihuahua 우선순위: kissing/sad/slowed > equippedSrc).
+  const getEquippedSkin = useCallback((): string | undefined => {
+    const eq = wardrobeRef.current.equipped
+    return eq ? clothPath('chi', eq, 'full') : undefined
+  }, [])
+
+  // 페어(pair) 옷일 때만 냐냐도 같이 입는 스킨(냐냐 풀바디) 경로. 단독 옷은 냐냐 자산 없음 → undefined.
+  const getEquippedCatSkin = useCallback((): string | undefined => {
+    const eq = wardrobeRef.current.equipped
+    if (!eq) return undefined
+    return CLOTHES[eq]?.pair ? clothPath('cat', eq, 'full') : undefined
+  }, [])
+
+  // 점수로 코인 적립 — MAX_COINS(999) 상한. 상한 초과분은 버려지고 walletFull로 알림.
+  const earnCoins = useCallback(
+    (score: number): { earned: number; walletFull: boolean } => {
+      const wouldEarn = Math.floor(score / COIN_PER_SCORE)
+      if (wouldEarn <= 0) return { earned: 0, walletFull: false }
+      const before = coinsRef.current
+      const after = Math.min(MAX_COINS, before + wouldEarn)
+      coinsRef.current = after
+      coinsStorage.save(coinsRef.current)
+      setCoins(coinsRef.current)
+      // 적립 시도가 있었는데 상한에 닿았으면 지갑이 가득 찬 상태로 본다.
+      return { earned: after - before, walletFull: after >= MAX_COINS }
+    },
+    [],
+  )
+
+  // 가챠 추첨 — 결과 반환 (UI에서 모달 표시용)
+  const pullGacha = useCallback((): GachaResult => {
+    const { proposeEndingCleared } = playStatsStorage.load()
+    if (coinsRef.current < GACHA_COST) {
+      return { error: true, cost: GACHA_COST, have: coinsRef.current }
+    }
+    coinsRef.current -= GACHA_COST
+
+    // 등급 결정
+    let grade: Grade
+    if (pityRef.current >= GACHA_PITY) {
+      grade =
+        Math.random() < GACHA_RATES.S / (GACHA_RATES.S + GACHA_RATES.A)
+          ? 'S'
+          : 'A'
+    } else {
+      const r = Math.random()
+      const sPlusRate = proposeEndingCleared ? GACHA_RATES['S+'] : 0
+      if (r < sPlusRate) grade = 'S+'
+      else if (r < sPlusRate + GACHA_RATES.S) grade = 'S'
+      else if (r < sPlusRate + GACHA_RATES.S + GACHA_RATES.A) grade = 'A'
+      else grade = 'B'
+    }
+
+    // 풀에서 추첨 — 비어있으면 B로 강등 (S+ 미등록 등)
+    let pool = CLOTHES_BY_GRADE[grade] ?? []
+    if (pool.length === 0) {
+      grade = 'B'
+      pool = CLOTHES_BY_GRADE.B
+    }
+    const clothId = pool[Math.floor(Math.random() * pool.length)]
+    const cloth = CLOTHES[clothId]
+
+    // 천장 갱신
+    if (grade === 'B') pityRef.current += 1
+    else pityRef.current = 0
+
+    // 보유 처리 — 신규면 보유 추가, 중복이면 등급별 코인 환불(상한 내).
+    const alreadyOwned = wardrobeRef.current.owned.includes(clothId)
+    let refund = 0
+    if (!alreadyOwned) {
+      wardrobeRef.current = {
+        ...wardrobeRef.current,
+        owned: [...wardrobeRef.current.owned, clothId],
+      }
+    } else {
+      refund = REFUND_BY_GRADE[cloth.grade] ?? 0
+      if (refund > 0) {
+        coinsRef.current = Math.min(MAX_COINS, coinsRef.current + refund)
+      }
+    }
+
+    persistAll()
+    return { error: false, cloth, alreadyOwned, refund } as const
+  }, [persistAll])
+
+  return {
+    wardrobeRef,
+    coinsRef,
+    coins,
+    pity,
+    owned: wardrobe.owned,
+    equipped: wardrobe.equipped,
+    toggleEquip,
+    getEquippedEffects,
+    getEquippedSkin,
+    getEquippedCatSkin,
+    earnCoins,
+    pullGacha,
+  }
+}

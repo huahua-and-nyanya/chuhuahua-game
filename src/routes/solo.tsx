@@ -67,6 +67,8 @@ import { updateParticles } from '@/game/particles'
 import { trackedTimeout } from '@/hooks/trackedTimeout'
 
 import { useHistory } from '@/features/history/useHistory'
+import { useWardrobe } from '@/features/wardrobe'
+import type { ClothEffects } from '@/features/wardrobe/types'
 
 import '@/game/keyframes.css'
 
@@ -89,6 +91,14 @@ type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover'
 function SoloPage() {
   const navigate = useNavigate()
   const history = useHistory()
+  const { getEquippedEffects, getEquippedSkin, getEquippedCatSkin, earnCoins } =
+    useWardrobe()
+  // 장착 옷 효과/스킨은 게임 시작 시 1회 스냅샷 (솔로 중 옷 변경 불가) — 매 프레임 ref만 읽음.
+  const equippedEffectsRef = useRef<ClothEffects>(getEquippedEffects())
+  // 장착 스킨(츄 풀바디 경로). 미장착이면 undefined → 기본 츄. idle 스프라이트에만 적용.
+  const equippedSkinRef = useRef<string | undefined>(getEquippedSkin())
+  // 페어 옷이면 냐냐도 같이 입는 스킨. 단독 옷이면 undefined → 기본 냐냐.
+  const equippedCatSkinRef = useRef<string | undefined>(getEquippedCatSkin())
 
   // 게임 객체는 ref. React state는 표시 트리거만.
   // gameStartRef는 마운트 useEffect에서 performance.now()로 채움 (initializer 안에서 impure 함수 호출 금지).
@@ -146,27 +156,37 @@ function SoloPage() {
     [],
   )
 
-  const triggerGameOver = useCallback((cause: GameOverInfo['cause']) => {
-    const sm = refs.current.scoreMirror
-    setGameOverInfo({
-      finalScore: sm.score,
-      maxLevel: sm.level,
-      maxCombo: sm.maxCombo,
-      elapsedMs: performance.now() - gameStartRef.current,
-      cause,
-    })
-    setGameState('gameover')
-  }, [])
+  const triggerGameOver = useCallback(
+    (cause: GameOverInfo['cause']) => {
+      const sm = refs.current.scoreMirror
+      // 점수만큼 코인 적립(999 상한) → 적립량 + 지갑가득 여부를 게임오버 모달에 전달.
+      const { earned, walletFull } = earnCoins(sm.score)
+      setGameOverInfo({
+        finalScore: sm.score,
+        maxLevel: sm.level,
+        maxCombo: sm.maxCombo,
+        elapsedMs: performance.now() - gameStartRef.current,
+        cause,
+        earnedCoins: earned,
+        walletFull,
+      })
+      setGameState('gameover')
+    },
+    [earnCoins],
+  )
 
   const startGame = useCallback(() => {
     refs.current = createInitialState()
+    equippedEffectsRef.current = getEquippedEffects()
+    equippedSkinRef.current = getEquippedSkin()
+    equippedCatSkinRef.current = getEquippedCatSkin()
     gameStartRef.current = performance.now()
     setGameOverInfo(null)
     setShowGameOverModal(false)
     setToasts([])
     pausedAtRef.current = 0
     setGameState('playing')
-  }, [])
+  }, [getEquippedEffects, getEquippedSkin, getEquippedCatSkin])
 
   // gameover 진입 → shake/flash가 ~500ms 동안 보인 뒤 모달 등장.
   // gameover 이탈은 startGame()/onMain만 가능, 둘 다 showGameOverModal을 명시 리셋.
@@ -423,6 +443,8 @@ function SoloPage() {
       spawnItem: (kind: SoloSpawnKind) =>
         spawnItem(refs.current, kind, performance.now()),
       showToast,
+      getPigeonSpawnMul: () => equippedEffectsRef.current.pigeonSpawnMul ?? 1,
+      getItemSpawnMul: () => equippedEffectsRef.current.itemSpawnMul ?? 1,
     })
 
     scheduleCatTarget({
@@ -443,9 +465,10 @@ function SoloPage() {
     update: (dt, now) => {
       const r = refs.current
       const level = r.scoreMirror.level
+      const fx = equippedEffectsRef.current
 
-      applyChiPhysics(r, now, dt, () => level)
-      updateCatFlee(r, level, now, dt)
+      applyChiPhysics(r, now, dt, () => level, undefined, fx.chiSpeedMul ?? 1)
+      updateCatFlee(r, level, now, dt, fx.catSpeedMul ?? 1)
       updatePigeons(r, level, dt)
 
       checkKiss({ refs: r, now, onKiss })
@@ -593,6 +616,7 @@ function SoloPage() {
               boosted={chiBoosted}
               mega={chiMega}
               slowed={chiSlowed}
+              equippedSrc={equippedSkinRef.current}
             />
           </div>
         </div>
@@ -619,6 +643,7 @@ function SoloPage() {
               shielded={catShielded}
               angry={catAngry}
               scared={catScared}
+              equippedSrc={equippedCatSkinRef.current}
             />
           </div>
         </div>

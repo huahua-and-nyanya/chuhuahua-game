@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
   createRootRoute,
   Link,
@@ -50,7 +50,12 @@ function RootLayout() {
     pathname,
   )
   const navigate = useNavigate()
-  const { coins } = useCoins()
+  const { coins, refresh: refreshCoins } = useCoins()
+  // 라우트 변경 시 코인 재읽기 — solo의 earnCoins(다른 useWardrobe 인스턴스)가 갱신한
+  // localStorage 값을 메인 복귀 시 반영 (root는 안 unmount → state가 stale로 남는 문제).
+  useEffect(() => {
+    refreshCoins()
+  }, [pathname, refreshCoins])
   const [multiOpen, setMultiOpen] = useState(false)
   const { scale, isMobile, dsFrameMaxWidth } = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
