@@ -45,7 +45,10 @@ function RankingPage() {
   }
 
   return (
-    <div className="px-4 py-4">
+    // 콘텐츠 라우트는 frameStack(align-items:center)의 flex 자식 — 폭 미지정 시 shrink-to-fit돼
+    // 내부 테이블 min-w-max가 페이지를 뷰포트 밖으로 밀어낸다. w-full로 폭 고정 + overflow-x-hidden로
+    // 페이지 레벨 가로 밀림 차단. 테이블 가로 스크롤은 안쪽 wrapper(자체 overflow-x-auto)가 담당.
+    <div className="w-full min-w-0 overflow-x-hidden px-4 py-4">
       {/* 영수증 카드 — ROOT은 viewport-bound max-h, 내부 scroll wrapper에 dashed border 통합.
           콘텐츠가 dashed 박스 밖으로 절대 못 나감 */}
       <PixelCard
@@ -57,7 +60,12 @@ function RankingPage() {
 
         {/* dashed 박스 = scroll wrapper. dashed border + rounded + overflow + max-h
             콘텐츠가 이 영역 밖으로 못 나감 */}
-        <div className="m-4 max-h-[calc(100dvh-128px)] overflow-y-auto rounded-xl border border-dashed border-pink-300">
+        <div
+          className={clsx(
+            styles.noScrollbar,
+            'm-4 max-h-[calc(100dvh-128px)] min-w-0 overflow-y-auto rounded-xl border border-dashed border-pink-300',
+          )}
+        >
           {/* 본문 — py-5(20px) 휘게 명시 */}
           <div className="px-8 py-5 max-md:px-4 max-md:py-5">
             {/* 헤더 */}
@@ -269,8 +277,13 @@ function SoloSection({
         </EmptyState>
       ) : (
         // 모바일만 가로 스크롤. w-full + min-w-0으로 부모 chain의 width 강제 끊어
-        // inner.min-w-max가 카드 폭을 늘리지 못하게 막음
-        <div className="w-full min-w-0 max-md:overflow-x-auto">
+        // inner.min-w-max가 카드 폭을 늘리지 못하게 막음. 스크롤바는 noScrollbar로 숨김.
+        <div
+          className={clsx(
+            styles.noScrollbar,
+            'w-full min-w-0 max-md:overflow-x-auto',
+          )}
+        >
           <div className="max-md:min-w-max">
             <div
               className={clsx(
@@ -395,8 +408,10 @@ function PvpSection({ entries }: { entries: PvpEntry[] }) {
     )
   }
   return (
-    // 모바일만 가로 스크롤. w-full + min-w-0으로 부모 chain의 width 강제 끊어
-    <div className="w-full min-w-0 max-md:overflow-x-auto">
+    // 모바일만 가로 스크롤. w-full + min-w-0으로 부모 chain의 width 강제 끊어. 스크롤바 숨김.
+    <div
+      className={clsx(styles.noScrollbar, 'w-full min-w-0 max-md:overflow-x-auto')}
+    >
       <div className="max-md:min-w-max">
         <div
           className={clsx(
