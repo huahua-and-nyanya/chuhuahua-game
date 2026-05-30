@@ -45,9 +45,7 @@ function RootLayout() {
   const isMain = pathname === '/'
   const isSolo = pathname === '/solo'
   const isPvpLocal = pathname === '/multi/local'
-  const isContentRoute = ['/ranking', '/leaderboard', '/howto'].includes(
-    pathname,
-  )
+  const isContentRoute = ['/ranking', '/howto'].includes(pathname)
   const navigate = useNavigate()
   const { coins, refresh: refreshCoins } = useCoins()
   // 라우트 변경 시 코인 재읽기 — solo의 earnCoins(다른 useWardrobe 인스턴스)가 갱신한
