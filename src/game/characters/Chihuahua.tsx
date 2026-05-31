@@ -8,10 +8,18 @@ interface ChihuahuaProps {
   slowed?: boolean
   sad?: boolean
   equippedSrc?: string
+  // propose 코스튬 스토리 armed — 전 상태를 데이트룩 스프라이트로 교체. (글로우/스케일은 그대로)
+  armed?: boolean
 }
 
 // 우선순위: kissing > sad > slowed > equippedSrc > default
+// armed면 같은 우선순위로 데이트룩 풀세트 사용 (sad는 PvP 전용이라 솔로 스토리엔 미발생).
 function pickSrc(props: ChihuahuaProps): string {
+  if (props.armed) {
+    if (props.kissing) return CHARACTER_ASSETS.chiDateKissing
+    if (props.slowed) return CHARACTER_ASSETS.chiDateSlow
+    return CHARACTER_ASSETS.chiDate
+  }
   if (props.kissing) return CHARACTER_ASSETS.chihuahuaKissing
   if (props.sad) return CHARACTER_ASSETS.chihuahuaSad
   if (props.slowed) return CHARACTER_ASSETS.chihuahuaSlow

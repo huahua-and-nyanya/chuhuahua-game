@@ -95,14 +95,22 @@ type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover'
 function SoloPage() {
   const navigate = useNavigate()
   const history = useHistory()
-  const { getEquippedEffects, getEquippedSkin, getEquippedCatSkin, earnCoins } =
-    useWardrobe()
+  const {
+    getEquippedEffects,
+    getEquippedSkin,
+    getEquippedCatSkin,
+    getProposeArmed,
+    earnCoins,
+  } = useWardrobe()
   // 장착 옷 효과/스킨은 게임 시작 시 1회 스냅샷 (솔로 중 옷 변경 불가) — 매 프레임 ref만 읽음.
   const equippedEffectsRef = useRef<ClothEffects>(getEquippedEffects())
   // 장착 스킨(츄 풀바디 경로). 미장착이면 undefined → 기본 츄. idle 스프라이트에만 적용.
   const equippedSkinRef = useRef<string | undefined>(getEquippedSkin())
   // 페어 옷이면 냐냐도 같이 입는 스킨. 단독 옷이면 undefined → 기본 냐냐.
   const equippedCatSkinRef = useRef<string | undefined>(getEquippedCatSkin())
+  // propose 코스튬 스토리 armed — true면 LV1~9 츄/냐 데이트룩. 솔로(=isSolo)이므로 조건 충족 시 켜짐.
+  // 게임 중 옷장 진입 불가 → 시작 시 1회 스냅샷이면 충분 (effects/skin과 동일 패턴).
+  const armedRef = useRef<boolean>(getProposeArmed())
 
   // 게임 객체는 ref. React state는 표시 트리거만.
   // gameStartRef는 마운트 useEffect에서 performance.now()로 채움 (initializer 안에서 impure 함수 호출 금지).
@@ -197,13 +205,14 @@ function SoloPage() {
     equippedEffectsRef.current = getEquippedEffects()
     equippedSkinRef.current = getEquippedSkin()
     equippedCatSkinRef.current = getEquippedCatSkin()
+    armedRef.current = getProposeArmed()
     gameStartRef.current = performance.now()
     setGameOverInfo(null)
     setShowGameOverModal(false)
     setToasts([])
     pausedAtRef.current = 0
     setGameState('playing')
-  }, [getEquippedEffects, getEquippedSkin, getEquippedCatSkin])
+  }, [getEquippedEffects, getEquippedSkin, getEquippedCatSkin, getProposeArmed])
 
   // gameover 진입 → shake/flash가 ~500ms 동안 보인 뒤 모달 등장.
   // gameover 이탈은 startGame()/onMain만 가능, 둘 다 showGameOverModal을 명시 리셋.
@@ -634,6 +643,7 @@ function SoloPage() {
               mega={chiMega}
               slowed={chiSlowed}
               equippedSrc={equippedSkinRef.current}
+              armed={armedRef.current}
             />
           </div>
         </div>
@@ -661,6 +671,7 @@ function SoloPage() {
               angry={catAngry}
               scared={catScared}
               equippedSrc={equippedCatSkinRef.current}
+              armed={armedRef.current}
             />
           </div>
         </div>
