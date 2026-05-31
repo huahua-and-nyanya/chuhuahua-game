@@ -1,5 +1,9 @@
 import type { ClothEntry, Grade } from './types'
 
+// 웨딩(S+) 해금 스토리 옷 — rose(B) → vacation(A) → propose(S) 3벌.
+// armed 게이트(3벌 전부 보유) 판정 및 도감 스토리 칩 표시에 쓰임.
+export const STORY_CLOTH_IDS = ['rose', 'vacation', 'propose'] as const
+
 // B 등급 (16벌) — 효과 없음, applyTo: 'idle' 강제.
 export const CLOTHES_B: Record<string, ClothEntry> = {
   sprout: {

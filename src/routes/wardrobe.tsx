@@ -11,7 +11,7 @@ import type {
   ClothEntry,
   GachaResult,
 } from '@/features/wardrobe/types'
-import { CLOTHES } from '@/features/wardrobe/clothes'
+import { CLOTHES, STORY_CLOTH_IDS } from '@/features/wardrobe/clothes'
 import { GRADE_TOKENS } from '@/features/wardrobe/grades'
 import { useWardrobe } from '@/features/wardrobe/useWardrobe'
 import { CenterModal } from '@/ui/CenterModal'
@@ -34,11 +34,10 @@ const CATALOG_FILTERS: { key: CatalogFilter; label: string }[] = [
   { key: 'S', label: 'S' },
 ]
 
-// 스토리(웨딩 해금) 필수 옷 — 데이터에 별도 플래그가 없어 id 화이트리스트로 판별.
-// 도감 설명 모달에서만 📖 칩 표시 (다른 사용처엔 미노출).
-const STORY_CLOTH_IDS = ['rose', 'vacation', 'propose']
+// 스토리(웨딩 해금) 필수 옷 — id 화이트리스트(STORY_CLOTH_IDS, features/wardrobe)로 판별.
+// 도감 설명 모달에서만 스토리 칩 표시 (다른 사용처엔 미노출).
 function isStoryCloth(cloth: ClothEntry): boolean {
-  return STORY_CLOTH_IDS.includes(cloth.id)
+  return (STORY_CLOTH_IDS as readonly string[]).includes(cloth.id)
 }
 
 // 등급 필터 매칭 — 'S' 탭은 S/S+ 모두 포함. 그리드·도감 공용.

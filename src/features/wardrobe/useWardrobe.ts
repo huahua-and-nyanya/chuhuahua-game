@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { clothPath } from '@/assets/clothes'
 import type { ClothEffects, GachaResult, Grade, WardrobeState } from './types'
-import { CLOTHES, CLOTHES_BY_GRADE } from './clothes'
+import { CLOTHES, CLOTHES_BY_GRADE, STORY_CLOTH_IDS } from './clothes'
 import {
   coinsStorage,
   pityStorage,
@@ -71,6 +71,16 @@ export function useWardrobe() {
     const eq = wardrobeRef.current.equipped
     if (!eq) return undefined
     return CLOTHES[eq]?.pair ? clothPath('cat', eq, 'full') : undefined
+  }, [])
+
+  // propose 코스튬 스토리 armed 판정 — 데이트룩 + LV10 컷신 노출 조건.
+  // equipped === 'propose' && rose·vacation·propose 3벌 모두 보유 && 미클리어.
+  // isSolo 조건은 호출처(solo.tsx)가 담당. 게임 시작 시 1회 스냅샷용이라 storage를 직접 읽음.
+  const getProposeArmed = useCallback((): boolean => {
+    const { equipped, owned } = wardrobeRef.current
+    if (equipped !== 'propose') return false
+    if (!STORY_CLOTH_IDS.every((id) => owned.includes(id))) return false
+    return !playStatsStorage.load().proposeEndingCleared
   }, [])
 
   // 점수로 코인 적립 — MAX_COINS(999) 상한. 상한 초과분은 버려지고 walletFull로 알림.
@@ -156,6 +166,7 @@ export function useWardrobe() {
     getEquippedEffects,
     getEquippedSkin,
     getEquippedCatSkin,
+    getProposeArmed,
     earnCoins,
     pullGacha,
   }
