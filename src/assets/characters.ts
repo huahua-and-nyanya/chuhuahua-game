@@ -15,4 +15,24 @@ export const CHARACTER_ASSETS = {
   catShield: '/assets/characters/cat-shield.png',
   catVictory: '/assets/characters/cat-victory.png',
   pigeon: '/assets/characters/pigeon.png',
+
+  // ── propose 코스튬 스토리 (W 사이클) ──────────────────────────────
+  // 데이트룩(armed 한 판): LV1~9 동안 츄/냐 둘 다 교체. 솔로 도달 상태만 제작.
+  // (cat-date-slow 없음 — 솔로 고구마는 츄만 슬로우)
+  chiDate: '/assets/characters/chi-date.png',
+  chiDateKissing: '/assets/characters/chi-date-kissing.png',
+  chiDateSlow: '/assets/characters/chi-date-slow.png',
+  catDate: '/assets/characters/cat-date.png',
+  catDateKissing: '/assets/characters/cat-date-kissing.png',
+  catDateAngry: '/assets/characters/cat-date-angry.png',
+  catDateScared: '/assets/characters/cat-date-scared.png',
+  catDateShield: '/assets/characters/cat-date-shield.png',
+
+  // propose 정장 컷신(S2 사용, 키만 등록). 실 자산은 clothes/에 배치돼 있어
+  // STORY_ASSETS.md §B의 characters/ 표기와 다름 — 실 자산 경로 기준으로 매핑.
+  // armed 아닐 때 default 외형은 옷 시스템 clothPath('chi','propose','full')가 같은 파일을 가리킨다.
+  chiProposeFull: '/assets/clothes/chi-propose-full.png',
+  chiProposeKissing: '/assets/clothes/chi-propose-kissing.png',
+  catProposeFull: '/assets/clothes/cat-propose-full.png',
+  catProposeKissing: '/assets/clothes/cat-propose-kissing.png',
 } as const
