@@ -27,6 +27,7 @@ import {
   DEBUFF_AFTER_LV3_FIRST,
   DEBUFF_LEVEL_MIN,
   DEBUFF_STAGGER,
+  MAX_LEVEL,
   MAX_TOASTS,
 } from '@/game/constants'
 import {
@@ -74,6 +75,15 @@ import { useHistory } from '@/features/history/useHistory'
 import { useWardrobe } from '@/features/wardrobe'
 import type { ClothEffects } from '@/features/wardrobe/types'
 
+import { BG_PROPOSE } from '@/assets/backgrounds'
+import {
+  createStoryRuntime,
+  setupStory,
+  updateStory,
+} from '@/game/story/proposeStory'
+import { CenterModal } from '@/ui/CenterModal'
+import { PixelButton } from '@/ui/PixelButton'
+
 import '@/game/keyframes.css'
 
 export const Route = createFileRoute('/solo')({
@@ -90,7 +100,7 @@ const CHARACTER_BOX = 150 // px — 캐릭터 wrapper 정사각 (캐릭터/아�
 // 아이템 expireAt 까지 남은 시간이 본 값 이하면 item-expire 깜빡임 + 글로우 시작.
 const ITEM_EXPIRE_WARN_MS = 2000
 
-type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover'
+type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover' | 'story'
 
 function SoloPage() {
   const navigate = useNavigate()
@@ -116,12 +126,16 @@ function SoloPage() {
   // gameStartRef는 마운트 useEffect에서 performance.now()로 채움 (initializer 안에서 impure 함수 호출 금지).
   const refs = useRef<GameRefs>(createInitialState())
   const gameStartRef = useRef<number>(0)
+  // propose 컷신 상태머신 런타임 (gameState==='story' 동안만 의미 있음).
+  const storyRef = useRef(createStoryRuntime())
   // 가상 컨트롤러는 root layout이 마운트, 입력은 chi-input.ts의 module-level virtualInputRef로 동기.
 
   const [gameState, setGameState] = useState<GameState>('playing')
   const [gameOverInfo, setGameOverInfo] = useState<GameOverInfo | null>(null)
   // 게임오버 → 카드 shake + 빨간 flash가 ~500ms 동안 끝난 뒤 모달 등장.
   const [showGameOverModal, setShowGameOverModal] = useState(false)
+  // 컷신 마지막 단계(modal) 진입 시 placeholder 모달 표시 (S3에서 실제 해금 모달로 교체).
+  const [showStoryModal, setShowStoryModal] = useState(false)
   const [toasts, setToasts] = useState<ToastRef[]>([])
   // 일시정지 관리: paused 진입 시각.
   // 옵션 (a) 동선: confirmQuit 진입 시 paused 정산 → 더 놀래 = playing 직행 (paused 복귀 X).
@@ -209,6 +223,7 @@ function SoloPage() {
     gameStartRef.current = performance.now()
     setGameOverInfo(null)
     setShowGameOverModal(false)
+    setShowStoryModal(false)
     setToasts([])
     pausedAtRef.current = 0
     setGameState('playing')
@@ -292,6 +307,19 @@ function SoloPage() {
   // ── 콜백 (게임 루프 → 점수/효과/시각) ─────────────────────────────────
   const onLevelUp = useCallback(
     (newLevel: number) => {
+      // armed(propose 3벌 + 미클리어) + LV10 최초 도달 → 컷신 진입.
+      // setupStory로 오브젝트/효과 리셋 + 캐릭터 텔레포트를 동기 수행한 뒤 story로 전환.
+      // 이미 story면 무시 (재트리거 차단). 컷신 중엔 마일스톤 토스트 등 일반 처리 스킵.
+      if (
+        armedRef.current &&
+        newLevel === MAX_LEVEL &&
+        gameStateRef.current !== 'story'
+      ) {
+        setupStory(refs.current, performance.now(), storyRef.current)
+        setShowStoryModal(false)
+        setGameState('story')
+        return
+      }
       if (isMilestoneLevel(newLevel)) {
         showToast(`LV${newLevel} 마일스톤!`, 'var(--color-game-accent-gold)')
       }
@@ -519,6 +547,22 @@ function SoloPage() {
     },
   })
 
+  // ── propose 컷신 루프 ──────────────────────────────────────────────
+  // story 동안만 활성. updateStory가 단계 전이 + chi 이동/점프 보간 + 이펙트 트리거.
+  // 일반 루프(enabled: playing)는 자동 정지하므로 둘이 동시에 돌지 않는다.
+  useGameLoop({
+    enabled: gameState === 'story',
+    update: (dt, now) => {
+      const r = refs.current
+      updateStory(r, storyRef.current, dt, now, {
+        onModal: () => setShowStoryModal(true),
+      })
+      updateParticles(r.particles)
+      updateBgHearts(r.bgHearts)
+      expireTransients(r, now)
+    },
+  })
+
   // ── 게임오버 모달 핸들러 ────────────────────────────────────────────
   const handleGameOverSubmit = (name: string) => {
     if (!gameOverInfo) return
@@ -572,14 +616,21 @@ function SoloPage() {
   const chiFacing = chi.facing === 'right' ? -1 : 1
   const catFacing = cat.facing === 'right' ? -1 : 1
 
-  const bgUrl = getBackgroundForLevel(sm.level)
+  // 컷신 파생값 — story 동안 정장 스프라이트/배경/점프 오프셋/HUD 숨김 분기.
+  const isStory = gameState === 'story'
+  const storyKiss = isStory && storyRef.current.phase === 'kiss'
+  const storyChiJumpY = isStory ? storyRef.current.chiJumpY : 0
+  const storyCatJumpY = isStory ? storyRef.current.catJumpY : 0
+
+  // story 중엔 getBackgroundForLevel 우회해 bgPropose 강제.
+  const bgUrl = isStory ? BG_PROPOSE : getBackgroundForLevel(sm.level)
 
   return (
     <>
       <div
         className={clsx(
           'absolute inset-0 overflow-hidden',
-          gameState === 'gameover' && 'animate-game-stage-shake',
+          (gameState === 'gameover' || storyKiss) && 'animate-game-stage-shake',
         )}
         style={{
           background: `url(${bgUrl}) center / cover no-repeat`,
@@ -627,7 +678,7 @@ function SoloPage() {
           className="absolute flex items-center justify-center"
           style={{
             left: chi.x,
-            top: chi.y,
+            top: chi.y + storyChiJumpY,
             width: CHARACTER_BOX,
             height: CHARACTER_BOX,
             transform: `translate(-50%, -50%) scaleX(${chiFacing})`,
@@ -639,11 +690,12 @@ function SoloPage() {
           >
             <Chihuahua
               kissing={chiKissing}
-              boosted={chiBoosted}
-              mega={chiMega}
-              slowed={chiSlowed}
+              boosted={!isStory && chiBoosted}
+              mega={!isStory && chiMega}
+              slowed={!isStory && chiSlowed}
               equippedSrc={equippedSkinRef.current}
               armed={armedRef.current}
+              story={isStory}
             />
           </div>
         </div>
@@ -653,7 +705,7 @@ function SoloPage() {
           className="absolute flex items-center justify-center"
           style={{
             left: cat.x,
-            top: cat.y,
+            top: cat.y + storyCatJumpY,
             width: CHARACTER_BOX,
             height: CHARACTER_BOX,
             transform: `translate(-50%, -50%) scaleX(${catFacing})`,
@@ -667,15 +719,16 @@ function SoloPage() {
           >
             <Cat
               kissing={catKissing}
-              shielded={catShielded}
-              angry={catAngry}
-              scared={catScared}
+              shielded={!isStory && catShielded}
+              angry={!isStory && catAngry}
+              scared={!isStory && catScared}
               equippedSrc={equippedCatSkinRef.current}
               armed={armedRef.current}
+              story={isStory}
             />
           </div>
         </div>
-        {catShielded && (
+        {!isStory && catShielded && (
           <div
             className="pointer-events-none absolute"
             style={{ left: cat.x, top: cat.y, width: 0, height: 0 }}
@@ -724,14 +777,17 @@ function SoloPage() {
         {/* 뽀뽀 "쪽!!" — z 10 */}
         <Mwah state={r.mwah} now={now} />
 
-        {/* HUD (좌상단 점수 + 우상단 LV/효과 게이지/토스트 stack) / 콤보 라벨 / 오버레이 / 플로트 텍스트 */}
-        <HUD
-          score={sm.score}
-          level={sm.level}
-          effects={effects}
-          now={now}
-          toasts={toasts}
-        />
+        {/* HUD (좌상단 점수 + 우상단 LV/효과 게이지/토스트 stack) / 콤보 라벨 / 오버레이 / 플로트 텍스트
+            컷신(story) 중엔 HUD 숨김 — 점수/레벨/게이지 미표시로 연출 몰입. */}
+        {!isStory && (
+          <HUD
+            score={sm.score}
+            level={sm.level}
+            effects={effects}
+            now={now}
+            toasts={toasts}
+          />
+        )}
         <ComboLabel combo={sm.combo} visible={gameState === 'playing'} />
         {/* 레벨업 효과 — z 18 (HUD/콤보 위) */}
         <LevelUpEffect state={r.levelUpEffect} now={now} />
@@ -753,6 +809,27 @@ function SoloPage() {
           onRestart={startGame}
           onMain={() => navigate({ to: '/' })}
         />
+      )}
+
+      {/* 컷신 종료 placeholder 모달 (S2) — 실제 해금 연출/기록/코인은 S3에서 교체.
+          닫기/메인으로 모두 메인 이동. blocker는 story를 in-progress로 안 봐서 이동 허용. */}
+      {showStoryModal && (
+        <CenterModal
+          open
+          onClose={() => navigate({ to: '/' })}
+          title="프로포즈 컷신"
+        >
+          <div className="gap-lg flex flex-col items-center py-2 text-center">
+            <p className="text-text-primary font-body text-sm leading-relaxed">
+              컷신 재생을 마쳤어요
+              <br />
+              해금 연출은 다음 단계에서 이어져요
+            </p>
+            <PixelButton variant="primary" onClick={() => navigate({ to: '/' })}>
+              메인으로
+            </PixelButton>
+          </div>
+        </CenterModal>
       )}
 
       {/* 일시정지/그만두기 모달 (gameover와 동일하게 라우트 레벨 portal/overlay) */}
