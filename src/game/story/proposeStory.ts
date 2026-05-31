@@ -1,3 +1,4 @@
+import { applyChiPhysics } from '@/game/ai/chi-input'
 import {
   GAME_HEIGHT,
   GAME_WIDTH,
@@ -10,7 +11,8 @@ import type { ParticleRef } from '@/game/state'
 
 // propose 코스튬 스토리 컷신 상태머신 (사이클 W S2).
 // 일반 게임 루프와 분리 — solo.tsx가 gameState==='story' 동안 별도 useGameLoop로 updateStory 호출.
-// 전이: intro →(타이밍)→ walk →(walkToX 도달)→ kiss →(타이밍)→ jump →(타이밍)→ modal.
+// 전이: intro →(타이밍)→ walk →(유저가 츄를 냐 KISS_DIST까지 데려감)→ kiss →(타이밍)→ jump →(타이밍)→ modal.
+// walk는 자동이동 아님 — 유저가 직접 츄 조작(매우 느림). 도달까지 타임아웃 없이 무한 대기.
 
 export type StoryPhase = 'intro' | 'walk' | 'kiss' | 'jump' | 'modal'
 
@@ -20,8 +22,6 @@ export type StoryRuntime = {
   chiJumpY: number // jump 단계 렌더 y 오프셋 (px, 음수=위)
   catJumpY: number
   heartAccum: number // walk 단계 하트 스폰 간격 누적 (ms)
-  walkFromX: number // walk 시작 chi.x
-  walkToX: number // walk 목표 chi.x (cat.x - KISS_DIST)
 }
 
 export function createStoryRuntime(): StoryRuntime {
@@ -31,18 +31,18 @@ export function createStoryRuntime(): StoryRuntime {
     chiJumpY: 0,
     catJumpY: 0,
     heartAccum: 0,
-    walkFromX: 0,
-    walkToX: 0,
   }
 }
 
 // 단계별 길이 — STORY_ASSETS.md 타이밍 락 범위 내 고정값.
 const INTRO_MS = 1000 // 락 800~1200
-// WALK: 좌우 끝(≈520px) 거리를 0.5~0.8px/frame로는 락 범위(2500~3500ms) 안에 못 건너므로,
-// 고정 px/frame 대신 시간 기반 보간으로 walkToX까지 WALK_MS에 도달 (프레임 독립 + 락 타이밍 우선).
-const WALK_MS = 3000 // 락 2500~3500
+// WALK는 타임아웃 없음 — 유저가 츄를 냐 KISS_DIST까지 데려갈 때까지 무한 대기.
 const KISS_MS = 1500 // 락 1200~1800
 const JUMP_MS = 1800 // 락 1500~2000
+
+// walk 전용 츄 이동 속도 배율 — MAX_SPEED(3.4)에 곱해 매우 느린 토독토독 보행.
+// 일반 플레이엔 영향 없음 (walk case에서만 applyChiPhysics에 전달).
+const STORY_WALK_SPEED_MUL = 0.3
 
 const WALK_HEART_INTERVAL = 320 // ms, walk 중 하트 간헐 스폰 간격
 const JUMP_HOPS = 3 // sine 점프 횟수
@@ -107,8 +107,6 @@ export function setupStory(
   story.chiJumpY = 0
   story.catJumpY = 0
   story.heartAccum = 0
-  story.walkFromX = STORY_CHI_X
-  story.walkToX = STORY_CAT_X - KISS_DIST
 }
 
 export type StoryCallbacks = {
@@ -130,15 +128,18 @@ export function updateStory(
       if (elapsed >= INTRO_MS) enterPhase(story, 'walk', now)
       break
     case 'walk': {
-      const t = Math.min(1, elapsed / WALK_MS)
-      refs.chi.x = story.walkFromX + (story.walkToX - story.walkFromX) * t
-      refs.chi.facing = 'right'
+      // 유저 조작 — 일반 솔로와 같은 입력 경로(applyChiPhysics, WASD+방향키). walk 전용 느린 배율만.
+      // getLevel은 호환 인자(미사용), getMode 미지정=solo. facing은 입력에 따라 갱신됨.
+      applyChiPhysics(refs, now, dt, () => 0, undefined, STORY_WALK_SPEED_MUL)
       story.heartAccum += dt
       if (story.heartAccum >= WALK_HEART_INTERVAL) {
         story.heartAccum -= WALK_HEART_INTERVAL
         spawnWalkHeart(refs, now)
       }
-      if (t >= 1) {
+      // 타임아웃 없음 — 츄가 냐 KISS_DIST 안으로 들어올 때까지 무한 대기.
+      const dx = refs.cat.x - refs.chi.x
+      const dy = refs.cat.y - refs.chi.y
+      if (Math.hypot(dx, dy) <= KISS_DIST) {
         triggerStoryKiss(refs, now)
         enterPhase(story, 'kiss', now)
       }
@@ -236,5 +237,10 @@ function triggerStoryJump(refs: GameRefs, now: number): void {
     })
   }
   addParticles(refs.particles, burst)
-  refs.shockwaves.push({ id: now + Math.random(), x: cx, y: cy, until: now + 300 })
+  refs.shockwaves.push({
+    id: now + Math.random(),
+    x: cx,
+    y: cy,
+    until: now + 300,
+  })
 }
