@@ -24,5 +24,8 @@ export const GAME_BGS = [
 
 export const SPACE_BG = '/assets/backgrounds/bg-space.png' as const
 
+// propose 스토리 컷신 전용 배경 (야경 호텔 뷰). story 중에만 getBackgroundForLevel 우회해 강제.
+export const BG_PROPOSE = '/assets/backgrounds/bg-propose.png' as const
+
 // 옷장 피팅룸 배경 — 자산 미존재 시 인라인 fallback(--color-bg-frame) 유지.
 export const WARDROBE_BG = '/assets/backgrounds/bg-wardrobe.png' as const
