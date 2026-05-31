@@ -302,6 +302,29 @@
   }
 }
 
+/* 캐릭터 idle/보행 통통 모션 — 위아래 3px (reference 2222 패턴 복원).
+ * 캐릭터 inner div(translate 없음)에 적용 — kiss-shake/kiss-bounce와 같은 층.
+ * propose 컷신 walk 단계에서만 사용: 냐는 제자리 idle bob, 츄는 이동 중 토독토독. */
+@keyframes bounce-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* 냐 제자리 idle bob — 느긋한 통통. */
+.animate-bounce-soft {
+  animation: bounce-soft 0.9s ease-in-out infinite;
+}
+
+/* 츄 보행 토독토독 — idle보다 또렷한 빠른 발걸음 통통. */
+.animate-toddok {
+  animation: bounce-soft 0.42s ease-in-out infinite;
+}
+
 /* PvP HUD — 마지막 5초 시간 칩 펄스 (chip 자체에 transform 없으므로 scale만 적용). */
 @keyframes pvp-time-pulse {
   0%,
