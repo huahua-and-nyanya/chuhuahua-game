@@ -443,7 +443,15 @@ function SoloPage() {
 
   // ── 입력 ───────────────────────────────────────────────────────────
   const isPlaying = useCallback(() => gameStateRef.current === 'playing', [])
-  useChiInput({ refs: refs.current, enabled: isPlaying })
+  // 츄 입력 허용 — 일반 플레이(playing) + 컷신 walk 단계만. intro/kiss/jump/modal은 차단.
+  // ref-shaped 콜백(빈 deps)으로 동일 참조 유지 — useChiInput은 mount 시 1회만 구독.
+  const isChiInputEnabled = useCallback(
+    () =>
+      gameStateRef.current === 'playing' ||
+      (gameStateRef.current === 'story' && storyRef.current.phase === 'walk'),
+    [],
+  )
+  useChiInput({ refs: refs.current, enabled: isChiInputEnabled })
 
   // ESC 키 — playing↔paused 토글, confirmQuit 시 취소(=더 놀래).
   // gameover에선 무시. input/textarea 포커스 중엔 무시 (다른 모달의 닉네임 입력 등).
@@ -619,8 +627,13 @@ function SoloPage() {
   // 컷신 파생값 — story 동안 정장 스프라이트/배경/점프 오프셋/HUD 숨김 분기.
   const isStory = gameState === 'story'
   const storyKiss = isStory && storyRef.current.phase === 'kiss'
+  const storyWalk = isStory && storyRef.current.phase === 'walk'
   const storyChiJumpY = isStory ? storyRef.current.chiJumpY : 0
   const storyCatJumpY = isStory ? storyRef.current.catJumpY : 0
+  // walk 중 츄 이동 여부 — 이동 시 토독토독, 정지 시 idle. dead-zone(0.05) 위로 살짝 마진.
+  const chiWalking = storyWalk && Math.hypot(chi.vx, chi.vy) > 0.1
+  // walk 중 냐는 제자리 idle bob (이동 안 함).
+  const catIdleBob = storyWalk
 
   // story 중엔 getBackgroundForLevel 우회해 bgPropose 강제.
   const bgUrl = isStory ? BG_PROPOSE : getBackgroundForLevel(sm.level)
@@ -686,7 +699,12 @@ function SoloPage() {
         >
           <div
             key={`chi-shake-${r.kissing.until}`}
-            className={clsx(chiKissing && 'animate-kiss-shake')}
+            className={clsx(
+              chiKissing && 'animate-kiss-shake',
+              // 컷신 walk: 이동 중이면 토독토독, 정지면 idle bob (kiss 중엔 미적용).
+              !chiKissing && chiWalking && 'animate-toddok',
+              !chiKissing && storyWalk && !chiWalking && 'animate-bounce-soft',
+            )}
           >
             <Chihuahua
               kissing={chiKissing}
@@ -715,7 +733,11 @@ function SoloPage() {
               key=kissing.until → 매 kiss마다 inner remount → animation 재시작. */}
           <div
             key={`cat-bounce-${r.kissing.until}`}
-            className={clsx(catKissing && 'animate-kiss-bounce')}
+            className={clsx(
+              catKissing && 'animate-kiss-bounce',
+              // 컷신 walk: 냐는 제자리 idle bob (kiss 중엔 미적용).
+              !catKissing && catIdleBob && 'animate-bounce-soft',
+            )}
           >
             <Cat
               kissing={catKissing}
@@ -797,6 +819,16 @@ function SoloPage() {
         {gameState === 'gameover' && (
           <div className="animate-game-stage-flash pointer-events-none absolute inset-0 bg-[rgba(255,51,68,0.5)]" />
         )}
+
+        {/* 컷신 walk 안내 배너 — 상단중앙, walk 단계 동안만. kiss 도달 시 사라짐.
+            HUD 숨김 상태라 z 충돌 적음. 핑크/잉크 톤, 토큰 클래스만 사용. */}
+        {storyWalk && (
+          <div className="pointer-events-none absolute top-4 left-1/2 z-20 -translate-x-1/2">
+            <div className="border-ink-base text-text-on-pink shadow-card font-display rounded-pill border-[3px] border-solid bg-pink-700 px-4 py-2 text-base leading-none whitespace-nowrap">
+              츄와와의 고백을 완성시켜줘!
+            </div>
+          </div>
+        )}
       </div>
 
       {showGameOverModal && gameOverInfo && (
@@ -825,7 +857,10 @@ function SoloPage() {
               <br />
               해금 연출은 다음 단계에서 이어져요
             </p>
-            <PixelButton variant="primary" onClick={() => navigate({ to: '/' })}>
+            <PixelButton
+              variant="primary"
+              onClick={() => navigate({ to: '/' })}
+            >
               메인으로
             </PixelButton>
           </div>
