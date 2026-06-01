@@ -346,6 +346,20 @@
   }
 }
 
+/* wedding 크레딧 댄스 좌우반전 — bounce-soft 2주기(2×0.9s=1.8s)마다 scaleX 1↔-1 즉시 토글("휙").
+ * 0~50%(첫 바운스) scaleX(1), 50.01~100%(둘째 바운스) scaleX(-1) — 플랫 스톱이라 중간만 순간 반전.
+ * 정렬(wrapper translate)·bounce(inner translateY)와 충돌 안 나게 중간 층(flip) 단독 transform. */
+@keyframes wedding-dance-flip {
+  0%,
+  50% {
+    transform: scaleX(1);
+  }
+  50.01%,
+  100% {
+    transform: scaleX(-1);
+  }
+}
+
 /* wedding 엔딩 크레딧 세로 스크롤 — 아래(화면 밖)에서 위(화면 밖)로 전체 통과. linear 일정 속도.
  * %는 컨텐츠 wrapper 자체 높이 기준 — wrapper가 min-h-full(프레임 높이) 이상이라 시작/끝 모두 화면 밖. */
 @keyframes wedding-credits-scroll {

@@ -195,6 +195,8 @@
   /* 엔딩 크레딧 세로 스크롤 — weddingStory.ts CREDITS_MS(28000)와 정합. linear 일정 속도. */
   --animate-wedding-credits-scroll: wedding-credits-scroll 28000ms linear
     forwards;
+  /* 크레딧 댄스 좌우반전 — bounce-soft 0.9s × 2 = 1.8s마다 1플립(2바운스=1주기). linear 즉시토글. */
+  --animate-wedding-dance-flip: wedding-dance-flip 1800ms linear infinite;
   --animate-subtitle-blink: subtitle-blink 1s steps(1, end) infinite;
 
   /* === 상태 색상 (Tailwind utility 생성용 노출) === */
