@@ -81,8 +81,6 @@ import {
   setupStory,
   updateStory,
 } from '@/game/story/proposeStory'
-import { CenterModal } from '@/ui/CenterModal'
-import { PixelButton } from '@/ui/PixelButton'
 
 import '@/game/keyframes.css'
 
@@ -110,6 +108,7 @@ function SoloPage() {
     getEquippedSkin,
     getEquippedCatSkin,
     getProposeArmed,
+    markProposeEndingCleared,
     earnCoins,
   } = useWardrobe()
   // 장착 옷 효과/스킨은 게임 시작 시 1회 스냅샷 (솔로 중 옷 변경 불가) — 매 프레임 ref만 읽음.
@@ -128,14 +127,25 @@ function SoloPage() {
   const gameStartRef = useRef<number>(0)
   // propose 컷신 상태머신 런타임 (gameState==='story' 동안만 의미 있음).
   const storyRef = useRef(createStoryRuntime())
+  // 컷신 진입(LV10) 시점 점수 스냅샷 — 컷신 중 점수 불변이라 모달 결과로 그대로 사용.
+  const storySnapshotRef = useRef<{
+    finalScore: number
+    maxLevel: number
+    maxCombo: number
+    elapsedMs: number
+  } | null>(null)
+  // STORY_MODAL 1회성 처리(코인 적립/해금 세팅) 가드 — 모달 표시 시 한 번만.
+  const storyModalDoneRef = useRef(false)
   // 가상 컨트롤러는 root layout이 마운트, 입력은 chi-input.ts의 module-level virtualInputRef로 동기.
 
   const [gameState, setGameState] = useState<GameState>('playing')
   const [gameOverInfo, setGameOverInfo] = useState<GameOverInfo | null>(null)
   // 게임오버 → 카드 shake + 빨간 flash가 ~500ms 동안 끝난 뒤 모달 등장.
   const [showGameOverModal, setShowGameOverModal] = useState(false)
-  // 컷신 마지막 단계(modal) 진입 시 placeholder 모달 표시 (S3에서 실제 해금 모달로 교체).
+  // 컷신 마지막 단계(modal) 진입 시 성공 결과 모달 표시.
   const [showStoryModal, setShowStoryModal] = useState(false)
+  // STORY_MODAL에 넘길 결과(점수/레벨/코인 등) — GameOverInfo 재활용(variant='story').
+  const [storyResult, setStoryResult] = useState<GameOverInfo | null>(null)
   const [toasts, setToasts] = useState<ToastRef[]>([])
   // 일시정지 관리: paused 진입 시각.
   // 옵션 (a) 동선: confirmQuit 진입 시 paused 정산 → 더 놀래 = playing 직행 (paused 복귀 X).
@@ -224,10 +234,35 @@ function SoloPage() {
     setGameOverInfo(null)
     setShowGameOverModal(false)
     setShowStoryModal(false)
+    setStoryResult(null)
+    storyModalDoneRef.current = false
+    storySnapshotRef.current = null
     setToasts([])
     pausedAtRef.current = 0
     setGameState('playing')
   }, [getEquippedEffects, getEquippedSkin, getEquippedCatSkin, getProposeArmed])
+
+  // 컷신 마지막(modal) 진입 시 1회 — 해금 세팅 + 코인 적립 + 결과 모달 구성.
+  // 멱등 가드(storyModalDoneRef): 모달 뜨는 순간 즉시 proposeEndingCleared=true →
+  // 유저가 모달 안 닫고 메인 가도 해금 유지. 코인도 여기서 1회만 적립.
+  const handleStoryModal = useCallback(() => {
+    if (storyModalDoneRef.current) return
+    const snap = storySnapshotRef.current
+    if (!snap) return
+    storyModalDoneRef.current = true
+    markProposeEndingCleared()
+    const { earned, walletFull } = earnCoins(snap.finalScore)
+    setStoryResult({
+      finalScore: snap.finalScore,
+      maxLevel: snap.maxLevel,
+      maxCombo: snap.maxCombo,
+      elapsedMs: snap.elapsedMs,
+      cause: 'quit', // story variant에선 미표시 (필수 필드라 채움)
+      earnedCoins: earned,
+      walletFull,
+    })
+    setShowStoryModal(true)
+  }, [earnCoins, markProposeEndingCleared])
 
   // gameover 진입 → shake/flash가 ~500ms 동안 보인 뒤 모달 등장.
   // gameover 이탈은 startGame()/onMain만 가능, 둘 다 showGameOverModal을 명시 리셋.
@@ -315,6 +350,15 @@ function SoloPage() {
         newLevel === MAX_LEVEL &&
         gameStateRef.current !== 'story'
       ) {
+        // 진입 시점 점수 스냅샷 — 컷신 중 점수 불변이라 모달 결과로 그대로 쓴다.
+        // level.ts checkLevelUp이 scoreMirror.level을 newLevel로 먼저 갱신 후 호출 → sm.level=10.
+        const sm = refs.current.scoreMirror
+        storySnapshotRef.current = {
+          finalScore: sm.score,
+          maxLevel: sm.level,
+          maxCombo: sm.maxCombo,
+          elapsedMs: performance.now() - gameStartRef.current,
+        }
         setupStory(refs.current, performance.now(), storyRef.current)
         setShowStoryModal(false)
         setGameState('story')
@@ -563,7 +607,7 @@ function SoloPage() {
     update: (dt, now) => {
       const r = refs.current
       updateStory(r, storyRef.current, dt, now, {
-        onModal: () => setShowStoryModal(true),
+        onModal: handleStoryModal,
       })
       updateParticles(r.particles)
       updateBgHearts(r.bgHearts)
@@ -572,20 +616,25 @@ function SoloPage() {
   })
 
   // ── 게임오버 모달 핸들러 ────────────────────────────────────────────
-  const handleGameOverSubmit = (name: string) => {
-    if (!gameOverInfo) return
+  // 기록 저장 공용 — 게임오버/스토리 결과 모두 같은 경로(닉네임 캐시 포함).
+  const saveRecord = (name: string, info: GameOverInfo) => {
     history.save({
       name,
-      score: gameOverInfo.finalScore,
-      maxLevel: gameOverInfo.maxLevel,
-      maxCombo: gameOverInfo.maxCombo,
-      elapsedMs: gameOverInfo.elapsedMs,
+      score: info.finalScore,
+      maxLevel: info.maxLevel,
+      maxCombo: info.maxCombo,
+      elapsedMs: info.elapsedMs,
     })
     try {
       localStorage.setItem(NICKNAME_KEY, name)
     } catch {
       // 무시
     }
+  }
+
+  const handleGameOverSubmit = (name: string) => {
+    if (!gameOverInfo) return
+    saveRecord(name, gameOverInfo)
   }
 
   const defaultName = (() => {
@@ -843,28 +892,19 @@ function SoloPage() {
         />
       )}
 
-      {/* 컷신 종료 placeholder 모달 (S2) — 실제 해금 연출/기록/코인은 S3에서 교체.
-          닫기/메인으로 모두 메인 이동. blocker는 story를 in-progress로 안 봐서 이동 허용. */}
-      {showStoryModal && (
-        <CenterModal
+      {/* 컷신 성공 결과 모달 — GameOverModal 재활용(variant='story'). 점수/LV10 + 닉네임 등록 +
+          코인 + [메인으로]. 해금(proposeEndingCleared)/코인은 handleStoryModal에서 모달 표시 시 처리.
+          blocker는 story를 in-progress로 안 봐서 메인 이동 허용. */}
+      {showStoryModal && storyResult && (
+        <GameOverModal
           open
-          onClose={() => navigate({ to: '/' })}
-          title="프로포즈 컷신"
-        >
-          <div className="gap-lg flex flex-col items-center py-2 text-center">
-            <p className="text-text-primary font-body text-sm leading-relaxed">
-              컷신 재생을 마쳤어요
-              <br />
-              해금 연출은 다음 단계에서 이어져요
-            </p>
-            <PixelButton
-              variant="primary"
-              onClick={() => navigate({ to: '/' })}
-            >
-              메인으로
-            </PixelButton>
-          </div>
-        </CenterModal>
+          variant="story"
+          info={storyResult}
+          rank={history.getRank(storyResult.finalScore)}
+          defaultName={defaultName}
+          onSubmit={(name) => saveRecord(name, storyResult)}
+          onMain={() => navigate({ to: '/' })}
+        />
       )}
 
       {/* 일시정지/그만두기 모달 (gameover와 동일하게 라우트 레벨 portal/overlay) */}
