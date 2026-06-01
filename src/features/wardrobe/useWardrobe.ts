@@ -106,6 +106,19 @@ export function useWardrobe() {
     playStatsStorage.save({ ...cur, proposeEndingCleared: true })
   }, [])
 
+  // wedding 게임변형 시청 완료 마킹 — 엔딩 모달 도달 시 1회 호출(컷신 완료 = 효과 소멸 확정).
+  // markProposeEndingCleared 패턴 미러. 멱등: 이미 포함이면 no-op.
+  // usedClothes에 'wedding' 추가 → getEquippedEffects가 {} 반환(비둘기 복귀 + 일반 아이템풀).
+  // ref + state + storage 동시 갱신 (toggleEquip/pullGacha의 wardrobe write 패턴).
+  const markWeddingUsed = useCallback(() => {
+    const cur = wardrobeRef.current
+    if (cur.usedClothes.includes('wedding')) return
+    const next = { ...cur, usedClothes: [...cur.usedClothes, 'wedding'] }
+    wardrobeRef.current = next
+    wardrobeStorage.save(next)
+    setWardrobe(next)
+  }, [])
+
   // 점수로 코인 적립 — MAX_COINS(999) 상한. 상한 초과분은 버려지고 walletFull로 알림.
   const earnCoins = useCallback(
     (score: number): { earned: number; walletFull: boolean } => {
@@ -193,6 +206,7 @@ export function useWardrobe() {
     getProposeArmed,
     getWeddingArmed,
     markProposeEndingCleared,
+    markWeddingUsed,
     earnCoins,
     pullGacha,
   }
