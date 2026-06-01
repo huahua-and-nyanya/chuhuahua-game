@@ -325,15 +325,14 @@ function WeddingEquipPrompt({
   onCancel: () => void
 }) {
   return (
-    <div className="gap-lg flex flex-col items-center text-center">
-      <div className="text-5xl leading-none">💍</div>
-      <div className="text-ink-base text-lg font-bold">
+    <div className="gap-xl flex flex-col items-center text-center">
+      <div className="text-ink-base text-lg leading-relaxed font-bold">
         이 옷을 입고 플레이하면
         <br />
         둘의 특별한 엔딩을 볼 수 있어요
       </div>
       {/* 동작 고지 — 게임오버/코인부족 모달과 동일한 점선 구분 레이아웃 */}
-      <div className="border-border-card flex w-full flex-col gap-2 border-y border-dashed py-4 text-left">
+      <div className="border-border-card flex w-full flex-col gap-2 border-y border-dashed py-7 text-left">
         <div className="text-text-muted text-sm leading-snug">
           · 엔딩(크레딧)을 볼 때까지 코인이 모이지 않아요.
         </div>
@@ -341,7 +340,7 @@ function WeddingEquipPrompt({
           · 엔딩 시청 시 이 옷의 효과는 사라져요.
         </div>
       </div>
-      <div className="gap-sm flex w-full flex-row">
+      <div className="gap-sm flex w-full flex-row pt-1">
         <PixelButton variant="secondary" onClick={onCancel}>
           취소
         </PixelButton>
