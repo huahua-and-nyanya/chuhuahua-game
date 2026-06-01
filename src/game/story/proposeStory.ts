@@ -42,7 +42,8 @@ const JUMP_MS = 1800 // 락 1500~2000
 
 // walk 전용 츄 이동 속도 배율 — MAX_SPEED(3.4)에 곱해 매우 느린 토독토독 보행.
 // 일반 플레이엔 영향 없음 (walk case에서만 applyChiPhysics에 전달).
-const STORY_WALK_SPEED_MUL = 0.3
+// weddingStory walk도 같은 보행 속도라 재사용(export). propose 동작 무변경.
+export const STORY_WALK_SPEED_MUL = 0.3
 
 const WALK_HEART_INTERVAL = 320 // ms, walk 중 하트 간헐 스폰 간격
 const JUMP_HOPS = 3 // sine 점프 횟수
