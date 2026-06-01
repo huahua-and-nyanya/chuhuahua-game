@@ -79,6 +79,7 @@ import { adjustTimersByPauseDuration } from '@/game/loop/pause'
 import { updateParticles } from '@/game/particles'
 import { trackedTimeout } from '@/hooks/trackedTimeout'
 
+import { audioManager } from '@/features/audio/audioManager'
 import { useHistory } from '@/features/history/useHistory'
 import { useWardrobe } from '@/features/wardrobe'
 import type { ClothEffects } from '@/features/wardrobe/types'
@@ -906,6 +907,54 @@ function SoloPage() {
     : undefined
   const weddingSubtitleLine = weddingSubtitleEntry?.text ?? ''
   const weddingSubtitleItalic = weddingSubtitleEntry?.italic ?? false
+
+  // ── BGM 씬 매핑 (B3a) — 상태/phase → 곡 토큰. 토큰이 바뀔 때만 effect 1회 발화(매 프레임 X).
+  //   playing: 웨딩 플레이(weddingArmed)는 title, 일반은 main.
+  //   paused/confirmQuit: calm(멈춤 연장선). 게임오버: sfx 1회 + 무음.
+  //   컷신: walk~kiss~cg~subtitle 무음. wedding credits/modal만 main(떡밥회수, modal까지 유지).
+  let audioScene:
+    | 'main'
+    | 'title'
+    | 'calm'
+    | 'gameover'
+    | 'silent'
+    | 'creditsMain'
+  if (gameState === 'gameover') {
+    audioScene = 'gameover'
+  } else if (gameState === 'paused' || gameState === 'confirmQuit') {
+    audioScene = 'calm'
+  } else if (isStory) {
+    audioScene =
+      isWeddingStory && (weddingPhase === 'credits' || weddingPhase === 'modal')
+        ? 'creditsMain'
+        : 'silent'
+  } else {
+    audioScene = weddingArmedRef.current ? 'title' : 'main'
+  }
+
+  // 첫 마운트(playing) 곡도 이 effect가 보장 — startGame은 첫 진입엔 안 불림(초기 state=playing).
+  useEffect(() => {
+    switch (audioScene) {
+      case 'main':
+        audioManager.playBgm('bgmMain')
+        break
+      case 'title':
+        audioManager.playBgm('bgmTitle')
+        break
+      case 'calm':
+        audioManager.playBgm('bgmCalm')
+        break
+      case 'creditsMain':
+        audioManager.playBgm('bgmMain', { crossfade: true })
+        break
+      case 'gameover':
+        audioManager.playSfx('sfxGameover')
+        break
+      case 'silent':
+        audioManager.stopBgm({ fade: true })
+        break
+    }
+  }, [audioScene])
 
   // story 중엔 getBackgroundForLevel 우회. propose는 bgPropose(야경 호텔), wedding은 제단(LV5 배경) 유지.
   // (wedding CG phase부터는 페이드+CG가 배경을 덮음.)
