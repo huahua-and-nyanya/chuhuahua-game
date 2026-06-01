@@ -41,6 +41,10 @@ export const CHARACTER_ASSETS = {
   // kissing은 S3 플레이 미연결(applyTo idle → kissing은 베이스 폴백).
   chiWeddingFull: '/assets/clothes/chi-wedding-full.png',
   chiWeddingKissing: '/assets/clothes/chi-wedding-kissing.png',
+  chiWeddingSlow: '/assets/clothes/chi-wedding-slow.png',
   catWeddingFull: '/assets/clothes/cat-wedding-full.png',
   catWeddingKissing: '/assets/clothes/cat-wedding-kissing.png',
+  catWeddingAngry: '/assets/clothes/cat-wedding-angry.png',
+  catWeddingScared: '/assets/clothes/cat-wedding-scared.png',
+  catWeddingShield: '/assets/clothes/cat-wedding-shield.png',
 } as const

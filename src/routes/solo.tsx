@@ -107,6 +107,7 @@ function SoloPage() {
   const navigate = useNavigate()
   const history = useHistory()
   const {
+    equipped,
     getEquippedEffects,
     getEquippedSkin,
     getEquippedCatSkin,
@@ -126,6 +127,8 @@ function SoloPage() {
   const armedRef = useRef<boolean>(getProposeArmed())
   // wedding 게임변형 armed — true면 진행 중 코인 적립 차단. 시작 시 1회 스냅샷(effects와 동일 패턴).
   const weddingArmedRef = useRef<boolean>(getWeddingArmed())
+  // wedding 착용 여부(used 무관) — 입으면 전 상태 웨딩 스프라이트. equipped 스냅샷, 시작 시 1회.
+  const weddingSkinRef = useRef<boolean>(equipped === 'wedding')
 
   // 게임 객체는 ref. React state는 표시 트리거만.
   // gameStartRef는 마운트 useEffect에서 performance.now()로 채움 (initializer 안에서 impure 함수 호출 금지).
@@ -240,6 +243,7 @@ function SoloPage() {
     equippedCatSkinRef.current = getEquippedCatSkin()
     armedRef.current = getProposeArmed()
     weddingArmedRef.current = getWeddingArmed()
+    weddingSkinRef.current = equipped === 'wedding'
     gameStartRef.current = performance.now()
     setGameOverInfo(null)
     setShowGameOverModal(false)
@@ -251,6 +255,7 @@ function SoloPage() {
     pausedAtRef.current = 0
     setGameState('playing')
   }, [
+    equipped,
     getEquippedEffects,
     getEquippedSkin,
     getEquippedCatSkin,
@@ -380,14 +385,14 @@ function SoloPage() {
         setGameState('story')
         return
       }
-      if (isMilestoneLevel(newLevel)) {
+      // wedding 게임변형 모드 — 마일스톤 토스트/기본 디버프 모두 스킵(엔딩 흐름과 어긋남).
+      const weddingMode =
+        equippedEffectsRef.current.itemPoolOverride === 'wedding'
+      if (isMilestoneLevel(newLevel) && !weddingMode) {
         showToast(`LV${newLevel} 마일스톤!`, 'var(--color-game-accent-gold)')
       }
       // LV3 도달 시 디버프 아이템 활성화 (cucumber 먼저, sweetPotato는 +stagger 후).
       // reference 985~988.
-      // wedding 게임변형 모드에선 기본 디버프 미등장 — 디버프 첫 스폰 예약 자체를 건너뛴다.
-      const weddingMode =
-        equippedEffectsRef.current.itemPoolOverride === 'wedding'
       if (newLevel === DEBUFF_LEVEL_MIN && !weddingMode) {
         scheduleDebuffFirstSpawn('cucumber', DEBUFF_AFTER_LV3_FIRST)
         scheduleDebuffFirstSpawn(
@@ -428,6 +433,7 @@ function SoloPage() {
         newScore,
         now,
         onLevelUp,
+        weddingMode: equippedEffectsRef.current.itemPoolOverride === 'wedding',
       })
     },
     [onLevelUp, pushFloatText, showToast],
@@ -493,6 +499,7 @@ function SoloPage() {
       newScore,
       now,
       onLevelUp,
+      weddingMode: equippedEffectsRef.current.itemPoolOverride === 'wedding',
     })
   }, [onLevelUp, pushFloatText])
 
@@ -509,6 +516,7 @@ function SoloPage() {
       newScore,
       now,
       onLevelUp,
+      weddingMode: equippedEffectsRef.current.itemPoolOverride === 'wedding',
     })
   }, [onLevelUp, pushFloatText])
 
@@ -720,7 +728,13 @@ function SoloPage() {
   const catIdleBob = storyWalk
 
   // story 중엔 getBackgroundForLevel 우회해 bgPropose 강제.
-  const bgUrl = isStory ? BG_PROPOSE : getBackgroundForLevel(sm.level)
+  // wedding 게임변형이면 wedding 5장 곡선으로 분기(레벨도 5압축).
+  const bgUrl = isStory
+    ? BG_PROPOSE
+    : getBackgroundForLevel(
+        sm.level,
+        equippedEffectsRef.current.itemPoolOverride === 'wedding',
+      )
 
   return (
     <>
@@ -801,6 +815,7 @@ function SoloPage() {
               equippedSrc={equippedSkinRef.current}
               armed={armedRef.current}
               story={isStory}
+              weddingSkin={weddingSkinRef.current}
             />
           </div>
         </div>
@@ -834,6 +849,7 @@ function SoloPage() {
               equippedSrc={equippedCatSkinRef.current}
               armed={armedRef.current}
               story={isStory}
+              weddingSkin={weddingSkinRef.current}
             />
           </div>
         </div>

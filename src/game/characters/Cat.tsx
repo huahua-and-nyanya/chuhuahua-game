@@ -17,9 +17,12 @@ interface CatProps {
   armed?: boolean
   // propose 컷신(story) — 정장 스프라이트. kissing이면 입 가린 수줍, 아니면 idle full.
   story?: boolean
+  // wedding(S+) 착용 — used 무관, 입으면 전 상태를 웨딩 스프라이트로 교체(propose armed 패턴 미러).
+  // 단 slowed(부케 catSlow)는 스프라이트 변경 없음 — 솔로에서 cat slowed prop 미전달 + 본 분기에 케이스 없음.
+  weddingSkin?: boolean
 }
 
-// 우선순위 (F-1.8 휘게 결정): kissing > angry > slowed > shielded > scared > equippedSrc > default
+// 우선순위 (F-1.8 휘게 결정): story > armed > weddingSkin > kissing > angry > slowed > shielded > scared > equippedSrc > default
 // reference 원본은 kissing > shielded > slowed > angry > scared 순이었으나, 분노/슬로우 매커니즘 활성 시
 // 시각도 매커니즘 우선이 맞다는 결정으로 angry/slowed를 shielded 위로 이동.
 // armed면 같은 우선순위로 데이트룩 풀세트 사용 (slowed는 솔로에서 고양이 미발생 → catDate 폴백).
@@ -36,6 +39,13 @@ function pickSrc(props: CatProps): string {
     if (props.shielded) return CHARACTER_ASSETS.catDateShield
     if (props.scared) return CHARACTER_ASSETS.catDateScared
     return CHARACTER_ASSETS.catDate
+  }
+  if (props.weddingSkin) {
+    if (props.kissing) return CHARACTER_ASSETS.catWeddingKissing
+    if (props.angry) return CHARACTER_ASSETS.catWeddingAngry
+    if (props.shielded) return CHARACTER_ASSETS.catWeddingShield
+    if (props.scared) return CHARACTER_ASSETS.catWeddingScared
+    return CHARACTER_ASSETS.catWeddingFull
   }
   if (props.kissing) return CHARACTER_ASSETS.catKissing
   if (props.angry) return CHARACTER_ASSETS.catAngry
