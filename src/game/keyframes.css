@@ -336,6 +336,16 @@
   }
 }
 
+/* wedding 엔딩 컷신 — kiss 후 검정 풀스크린 페이드 인. 0→1 opacity, forwards로 검정 유지. */
+@keyframes wedding-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* 비둘기 등장 경고 마커 (F-1.7) — 0.35s 무한 반복, scale만.
  * wrapper(translate)가 중앙정렬, 내부 자식 div가 actual 칩 (transform: translate(-50%, -50%)).
  * wrapper에 적용 시 wrapper transform과 충돌하지 않도록 wrapper 자체에 transform 없음 가정. */

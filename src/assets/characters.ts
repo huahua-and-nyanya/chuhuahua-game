@@ -47,4 +47,6 @@ export const CHARACTER_ASSETS = {
   catWeddingAngry: '/assets/clothes/cat-wedding-angry.png',
   catWeddingScared: '/assets/clothes/cat-wedding-scared.png',
   catWeddingShield: '/assets/clothes/cat-wedding-shield.png',
+  // wedding 엔딩 컷신 CG (츄·냐 합체 일러스트, 풀스크린) — W3a 등록. clothPath는 cg kind 미지원.
+  chiCatWeddingCg: '/assets/clothes/chi-cat-wedding-cg.png',
 } as const
