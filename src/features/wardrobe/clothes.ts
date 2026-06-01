@@ -242,10 +242,27 @@ export const CLOTHES_S: Record<string, ClothEntry> = {
   },
 }
 
+// S+ 등급 (1벌) — 웨딩. propose 엔딩 클리어 후에만 가챠 풀 진입(useWardrobe S+ 게이팅).
+// 능력 없음(표기만 S+, effects {}), applyTo: 'idle' — 본 게임 변형(5레벨압축/비둘기없음 등)은
+// 다음 브랜치. kissing 자산은 존재하나 idle 적용이라 현재 플레이엔 미사용(베이스 폴백).
+export const CLOTHES_S_PLUS: Record<string, ClothEntry> = {
+  wedding: {
+    id: 'wedding',
+    name: '우리의 미래',
+    grade: 'S+',
+    pair: true,
+    applyTo: 'idle',
+    description: '우리를 방해하는 것은 더이상 없다',
+    effects: {},
+    kissingAsset: true,
+  },
+}
+
 export const CLOTHES: Record<string, ClothEntry> = {
   ...CLOTHES_B,
   ...CLOTHES_A,
   ...CLOTHES_S,
+  ...CLOTHES_S_PLUS,
 }
 
 export const CLOTHES_BY_GRADE: Record<Grade, string[]> = {

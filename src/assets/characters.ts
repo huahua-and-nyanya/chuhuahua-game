@@ -35,4 +35,12 @@ export const CHARACTER_ASSETS = {
   chiProposeKissing: '/assets/clothes/chi-propose-kissing.png',
   catProposeFull: '/assets/clothes/cat-propose-full.png',
   catProposeKissing: '/assets/clothes/cat-propose-kissing.png',
+
+  // 웨딩(S+) — 키만 등록(다음 브랜치 전용 컷신용). idle 외형은 옷 시스템
+  // clothPath('chi'/'cat','wedding','full')가 같은 파일을 가리켜 자동 동작.
+  // kissing은 S3 플레이 미연결(applyTo idle → kissing은 베이스 폴백).
+  chiWeddingFull: '/assets/clothes/chi-wedding-full.png',
+  chiWeddingKissing: '/assets/clothes/chi-wedding-kissing.png',
+  catWeddingFull: '/assets/clothes/cat-wedding-full.png',
+  catWeddingKissing: '/assets/clothes/cat-wedding-kissing.png',
 } as const
