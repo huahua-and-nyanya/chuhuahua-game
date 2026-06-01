@@ -1207,7 +1207,7 @@ function SoloPage() {
                 src={TITLE_LOGO}
                 alt=""
                 draggable={false}
-                className="w-[65%] max-w-[65%] object-contain"
+                className="animate-wedding-title-wave w-[65%] max-w-[65%] object-contain"
               />
               <span className="text-text-on-pink font-display text-lg leading-relaxed">
                 츄와와 ~뽀뽀 돌격~
@@ -1225,8 +1225,8 @@ function SoloPage() {
                 </span>
               </div>
 
-              <div className="gap-sm flex flex-col items-center">
-                <div className="bg-text-on-pink h-px w-24 opacity-60" />
+              {/* 데이콘 영역 — 위/아래 점선(게임 카드 스타일, pink-300 dashed) + 안쪽 넉넉한 패딩 */}
+              <div className="gap-sm flex flex-col items-center border-y-2 border-dashed border-pink-300 px-10 py-8">
                 <span className="text-text-on-pink font-display text-base leading-relaxed">
                   데이콘 월간 해커톤
                 </span>
@@ -1236,7 +1236,6 @@ function SoloPage() {
                 <span className="text-text-on-pink font-display text-sm leading-relaxed opacity-80">
                   — 웹 미니게임 챌린지 —
                 </span>
-                <div className="bg-text-on-pink h-px w-24 opacity-60" />
               </div>
 
               <span className="text-text-on-pink font-display text-lg leading-relaxed">
