@@ -460,6 +460,17 @@ function SoloPage() {
         // floatText("펑!"/"힝...")는 effects.ts가 자체 push — label 미설정으로 중복 방지. toast는 유지.
         toastText = '느려졌어요!'
         color = 'var(--color-danger)'
+      } else if (kind === 'weddingRing') {
+        label = '점수 2배!'
+        toastText = '점수 2배!'
+        color = 'var(--color-game-accent-gold)'
+      } else if (kind === 'weddingInvitation') {
+        label = '부스트!'
+        toastText = '부스트!'
+      } else if (kind === 'weddingBouquet') {
+        label = '껌딱지!'
+        toastText = '껌딱지!'
+        color = 'var(--color-pink-700)'
       }
       showToast(toastText, color)
       if (label) {
