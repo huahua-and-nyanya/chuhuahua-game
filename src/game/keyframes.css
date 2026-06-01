@@ -346,6 +346,18 @@
   }
 }
 
+/* wedding 자막 진행 인디케이터(▽) 깜빡임 — "다음 누르라" 신호. 1s 무한, on/off 이산. */
+@keyframes subtitle-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
 /* 비둘기 등장 경고 마커 (F-1.7) — 0.35s 무한 반복, scale만.
  * wrapper(translate)가 중앙정렬, 내부 자식 div가 actual 칩 (transform: translate(-50%, -50%)).
  * wrapper에 적용 시 wrapper transform과 충돌하지 않도록 wrapper 자체에 transform 없음 가정. */
