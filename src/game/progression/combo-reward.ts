@@ -47,10 +47,12 @@ export type RollComboRewardParams = {
   combo: number
   now: number
   showToast: (text: string, color: string) => void
+  // wedding 게임변형 모드 — 기본 아이템(kibble/fish) 보너스 후보 제외(효과형 mult2x/mega만).
+  weddingMode?: boolean
 }
 
 export function rollComboReward(params: RollComboRewardParams): void {
-  const { refs, combo, now, showToast } = params
+  const { refs, combo, now, showToast, weddingMode } = params
   const sm = refs.scoreMirror
 
   // 5콤보 보장 가드.
@@ -58,7 +60,11 @@ export function rollComboReward(params: RollComboRewardParams): void {
   if (sm.prevComboMilestone === combo) return
   sm.prevComboMilestone = combo
 
-  const reward = COMBO_REWARDS[Math.floor(Math.random() * COMBO_REWARDS.length)]
+  // wedding 모드면 기본 아이템 스폰 보상(kibble/fish)을 후보에서 빼 일반 아이템 누출을 막는다.
+  const pool = weddingMode
+    ? COMBO_REWARDS.filter((r) => r.id === 'mult2x' || r.id === 'mega')
+    : COMBO_REWARDS
+  const reward = pool[Math.floor(Math.random() * pool.length)]
   showToast(reward.name, reward.color)
 
   if (reward.id === 'mult2x') {

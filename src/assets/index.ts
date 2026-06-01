@@ -7,6 +7,7 @@ export {
   PAGE_BGS,
   GAME_BGS,
   SPACE_BG,
+  WEDDING_BGS,
   WARDROBE_BG,
   BG_PROPOSE,
 } from './backgrounds'

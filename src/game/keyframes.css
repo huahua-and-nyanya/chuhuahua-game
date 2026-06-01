@@ -336,6 +336,63 @@
   }
 }
 
+/* wedding 엔딩 컷신 — kiss 후 검정 풀스크린 페이드 인. 0→1 opacity, forwards로 검정 유지. */
+@keyframes wedding-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* wedding 크레딧 댄스 좌우반전 — bounce-soft 2주기(2×0.9s=1.8s)에 scaleX 1→-1→1 스무스 반전.
+ * 50%(첫 바운스 끝)에서 완전 반전, 100%(둘째 바운스 끝)에 복귀. ease-in-out로 0 통과하며 부드러운 회전.
+ * 정렬(wrapper translate)·bounce(inner translateY)와 충돌 안 나게 중간 층(flip) 단독 transform. */
+@keyframes wedding-dance-flip {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(-1);
+  }
+}
+
+/* wedding 크레딧 로고 좌우 흔들림 — reference title-wave 이식(rotate ±2deg). 4s ease-in-out 무한. */
+@keyframes wedding-title-wave {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+/* wedding 엔딩 크레딧 세로 스크롤 — 아래(화면 밖)에서 위(화면 밖)로 전체 통과. linear 일정 속도.
+ * %는 컨텐츠 wrapper 자체 높이 기준 — wrapper가 min-h-full(프레임 높이) 이상이라 시작/끝 모두 화면 밖. */
+@keyframes wedding-credits-scroll {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+/* wedding 자막 진행 인디케이터(▽) 깜빡임 — "다음 누르라" 신호. 1s 무한, on/off 이산. */
+@keyframes subtitle-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
 /* 비둘기 등장 경고 마커 (F-1.7) — 0.35s 무한 반복, scale만.
  * wrapper(translate)가 중앙정렬, 내부 자식 div가 actual 칩 (transform: translate(-50%, -50%)).
  * wrapper에 적용 시 wrapper transform과 충돌하지 않도록 wrapper 자체에 transform 없음 가정. */

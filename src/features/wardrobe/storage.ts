@@ -12,14 +12,18 @@ export const wardrobeStorage = {
   load(): WardrobeState {
     try {
       const raw = localStorage.getItem(WARDROBE_KEY)
-      if (!raw) return { owned: [], equipped: null }
+      if (!raw) return { owned: [], equipped: null, usedClothes: [] }
       const parsed = JSON.parse(raw)
       return {
         owned: Array.isArray(parsed.owned) ? parsed.owned : [],
         equipped: typeof parsed.equipped === 'string' ? parsed.equipped : null,
+        // 하위호환 — 기존 저장본에 usedClothes 없으면 [] 디폴트.
+        usedClothes: Array.isArray(parsed.usedClothes)
+          ? parsed.usedClothes
+          : [],
       }
     } catch {
-      return { owned: [], equipped: null }
+      return { owned: [], equipped: null, usedClothes: [] }
     }
   },
   save(state: WardrobeState): void {

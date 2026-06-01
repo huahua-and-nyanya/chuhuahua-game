@@ -9,6 +9,7 @@ export interface ClothEffects {
   itemSpawnMul?: number
   // S+ 전용 게임변형 필드
   pigeonDisabled?: boolean
+  itemPoolOverride?: string
   backgroundOverride?: string
   triggerEnding?: string
 }
@@ -28,6 +29,7 @@ export interface ClothEntry {
 export interface WardrobeState {
   owned: string[] // 보유 옷 id 배열
   equipped: string | null // 장착 옷 id
+  usedClothes: string[] // 게임변형 1회 시청 완료한 옷 id (S+ 효과 게이팅). write는 W3.
 }
 
 export interface PlayStats {

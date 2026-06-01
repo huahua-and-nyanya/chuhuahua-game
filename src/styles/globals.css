@@ -185,6 +185,21 @@
   --animate-item-bob: item-bob 1.4s ease-in-out infinite;
   --animate-item-expire: item-expire 0.5s ease-in-out infinite;
   --animate-pvp-time-pulse: pvp-time-pulse 600ms ease-in-out infinite;
+  /* wedding 엔딩 페이드 — 같은 wedding-fade-in(0→1 opacity) keyframe을 용도별 duration으로 분리.
+     검정(뽀뽀→CG): WEDDING_FADE_MS(weddingStory.ts)와 정합 1.2s / 자막 줄전환 0.8s / 모달 dim 1s. */
+  --animate-wedding-fade-black: wedding-fade-in 1200ms ease-in-out forwards;
+  --animate-wedding-fade-subtitle: wedding-fade-in 800ms ease-in-out forwards;
+  --animate-wedding-fade-dim: wedding-fade-in 1000ms ease-in-out forwards;
+  /* CG 스르륵 등장 — cg phase 진입 시 1회(검정 1.2s 완료 후). subtitle/modal 전환 땐 미적용(클래스 제거). */
+  --animate-wedding-cg-in: wedding-fade-in 1800ms ease-in-out forwards;
+  /* 엔딩 크레딧 세로 스크롤 — weddingStory.ts CREDITS_MS(28000)와 정합. linear 일정 속도. */
+  --animate-wedding-credits-scroll: wedding-credits-scroll 28000ms linear
+    forwards;
+  /* 크레딧 댄스 좌우반전 — bounce-soft 0.9s × 2 = 1.8s 주기. ease-in-out로 스무스 회전. */
+  --animate-wedding-dance-flip: wedding-dance-flip 1800ms ease-in-out infinite;
+  /* 크레딧 로고 좌우 흔들림 — reference title-wave. 4s ease-in-out 무한. */
+  --animate-wedding-title-wave: wedding-title-wave 4s ease-in-out infinite;
+  --animate-subtitle-blink: subtitle-blink 1s steps(1, end) infinite;
 
   /* === 상태 색상 (Tailwind utility 생성용 노출) === */
   --color-danger: #d94747;

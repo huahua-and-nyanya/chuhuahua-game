@@ -96,6 +96,9 @@ export const LEVEL_THRESHOLDS = [
   0, 20, 50, 90, 140, 200, 270, 350, 440, 540, 650,
 ] as const
 export const MAX_LEVEL = 10
+// wedding 게임변형 — 5압축 레벨 곡선 (LV0~LV5, 길이 6). 일반 곡선과 별개, wedding 모드일 때만.
+export const WEDDING_LEVEL_THRESHOLDS = [0, 15, 35, 60, 90, 130] as const
+export const WEDDING_MAX_LEVEL = 5
 
 // === PvP 게임 규칙 ===
 export const PVP_TIME_LIMIT = 30000 // ms — 츄와와에게 주어진 시간

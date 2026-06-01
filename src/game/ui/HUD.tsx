@@ -10,6 +10,7 @@ import {
   BOOST_DURATION,
   SCORE_MULT_DURATION,
   SHIELD_DURATION,
+  SWEETPOTATO_DURATION,
 } from '@/game/constants'
 import type { EffectState, ToastRef } from '@/game/state'
 
@@ -20,7 +21,7 @@ import { Toasts } from './Toast'
 //   - LV 칩과 점수 칩 동일 스타일 (흰 fill + ink 텍스트 + ink 보더)
 //   - 효과 게이지: 흰 칩 + Tabler 아이콘 + 작은 진행 바
 //   - 토스트: 검정 배경 + 흰 글씨 (영구 vs 임시 시각 위계 구분)
-//   - 솔로엔 catSlow/catSpeedup 자체가 안 발동되므로 표시 X
+//   - catSlow는 weddingBouquet(W1.1)로 솔로 발동되므로 하트 게이지로 표시. catSpeedup은 솔로 미발동이라 표시 X
 // 카드 경계 마진 = top/left/right-md(12px) — 모바일 scale 시 카드 border와 안 겹침
 
 export type HUDProps = {
@@ -74,6 +75,17 @@ export function HUD(props: HUDProps) {
       colorVar: '--color-game-accent-gold',
       remaining: multRemaining,
       duration: SCORE_MULT_DURATION,
+    })
+  }
+  // catSlow — weddingBouquet 픽업 시 냐 감속(솔로 전용 발동). 하트 게이지로 표시.
+  const catSlowRemaining = effects.catSlow.until - now
+  if (catSlowRemaining > 0) {
+    gauges.push({
+      key: 'catSlow',
+      Icon: IconHeartFilled,
+      colorVar: '--color-pink-700',
+      remaining: catSlowRemaining,
+      duration: SWEETPOTATO_DURATION,
     })
   }
 

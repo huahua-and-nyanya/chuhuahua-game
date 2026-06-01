@@ -41,6 +41,15 @@ export const CHARACTER_ASSETS = {
   // kissing은 S3 플레이 미연결(applyTo idle → kissing은 베이스 폴백).
   chiWeddingFull: '/assets/clothes/chi-wedding-full.png',
   chiWeddingKissing: '/assets/clothes/chi-wedding-kissing.png',
+  chiWeddingSlow: '/assets/clothes/chi-wedding-slow.png',
   catWeddingFull: '/assets/clothes/cat-wedding-full.png',
   catWeddingKissing: '/assets/clothes/cat-wedding-kissing.png',
+  catWeddingAngry: '/assets/clothes/cat-wedding-angry.png',
+  catWeddingScared: '/assets/clothes/cat-wedding-scared.png',
+  catWeddingShield: '/assets/clothes/cat-wedding-shield.png',
+  // wedding 엔딩 컷신 CG (츄·냐 합체 일러스트, 풀스크린) — W3a 등록. clothPath는 cg kind 미지원.
+  chiCatWeddingCg: '/assets/clothes/chi-cat-wedding-cg.png',
+  // wedding 엔딩 크레딧 양옆 댄스 스프라이트 (각 256² 1장, 위치 bob으로 춤) — W3b 등록.
+  chiWeddingDance: '/assets/clothes/chi-wedding-dance.png',
+  catWeddingDance: '/assets/clothes/cat-wedding-dance.png',
 } as const

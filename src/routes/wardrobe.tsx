@@ -95,9 +95,14 @@ function FallbackImage({
 }
 
 function WardrobePage() {
-  const { coins, owned, equipped, toggleEquip, pullGacha } = useWardrobe()
+  const { coins, owned, equipped, usedClothes, toggleEquip, pullGacha } =
+    useWardrobe()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [gachaResult, setGachaResult] = useState<GachaResult | null>(null)
+  // wedding 착용 안내모달 대기 중인 옷 id (현재 'wedding'만). null이면 모달 닫힘.
+  const [weddingEquipPrompt, setWeddingEquipPrompt] = useState<string | null>(
+    null,
+  )
   const [catalogOpen, setCatalogOpen] = useState(false)
   const [catalogFilter, setCatalogFilter] = useState<CatalogFilter>('all')
   const [gridFilter, setGridFilter] = useState<CatalogFilter>('all')
@@ -115,6 +120,16 @@ function WardrobePage() {
   const selected = selectedId ? CLOTHES[selectedId] : null
   const selectedOwned = selectedId ? owned.includes(selectedId) : false
 
+  // 장착 요청 공통 — wedding이고 엔딩 미시청이면 안내모달 경유, 그 외엔 즉시 장착.
+  // 클릭 즉시장착 / 가챠 바로입기 두 진입점이 같이 사용.
+  const requestEquip = (id: string) => {
+    if (id === 'wedding' && !usedClothes.includes('wedding')) {
+      setWeddingEquipPrompt(id)
+      return
+    }
+    toggleEquip(id)
+  }
+
   const handleClothClick = (cloth: ClothEntry) => {
     if (!owned.includes(cloth.id)) {
       setSelectedId(cloth.id) // 미보유 → ??? 팝업
@@ -124,7 +139,7 @@ function WardrobePage() {
       setSelectedId(cloth.id) // 장착 중 → 상세 팝업
       return
     }
-    toggleEquip(cloth.id) // 보유 미장착 → 즉시 장착
+    requestEquip(cloth.id) // 보유 미장착 → 즉시 장착(wedding&&!used면 안내모달)
   }
 
   const unequip = () => {
@@ -239,7 +254,7 @@ function WardrobePage() {
           <GachaResultModal
             result={gachaResult}
             onEquip={(id) => {
-              toggleEquip(id)
+              requestEquip(id)
               setGachaResult(null)
             }}
             onClose={() => setGachaResult(null)}
@@ -280,6 +295,59 @@ function WardrobePage() {
           />
         )}
       </CenterModal>
+
+      {/* wedding 착용 안내 — 엔딩 미시청 wedding 장착 시도마다(매번) 표시. used면 requestEquip이 스킵. */}
+      <CenterModal
+        open={weddingEquipPrompt !== null}
+        onClose={() => setWeddingEquipPrompt(null)}
+        title="특별한 엔딩이 있어요"
+        zIndex={90}
+      >
+        <WeddingEquipPrompt
+          onConfirm={() => {
+            if (weddingEquipPrompt) toggleEquip(weddingEquipPrompt)
+            setWeddingEquipPrompt(null)
+          }}
+          onCancel={() => setWeddingEquipPrompt(null)}
+        />
+      </CenterModal>
+    </div>
+  )
+}
+
+// wedding 착용 안내모달 내용 — 코인부족 모달(GachaResultModal error) 구조 미러.
+// 엔딩 안내 + 동작 고지(코인 차단/효과 소멸은 grep 정합 문구). [취소]/[입기] 2버튼.
+function WeddingEquipPrompt({
+  onConfirm,
+  onCancel,
+}: {
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  return (
+    <div className="gap-xl flex flex-col items-center text-center">
+      <div className="text-ink-base py-4 text-lg leading-relaxed font-bold">
+        이 옷을 입고 플레이하면
+        <br />
+        둘의 특별한 엔딩을 볼 수 있어요
+      </div>
+      {/* 동작 고지 — 게임오버/코인부족 모달과 동일한 점선 구분 레이아웃 */}
+      <div className="border-border-card flex w-full flex-col gap-2 border-y border-dashed py-7 text-left">
+        <div className="text-text-muted text-sm leading-snug">
+          · 엔딩(크레딧)을 볼 때까지 코인이 모이지 않아요.
+        </div>
+        <div className="text-text-muted text-sm leading-snug">
+          · 엔딩 시청 시 이 옷의 효과는 사라져요.
+        </div>
+      </div>
+      <div className="gap-sm flex w-full flex-row pt-1">
+        <PixelButton variant="secondary" onClick={onCancel}>
+          취소
+        </PixelButton>
+        <PixelButton className="flex-1" onClick={onConfirm}>
+          입기
+        </PixelButton>
+      </div>
     </div>
   )
 }

@@ -46,6 +46,13 @@ export function setVirtualInput(state: VirtualInputState): void {
   virtualInputRef.current = state
 }
 
+// 가상 컨트롤러 방향(상/하/좌/우) 중 하나라도 눌렸는지 — read-only.
+// wedding 자막을 가상패드로 진행(모바일)하기 위한 폴링용. virtualInputRef 자체는 비노출 유지.
+export function isAnyVirtualDirDown(): boolean {
+  const v = virtualInputRef.current
+  return v.up || v.down || v.left || v.right
+}
+
 export type ChiInputDeps = {
   refs: GameRefs
   enabled: () => boolean

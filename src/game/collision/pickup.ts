@@ -1,5 +1,12 @@
-import { ITEM_PICKUP_DIST } from '@/game/constants'
 import {
+  BOOST_DURATION,
+  ITEM_PICKUP_DIST,
+  SCORE_MULT,
+  SCORE_MULT_DURATION,
+} from '@/game/constants'
+import {
+  applyCatSlow,
+  applyChiBoost,
   applyCucumberEffect,
   applyFishEffect,
   applyKibbleEffect,
@@ -17,6 +24,10 @@ const PICKUP_COLORS: Record<ItemKind, string> = {
   fish: '#3b82f6',
   cucumber: '#10b981',
   sweetPotato: '#f59e0b',
+  // 웨딩 3종 — 기존 팔레트 값 재사용(신규 hex 미도입). 시각 톤은 휘게 검증 항목.
+  weddingRing: '#f59e0b',
+  weddingInvitation: '#3b82f6',
+  weddingBouquet: '#10b981',
 }
 
 function spawnPickupBurst(
@@ -80,6 +91,18 @@ export function checkPickups(deps: PickupDeps): void {
       cancelled = applyCucumberEffect(refs, now)
     } else if (item.kind === 'sweetPotato') {
       cancelled = applySweetPotatoEffect(refs, now, 'chi')
+    } else if (item.kind === 'weddingRing') {
+      // 점수 2배 — 콤보보상 mult2x와 동일 메커니즘/상수 재사용.
+      refs.effects.scoreMult = {
+        value: SCORE_MULT,
+        until: now + SCORE_MULT_DURATION,
+      }
+    } else if (item.kind === 'weddingInvitation') {
+      // 츄 속도업 — kibble과 동일(applyChiBoost, BOOST_DURATION).
+      applyChiBoost(refs, now, BOOST_DURATION)
+    } else if (item.kind === 'weddingBouquet') {
+      // 냐 감속 — catSlow 0.55배(getCatSpeedMul), SWEETPOTATO_DURATION 지속. 헬퍼 경유.
+      applyCatSlow(refs, now)
     }
 
     // 상쇄 시엔 글로우 안 발동 — 효과 미적용을 시각적으로 구분.

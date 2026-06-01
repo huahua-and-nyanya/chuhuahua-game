@@ -14,8 +14,15 @@ import { Cucumber } from '@/game/items/Cucumber'
 import { Fish } from '@/game/items/Fish'
 import { Kibble } from '@/game/items/Kibble'
 import { SweetPotato } from '@/game/items/SweetPotato'
+import { WeddingBouquet } from '@/game/items/WeddingBouquet'
+import { WeddingInvitation } from '@/game/items/WeddingInvitation'
+import { WeddingRing } from '@/game/items/WeddingRing'
 
-import { applyChiPhysics, useChiInput } from '@/game/ai/chi-input'
+import {
+  applyChiPhysics,
+  isAnyVirtualDirDown,
+  useChiInput,
+} from '@/game/ai/chi-input'
 import { scheduleCatTarget, stopCatTargetScheduler } from '@/game/ai/cat-target'
 import { updateCatFlee } from '@/game/ai/cat-flee'
 import { updatePigeons } from '@/game/ai/pigeon-fly'
@@ -29,6 +36,7 @@ import {
   DEBUFF_STAGGER,
   MAX_LEVEL,
   MAX_TOASTS,
+  WEDDING_MAX_LEVEL,
 } from '@/game/constants'
 import {
   commitPigeonAt,
@@ -75,12 +83,21 @@ import { useHistory } from '@/features/history/useHistory'
 import { useWardrobe } from '@/features/wardrobe'
 import type { ClothEffects } from '@/features/wardrobe/types'
 
-import { BG_PROPOSE } from '@/assets/backgrounds'
+import { CHARACTER_ASSETS } from '@/assets'
+import { BG_PROPOSE, TITLE_LOGO, WEDDING_BGS } from '@/assets/backgrounds'
 import {
   createStoryRuntime,
   setupStory,
   updateStory,
 } from '@/game/story/proposeStory'
+import {
+  advanceWeddingSubtitle,
+  createWeddingStoryRuntime,
+  setupWeddingStory,
+  skipWeddingCredits,
+  SUBTITLE_LINES,
+  updateWeddingStory,
+} from '@/game/story/weddingStory'
 
 import '@/game/keyframes.css'
 
@@ -98,17 +115,35 @@ const CHARACTER_BOX = 150 // px — 캐릭터 wrapper 정사각 (캐릭터/아�
 // 아이템 expireAt 까지 남은 시간이 본 값 이하면 item-expire 깜빡임 + 글로우 시작.
 const ITEM_EXPIRE_WARN_MS = 2000
 
+// wedding 자막 진행 키 — 스페이스/엔터 + 방향키/WASD. e.key 소문자 비교.
+// 모바일 가상패드는 별도(story 루프 폴링). subtitle phase에선 chi 이동 입력이 비활성이라 충돌 없음.
+const SUBTITLE_ADVANCE_KEYS = new Set([
+  ' ',
+  'enter',
+  'arrowup',
+  'arrowdown',
+  'arrowleft',
+  'arrowright',
+  'w',
+  'a',
+  's',
+  'd',
+])
+
 type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover' | 'story'
 
 function SoloPage() {
   const navigate = useNavigate()
   const history = useHistory()
   const {
+    equipped,
     getEquippedEffects,
     getEquippedSkin,
     getEquippedCatSkin,
     getProposeArmed,
+    getWeddingArmed,
     markProposeEndingCleared,
+    markWeddingUsed,
     earnCoins,
   } = useWardrobe()
   // 장착 옷 효과/스킨은 게임 시작 시 1회 스냅샷 (솔로 중 옷 변경 불가) — 매 프레임 ref만 읽음.
@@ -120,6 +155,10 @@ function SoloPage() {
   // propose 코스튬 스토리 armed — true면 LV1~9 츄/냐 데이트룩. 솔로(=isSolo)이므로 조건 충족 시 켜짐.
   // 게임 중 옷장 진입 불가 → 시작 시 1회 스냅샷이면 충분 (effects/skin과 동일 패턴).
   const armedRef = useRef<boolean>(getProposeArmed())
+  // wedding 게임변형 armed — true면 진행 중 코인 적립 차단. 시작 시 1회 스냅샷(effects와 동일 패턴).
+  const weddingArmedRef = useRef<boolean>(getWeddingArmed())
+  // wedding 착용 여부(used 무관) — 입으면 전 상태 웨딩 스프라이트. equipped 스냅샷, 시작 시 1회.
+  const weddingSkinRef = useRef<boolean>(equipped === 'wedding')
 
   // 게임 객체는 ref. React state는 표시 트리거만.
   // gameStartRef는 마운트 useEffect에서 performance.now()로 채움 (initializer 안에서 impure 함수 호출 금지).
@@ -127,6 +166,10 @@ function SoloPage() {
   const gameStartRef = useRef<number>(0)
   // propose 컷신 상태머신 런타임 (gameState==='story' 동안만 의미 있음).
   const storyRef = useRef(createStoryRuntime())
+  // wedding 엔딩 컷신 상태머신 런타임 (gameState==='story' + storyKind==='wedding' 동안만).
+  const weddingStoryRef = useRef(createWeddingStoryRuntime())
+  // 현재 'story' gameState가 어느 컷신인지 — propose/wedding 분기용. 비-story 시 null.
+  const storyKindRef = useRef<'propose' | 'wedding' | null>(null)
   // 컷신 진입(LV10) 시점 점수 스냅샷 — 컷신 중 점수 불변이라 모달 결과로 그대로 사용.
   const storySnapshotRef = useRef<{
     finalScore: number
@@ -136,6 +179,10 @@ function SoloPage() {
   } | null>(null)
   // STORY_MODAL 1회성 처리(코인 적립/해금 세팅) 가드 — 모달 표시 시 한 번만.
   const storyModalDoneRef = useRef(false)
+  // wedding 자막 진행 키 잠금 — keydown 1회당 1줄. keyup 전엔 재진행 차단(반복/홀드 방지).
+  const subtitleKeyLockRef = useRef(false)
+  // 가상패드 자막 진행 에지 감지 — 이전 프레임 방향 누름 상태. 0→1 전이에서만 1줄(키 잠금과 분리).
+  const subtitleVirtualPrevRef = useRef(false)
   // 가상 컨트롤러는 root layout이 마운트, 입력은 chi-input.ts의 module-level virtualInputRef로 동기.
 
   const [gameState, setGameState] = useState<GameState>('playing')
@@ -209,7 +256,10 @@ function SoloPage() {
     (cause: GameOverInfo['cause']) => {
       const sm = refs.current.scoreMirror
       // 점수만큼 코인 적립(999 상한) → 적립량 + 지갑가득 여부를 게임오버 모달에 전달.
-      const { earned, walletFull } = earnCoins(sm.score)
+      // wedding 게임변형 진행 중엔 코인 적립 차단(시청 완료 전). quit 경로 포함.
+      const { earned, walletFull } = weddingArmedRef.current
+        ? { earned: 0, walletFull: false }
+        : earnCoins(sm.score)
       setGameOverInfo({
         finalScore: sm.score,
         maxLevel: sm.level,
@@ -230,6 +280,8 @@ function SoloPage() {
     equippedSkinRef.current = getEquippedSkin()
     equippedCatSkinRef.current = getEquippedCatSkin()
     armedRef.current = getProposeArmed()
+    weddingArmedRef.current = getWeddingArmed()
+    weddingSkinRef.current = equipped === 'wedding'
     gameStartRef.current = performance.now()
     setGameOverInfo(null)
     setShowGameOverModal(false)
@@ -237,10 +289,18 @@ function SoloPage() {
     setStoryResult(null)
     storyModalDoneRef.current = false
     storySnapshotRef.current = null
+    storyKindRef.current = null
     setToasts([])
     pausedAtRef.current = 0
     setGameState('playing')
-  }, [getEquippedEffects, getEquippedSkin, getEquippedCatSkin, getProposeArmed])
+  }, [
+    equipped,
+    getEquippedEffects,
+    getEquippedSkin,
+    getEquippedCatSkin,
+    getProposeArmed,
+    getWeddingArmed,
+  ])
 
   // 컷신 마지막(modal) 진입 시 1회 — 해금 세팅 + 코인 적립 + 결과 모달 구성.
   // 멱등 가드(storyModalDoneRef): 모달 뜨는 순간 즉시 proposeEndingCleared=true →
@@ -263,6 +323,27 @@ function SoloPage() {
     })
     setShowStoryModal(true)
   }, [earnCoins, markProposeEndingCleared])
+
+  // wedding 엔딩 컷신 cg 종료 시 1회 — handleStoryModal 미러.
+  // markWeddingUsed(멱등)로 wedding 효과 소멸 확정. wedding 엔딩은 코인 적립 없음(used 보상이 wedding 자체)
+  // → earnedCoins 0, walletFull false. 결과 모달은 Happy Ending 문구로 표시(아래 렌더 분기).
+  const handleWeddingStoryModal = useCallback(() => {
+    if (storyModalDoneRef.current) return
+    const snap = storySnapshotRef.current
+    if (!snap) return
+    storyModalDoneRef.current = true
+    markWeddingUsed()
+    setStoryResult({
+      finalScore: snap.finalScore,
+      maxLevel: snap.maxLevel,
+      maxCombo: snap.maxCombo,
+      elapsedMs: snap.elapsedMs,
+      cause: 'quit', // story variant에선 미표시 (필수 필드라 채움)
+      earnedCoins: 0,
+      walletFull: false,
+    })
+    setShowStoryModal(true)
+  }, [markWeddingUsed])
 
   // gameover 진입 → shake/flash가 ~500ms 동안 보인 뒤 모달 등장.
   // gameover 이탈은 startGame()/onMain만 가능, 둘 다 showGameOverModal을 명시 리셋.
@@ -359,17 +440,45 @@ function SoloPage() {
           maxCombo: sm.maxCombo,
           elapsedMs: performance.now() - gameStartRef.current,
         }
+        storyKindRef.current = 'propose'
         setupStory(refs.current, performance.now(), storyRef.current)
         setShowStoryModal(false)
         setGameState('story')
         return
       }
-      if (isMilestoneLevel(newLevel)) {
+      // wedding armed(wedding 착용 + 미사용) + LV5(WEDDING_MAX_LEVEL) 최초 도달 → 엔딩 컷신.
+      // propose 분기 미러 — setupWeddingStory로 리셋/배치 후 story 전환. storyKind로 루프 분기.
+      if (
+        weddingArmedRef.current &&
+        newLevel === WEDDING_MAX_LEVEL &&
+        gameStateRef.current !== 'story'
+      ) {
+        const sm = refs.current.scoreMirror
+        storySnapshotRef.current = {
+          finalScore: sm.score,
+          maxLevel: sm.level,
+          maxCombo: sm.maxCombo,
+          elapsedMs: performance.now() - gameStartRef.current,
+        }
+        storyKindRef.current = 'wedding'
+        setupWeddingStory(
+          refs.current,
+          performance.now(),
+          weddingStoryRef.current,
+        )
+        setShowStoryModal(false)
+        setGameState('story')
+        return
+      }
+      // wedding 게임변형 모드 — 마일스톤 토스트/기본 디버프 모두 스킵(엔딩 흐름과 어긋남).
+      const weddingMode =
+        equippedEffectsRef.current.itemPoolOverride === 'wedding'
+      if (isMilestoneLevel(newLevel) && !weddingMode) {
         showToast(`LV${newLevel} 마일스톤!`, 'var(--color-game-accent-gold)')
       }
       // LV3 도달 시 디버프 아이템 활성화 (cucumber 먼저, sweetPotato는 +stagger 후).
       // reference 985~988.
-      if (newLevel === DEBUFF_LEVEL_MIN) {
+      if (newLevel === DEBUFF_LEVEL_MIN && !weddingMode) {
         scheduleDebuffFirstSpawn('cucumber', DEBUFF_AFTER_LV3_FIRST)
         scheduleDebuffFirstSpawn(
           'sweetPotato',
@@ -401,6 +510,7 @@ function SoloPage() {
         combo: refs.current.scoreMirror.combo,
         now,
         showToast,
+        weddingMode: equippedEffectsRef.current.itemPoolOverride === 'wedding',
       })
       checkLevelUp({
         refs: refs.current,
@@ -408,6 +518,7 @@ function SoloPage() {
         newScore,
         now,
         onLevelUp,
+        weddingMode: equippedEffectsRef.current.itemPoolOverride === 'wedding',
       })
     },
     [onLevelUp, pushFloatText, showToast],
@@ -440,6 +551,17 @@ function SoloPage() {
         // floatText("펑!"/"힝...")는 effects.ts가 자체 push — label 미설정으로 중복 방지. toast는 유지.
         toastText = '느려졌어요!'
         color = 'var(--color-danger)'
+      } else if (kind === 'weddingRing') {
+        label = '점수 2배!'
+        toastText = '점수 2배!'
+        color = 'var(--color-game-accent-gold)'
+      } else if (kind === 'weddingInvitation') {
+        label = '부스트!'
+        toastText = '부스트!'
+      } else if (kind === 'weddingBouquet') {
+        label = '껌딱지!'
+        toastText = '껌딱지!'
+        color = 'var(--color-pink-700)'
       }
       showToast(toastText, color)
       if (label) {
@@ -462,6 +584,7 @@ function SoloPage() {
       newScore,
       now,
       onLevelUp,
+      weddingMode: equippedEffectsRef.current.itemPoolOverride === 'wedding',
     })
   }, [onLevelUp, pushFloatText])
 
@@ -478,6 +601,7 @@ function SoloPage() {
       newScore,
       now,
       onLevelUp,
+      weddingMode: equippedEffectsRef.current.itemPoolOverride === 'wedding',
     })
   }, [onLevelUp, pushFloatText])
 
@@ -487,12 +611,18 @@ function SoloPage() {
 
   // ── 입력 ───────────────────────────────────────────────────────────
   const isPlaying = useCallback(() => gameStateRef.current === 'playing', [])
-  // 츄 입력 허용 — 일반 플레이(playing) + 컷신 walk 단계만. intro/kiss/jump/modal은 차단.
+  // 츄 입력 허용 — 일반 플레이(playing) + propose walk + wedding walk 단계만.
+  // 그 외 컷신 단계(intro/kiss/fade/cg/subtitle/modal/jump)는 차단(특히 subtitle은 진행키 전용).
   // ref-shaped 콜백(빈 deps)으로 동일 참조 유지 — useChiInput은 mount 시 1회만 구독.
   const isChiInputEnabled = useCallback(
     () =>
       gameStateRef.current === 'playing' ||
-      (gameStateRef.current === 'story' && storyRef.current.phase === 'walk'),
+      (gameStateRef.current === 'story' &&
+        storyKindRef.current === 'propose' &&
+        storyRef.current.phase === 'walk') ||
+      (gameStateRef.current === 'story' &&
+        storyKindRef.current === 'wedding' &&
+        weddingStoryRef.current.phase === 'walk'),
     [],
   )
   useChiInput({ refs: refs.current, enabled: isChiInputEnabled })
@@ -521,6 +651,61 @@ function SoloPage() {
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [togglePause, cancelQuit])
+
+  // wedding 컷신 유저 진행 — 클릭/키/가상패드 1회. subtitle이면 다음 줄(마지막 줄 후 크레딧),
+  // credits면 스크롤 스킵 → 모달. ref만 변경 → story 루프(30fps forceRender)가 다음 프레임 반영.
+  const advanceSubtitle = useCallback(() => {
+    if (
+      gameStateRef.current !== 'story' ||
+      storyKindRef.current !== 'wedding'
+    ) {
+      return
+    }
+    const phase = weddingStoryRef.current.phase
+    const cb = { onModal: handleWeddingStoryModal }
+    if (phase === 'subtitle') {
+      advanceWeddingSubtitle(weddingStoryRef.current, performance.now(), cb)
+    } else if (phase === 'credits') {
+      skipWeddingCredits(weddingStoryRef.current, performance.now(), cb)
+    }
+  }, [handleWeddingStoryModal])
+
+  // 자막 진행 키 — 스페이스/엔터 + 방향키/WASD. keydown 1회당 1줄(keyup 전 재진행 차단으로 홀드/반복 방지).
+  useEffect(() => {
+    const onDown = (e: KeyboardEvent) => {
+      if (!SUBTITLE_ADVANCE_KEYS.has(e.key.toLowerCase())) return
+      const target = e.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
+      ) {
+        return
+      }
+      const phase = weddingStoryRef.current.phase
+      if (
+        gameStateRef.current !== 'story' ||
+        storyKindRef.current !== 'wedding' ||
+        (phase !== 'subtitle' && phase !== 'credits')
+      ) {
+        return
+      }
+      e.preventDefault()
+      if (subtitleKeyLockRef.current) return
+      subtitleKeyLockRef.current = true
+      advanceSubtitle()
+    }
+    const onUp = (e: KeyboardEvent) => {
+      if (SUBTITLE_ADVANCE_KEYS.has(e.key.toLowerCase())) {
+        subtitleKeyLockRef.current = false
+      }
+    }
+    window.addEventListener('keydown', onDown)
+    window.addEventListener('keyup', onUp)
+    return () => {
+      window.removeEventListener('keydown', onDown)
+      window.removeEventListener('keyup', onUp)
+    }
+  }, [advanceSubtitle])
 
   // ── 스폰 + cat-target 스케줄러 (gameState 토글에 묶음) ──────────────
   useEffect(() => {
@@ -551,6 +736,10 @@ function SoloPage() {
       showToast,
       getPigeonSpawnMul: () => equippedEffectsRef.current.pigeonSpawnMul ?? 1,
       getItemSpawnMul: () => equippedEffectsRef.current.itemSpawnMul ?? 1,
+      getPigeonDisabled: () =>
+        equippedEffectsRef.current.pigeonDisabled ?? false,
+      getWeddingItemMode: () =>
+        equippedEffectsRef.current.itemPoolOverride === 'wedding',
     })
 
     scheduleCatTarget({
@@ -606,9 +795,27 @@ function SoloPage() {
     enabled: gameState === 'story',
     update: (dt, now) => {
       const r = refs.current
-      updateStory(r, storyRef.current, dt, now, {
-        onModal: handleStoryModal,
-      })
+      // 어느 컷신인지에 따라 분기 — propose는 유저 조작 walk, wedding은 자동 대칭이동 + CG 엔딩.
+      if (storyKindRef.current === 'wedding') {
+        updateWeddingStory(r, weddingStoryRef.current, dt, now, {
+          onModal: handleWeddingStoryModal,
+        })
+      } else {
+        updateStory(r, storyRef.current, dt, now, {
+          onModal: handleStoryModal,
+        })
+      }
+      // 가상패드(모바일) 진행 — 이벤트가 안 와 폴링. 에지(0→1)에서만 1회(키 잠금과 분리).
+      // subtitle(다음 줄)/credits(스킵) 둘 다 대상. 키보드는 window keydown이 별도 처리.
+      const wp = weddingStoryRef.current.phase
+      const subtitleVirtualDown =
+        storyKindRef.current === 'wedding' &&
+        (wp === 'subtitle' || wp === 'credits') &&
+        isAnyVirtualDirDown()
+      if (subtitleVirtualDown && !subtitleVirtualPrevRef.current) {
+        advanceSubtitle()
+      }
+      subtitleVirtualPrevRef.current = subtitleVirtualDown
       updateParticles(r.particles)
       updateBgHearts(r.bgHearts)
       expireTransients(r, now)
@@ -675,24 +882,49 @@ function SoloPage() {
 
   // 컷신 파생값 — story 동안 정장 스프라이트/배경/점프 오프셋/HUD 숨김 분기.
   const isStory = gameState === 'story'
-  const storyKiss = isStory && storyRef.current.phase === 'kiss'
-  const storyWalk = isStory && storyRef.current.phase === 'walk'
-  const storyChiJumpY = isStory ? storyRef.current.chiJumpY : 0
-  const storyCatJumpY = isStory ? storyRef.current.catJumpY : 0
+  const storyKind = storyKindRef.current
+  const isProposeStory = isStory && storyKind === 'propose'
+  const isWeddingStory = isStory && storyKind === 'wedding'
+  // propose 컷신 파생 (storyKind==='propose'만).
+  const storyKiss = isProposeStory && storyRef.current.phase === 'kiss'
+  const storyWalk = isProposeStory && storyRef.current.phase === 'walk'
+  const storyChiJumpY = isProposeStory ? storyRef.current.chiJumpY : 0
+  const storyCatJumpY = isProposeStory ? storyRef.current.catJumpY : 0
   // walk 중 츄 이동 여부 — 이동 시 토독토독, 정지 시 idle. dead-zone(0.05) 위로 살짝 마진.
   const chiWalking = storyWalk && Math.hypot(chi.vx, chi.vy) > 0.1
   // walk 중 냐는 제자리 idle bob (이동 안 함).
   const catIdleBob = storyWalk
+  // wedding 엔딩 컷신 파생 — walk(유저조작+냐 거울, 둘 다 토독토독), kiss 흔들림, fade/cg/subtitle/modal 오버레이.
+  const weddingPhase = isWeddingStory ? weddingStoryRef.current.phase : null
+  const weddingWalk = weddingPhase === 'walk'
+  const weddingKiss = weddingPhase === 'kiss'
+  const weddingSubtitle = weddingPhase === 'subtitle'
+  const weddingCredits = weddingPhase === 'credits'
+  // 현재 자막 줄 — subtitle 단계에서만 의미. 인덱스 안전 클램프. 캐릭터 대사는 italic.
+  const weddingSubtitleEntry = weddingSubtitle
+    ? SUBTITLE_LINES[weddingStoryRef.current.subtitleIndex]
+    : undefined
+  const weddingSubtitleLine = weddingSubtitleEntry?.text ?? ''
+  const weddingSubtitleItalic = weddingSubtitleEntry?.italic ?? false
 
-  // story 중엔 getBackgroundForLevel 우회해 bgPropose 강제.
-  const bgUrl = isStory ? BG_PROPOSE : getBackgroundForLevel(sm.level)
+  // story 중엔 getBackgroundForLevel 우회. propose는 bgPropose(야경 호텔), wedding은 제단(LV5 배경) 유지.
+  // (wedding CG phase부터는 페이드+CG가 배경을 덮음.)
+  const bgUrl = isStory
+    ? isWeddingStory
+      ? WEDDING_BGS[WEDDING_BGS.length - 1]
+      : BG_PROPOSE
+    : getBackgroundForLevel(
+        sm.level,
+        equippedEffectsRef.current.itemPoolOverride === 'wedding',
+      )
 
   return (
     <>
       <div
         className={clsx(
           'absolute inset-0 overflow-hidden',
-          (gameState === 'gameover' || storyKiss) && 'animate-game-stage-shake',
+          (gameState === 'gameover' || storyKiss || weddingKiss) &&
+            'animate-game-stage-shake',
         )}
         style={{
           background: `url(${bgUrl}) center / cover no-repeat`,
@@ -729,6 +961,9 @@ function SoloPage() {
               {item.kind === 'fish' && <Fish />}
               {item.kind === 'cucumber' && <Cucumber />}
               {item.kind === 'sweetPotato' && <SweetPotato />}
+              {item.kind === 'weddingRing' && <WeddingRing />}
+              {item.kind === 'weddingInvitation' && <WeddingInvitation />}
+              {item.kind === 'weddingBouquet' && <WeddingBouquet />}
             </div>
           )
         })}
@@ -750,9 +985,11 @@ function SoloPage() {
             key={`chi-shake-${r.kissing.until}`}
             className={clsx(
               chiKissing && 'animate-kiss-shake',
-              // 컷신 walk: 이동 중이면 토독토독, 정지면 idle bob (kiss 중엔 미적용).
+              // propose walk: 이동 중이면 토독토독, 정지면 idle bob (kiss 중엔 미적용).
               !chiKissing && chiWalking && 'animate-toddok',
               !chiKissing && storyWalk && !chiWalking && 'animate-bounce-soft',
+              // wedding walk: 자동 대칭이동이라 항상 토독토독.
+              !chiKissing && weddingWalk && 'animate-toddok',
             )}
           >
             <Chihuahua
@@ -762,7 +999,8 @@ function SoloPage() {
               slowed={!isStory && chiSlowed}
               equippedSrc={equippedSkinRef.current}
               armed={armedRef.current}
-              story={isStory}
+              story={isProposeStory}
+              weddingSkin={weddingSkinRef.current}
             />
           </div>
         </div>
@@ -784,8 +1022,10 @@ function SoloPage() {
             key={`cat-bounce-${r.kissing.until}`}
             className={clsx(
               catKissing && 'animate-kiss-bounce',
-              // 컷신 walk: 냐는 제자리 idle bob (kiss 중엔 미적용).
+              // propose walk: 냐는 제자리 idle bob (kiss 중엔 미적용).
               !catKissing && catIdleBob && 'animate-bounce-soft',
+              // wedding walk: 냐도 자동 대칭이동(우→중앙)이라 토독토독.
+              !catKissing && weddingWalk && 'animate-toddok',
             )}
           >
             <Cat
@@ -795,7 +1035,8 @@ function SoloPage() {
               scared={!isStory && catScared}
               equippedSrc={equippedCatSkinRef.current}
               armed={armedRef.current}
-              story={isStory}
+              story={isProposeStory}
+              weddingSkin={weddingSkinRef.current}
             />
           </div>
         </div>
@@ -878,6 +1119,155 @@ function SoloPage() {
             </div>
           </div>
         )}
+
+        {/* wedding walk 안내 배너 — propose 배너 미러. 좌우 조작으로 가운데서 만나도록 유도. */}
+        {weddingWalk && (
+          <div className="pointer-events-none absolute top-4 left-1/2 z-20 -translate-x-1/2">
+            <div className="border-ink-base text-text-on-pink shadow-card font-display rounded-pill border-[3px] border-solid bg-pink-700 px-4 py-2 text-base leading-none whitespace-nowrap">
+              평생 함께할 것을 뽀뽀로 증명하자!
+            </div>
+          </div>
+        )}
+
+        {/* wedding 엔딩 — 검정 페이드 → CG 풀스크린(3초) → 자막 6줄(유저 진행) → 모달 직전 블러.
+            fade: 검정 0→1 페이드 인. cg/subtitle/modal: 검정 유지 + CG(contain, 위아래 검정 레터박스).
+            subtitle: 하단 검정띠에 자막 + ▽. modal: CG 위 블러+딤(페이드 인).
+            검정/딤은 1회성 로직이라 rgba 직접 허용(위임 명시). z는 게임요소 위, 모달(portal z-100) 아래. */}
+        {isWeddingStory &&
+          (weddingPhase === 'fade' ||
+            weddingPhase === 'cg' ||
+            weddingPhase === 'subtitle' ||
+            weddingPhase === 'modal') && (
+            <>
+              <div
+                className={clsx(
+                  'pointer-events-none absolute inset-0 z-40',
+                  weddingPhase === 'fade' && 'animate-wedding-fade-black',
+                )}
+                style={{
+                  background: 'rgba(0, 0, 0, 1)',
+                  ...(weddingPhase === 'fade' ? null : { opacity: 1 }),
+                }}
+              />
+              {(weddingPhase === 'cg' ||
+                weddingPhase === 'subtitle' ||
+                weddingPhase === 'modal') && (
+                <img
+                  src={CHARACTER_ASSETS.chiCatWeddingCg}
+                  alt=""
+                  draggable={false}
+                  className={clsx(
+                    'pointer-events-none absolute inset-0 z-45 h-full w-full object-contain',
+                    // cg 단계에서만 fade-in 클래스 — subtitle/modal 전환 시 클래스 제거되어 재생 안 됨.
+                    // (페이드는 cg 3초 안에 완료, 클래스 제거 후 opacity 기본값 1로 그대로 유지.)
+                    weddingPhase === 'cg' && 'animate-wedding-cg-in',
+                  )}
+                />
+              )}
+              {/* 자막 — CG 아래 검정 레터박스 띠. 클릭으로도 진행(div pointer-events-auto).
+                  ▽는 다음 진행 신호로 깜빡임. 각 줄 진입 시 페이드 인. */}
+              {weddingSubtitle && (
+                <button
+                  type="button"
+                  onClick={advanceSubtitle}
+                  aria-label="다음"
+                  className="absolute inset-x-0 bottom-0 z-50 flex w-full cursor-pointer flex-col items-center gap-2 px-6 pb-2"
+                >
+                  <span
+                    key={weddingStoryRef.current.subtitleIndex}
+                    className={clsx(
+                      'animate-wedding-fade-subtitle text-text-on-pink font-display block text-center text-base leading-relaxed',
+                      weddingSubtitleItalic && 'italic',
+                    )}
+                  >
+                    {weddingSubtitleLine}
+                  </span>
+                  <span className="animate-subtitle-blink text-text-on-pink font-display block text-base leading-none">
+                    ▽
+                  </span>
+                </button>
+              )}
+              {weddingPhase === 'modal' && (
+                <div className="animate-wedding-fade-dim pointer-events-none absolute inset-0 z-48 bg-[rgba(0,0,0,0.25)] backdrop-blur-sm" />
+              )}
+            </>
+          )}
+
+        {/* wedding 엔딩 크레딧 — 검정 위 세로 스크롤(아래→위). 클릭/키/가상패드로 스킵.
+            텍스트만 스크롤, 양옆 댄스는 화면 고정 통통. 검정은 1회성 로직이라 rgba 직접 허용. */}
+        {isWeddingStory && weddingCredits && (
+          <div
+            onClick={advanceSubtitle}
+            className="absolute inset-0 z-40 cursor-pointer overflow-hidden"
+            style={{ background: 'rgba(0, 0, 0, 1)' }}
+          >
+            {/* 스크롤 컨텐츠 — wrapper가 min-h-full 이상이라 시작/끝 모두 화면 밖 */}
+            <div className="animate-wedding-credits-scroll gap-xl absolute inset-x-0 top-0 flex min-h-full flex-col items-center justify-center px-6 text-center">
+              <img
+                src={TITLE_LOGO}
+                alt=""
+                draggable={false}
+                className="animate-wedding-title-wave w-[65%] max-w-[65%] object-contain"
+              />
+              <span className="text-text-on-pink font-display text-lg leading-relaxed">
+                츄와와 ~뽀뽀 돌격~
+              </span>
+
+              <div className="gap-sm flex flex-col items-center">
+                <span className="text-text-on-pink font-display text-sm opacity-80">
+                  제작
+                </span>
+                <span className="text-text-on-pink font-display text-base leading-relaxed">
+                  김co수
+                </span>
+                <span className="text-text-on-pink font-display text-base leading-relaxed">
+                  워워
+                </span>
+              </div>
+
+              {/* 데이콘 영역 — 위/아래 점선(게임 카드 스타일, pink-300 dashed) + 안쪽 넉넉한 패딩 */}
+              <div className="gap-sm flex flex-col items-center border-y-2 border-dashed border-pink-300 px-10 py-8">
+                <span className="text-text-on-pink font-display text-base leading-relaxed">
+                  데이콘 월간 해커톤
+                </span>
+                <span className="text-text-on-pink font-display text-sm leading-relaxed opacity-80">
+                  10분 안에 중독시켜라
+                </span>
+                <span className="text-text-on-pink font-display text-sm leading-relaxed opacity-80">
+                  — 웹 미니게임 챌린지 —
+                </span>
+              </div>
+
+              <span className="text-text-on-pink font-display text-lg leading-relaxed">
+                Thanks to play
+              </span>
+            </div>
+
+            {/* 양옆 댄스 — 좌우 끝 세로중앙 고정, 통통 + 2바운스마다 좌우반전(스무스).
+                3층 분리(각 층 transform 1종): wrapper(정렬 -translate-y-1/2) /
+                flip 레이어(scaleX 반전) / inner img(bounce translateY) — 서로 안 덮음. */}
+            <div className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2">
+              <div className="animate-wedding-dance-flip">
+                <img
+                  src={CHARACTER_ASSETS.chiWeddingDance}
+                  alt=""
+                  draggable={false}
+                  className="animate-bounce-soft w-24 object-contain"
+                />
+              </div>
+            </div>
+            <div className="pointer-events-none absolute top-1/2 right-4 z-10 -translate-y-1/2">
+              <div className="animate-wedding-dance-flip">
+                <img
+                  src={CHARACTER_ASSETS.catWeddingDance}
+                  alt=""
+                  draggable={false}
+                  className="animate-bounce-soft w-24 object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {showGameOverModal && gameOverInfo && (
@@ -904,6 +1294,14 @@ function SoloPage() {
           defaultName={defaultName}
           onSubmit={(name) => saveRecord(name, storyResult)}
           onMain={() => navigate({ to: '/' })}
+          // wedding 엔딩이면 Happy Ending 문구. propose는 기본값(미전달).
+          {...(storyKindRef.current === 'wedding'
+            ? {
+                storyTitle: 'Happy Ending',
+                storyHeading: 'Happy Ending',
+                storySubtitle: '오래오래 행복하게 뽀뽀했답니다!',
+              }
+            : {})}
         />
       )}
 

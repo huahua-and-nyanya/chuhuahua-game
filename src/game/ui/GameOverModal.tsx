@@ -23,8 +23,12 @@ export type GameOverModalProps = {
   rank: number | null
   defaultName: string
   onSubmit: (name: string) => void
-  // 'gameover'(기본): GAME OVER + 다시하기. 'story': propose 컷신 성공 결과(다시하기 없음).
+  // 'gameover'(기본): GAME OVER + 다시하기. 'story': 컷신 성공 결과(다시하기 없음).
   variant?: 'gameover' | 'story'
+  // story variant 문구 오버라이드 — 미지정이면 propose 엔딩 기본 문구. wedding 엔딩이 전달.
+  storyTitle?: string // 카드 헤더
+  storyHeading?: string // 큰 텍스트
+  storySubtitle?: string // 부제
   onRestart?: () => void // story variant에선 미사용
   onMain: () => void
 }
@@ -61,6 +65,9 @@ export function GameOverModal(props: GameOverModalProps) {
     onRestart,
     onMain,
     variant = 'gameover',
+    storyTitle,
+    storyHeading,
+    storySubtitle,
   } = props
   const [nickname, setNickname] = useState('')
   const [registered, setRegistered] = useState(false)
@@ -76,7 +83,7 @@ export function GameOverModal(props: GameOverModalProps) {
 
   // story: 성공 결과 — 헤더는 짧은 축하 문구. gameover: 랭크 진입/기본.
   const title = isStory
-    ? '프로포즈 성공!'
+    ? (storyTitle ?? '프로포즈 성공!')
     : canRegister
       ? `Top ${rank} 진입!`
       : 'GAME OVER'
@@ -100,11 +107,11 @@ export function GameOverModal(props: GameOverModalProps) {
             }
             style={{ color: COLOR_PRIMARY }}
           >
-            {isStory ? '프로포즈를 성공했어!' : 'GAME OVER'}
+            {isStory ? (storyHeading ?? '프로포즈를 성공했어!') : 'GAME OVER'}
           </h2>
           <p className="font-body mt-3 text-xs" style={{ color: COLOR_LABEL }}>
             {isStory
-              ? '이제 뽑기에서 웨딩룩을 만날 수 있어!'
+              ? (storySubtitle ?? '이제 뽑기에서 웨딩룩을 만날 수 있어!')
               : info.cause === 'quit'
                 ? '그만뒀어요'
                 : '비둘기가 고양이를 잡았어요'}
