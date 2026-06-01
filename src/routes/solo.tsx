@@ -14,6 +14,9 @@ import { Cucumber } from '@/game/items/Cucumber'
 import { Fish } from '@/game/items/Fish'
 import { Kibble } from '@/game/items/Kibble'
 import { SweetPotato } from '@/game/items/SweetPotato'
+import { WeddingBouquet } from '@/game/items/WeddingBouquet'
+import { WeddingInvitation } from '@/game/items/WeddingInvitation'
+import { WeddingRing } from '@/game/items/WeddingRing'
 
 import { applyChiPhysics, useChiInput } from '@/game/ai/chi-input'
 import { scheduleCatTarget, stopCatTargetScheduler } from '@/game/ai/cat-target'
@@ -108,6 +111,7 @@ function SoloPage() {
     getEquippedSkin,
     getEquippedCatSkin,
     getProposeArmed,
+    getWeddingArmed,
     markProposeEndingCleared,
     earnCoins,
   } = useWardrobe()
@@ -120,6 +124,8 @@ function SoloPage() {
   // propose 코스튬 스토리 armed — true면 LV1~9 츄/냐 데이트룩. 솔로(=isSolo)이므로 조건 충족 시 켜짐.
   // 게임 중 옷장 진입 불가 → 시작 시 1회 스냅샷이면 충분 (effects/skin과 동일 패턴).
   const armedRef = useRef<boolean>(getProposeArmed())
+  // wedding 게임변형 armed — true면 진행 중 코인 적립 차단. 시작 시 1회 스냅샷(effects와 동일 패턴).
+  const weddingArmedRef = useRef<boolean>(getWeddingArmed())
 
   // 게임 객체는 ref. React state는 표시 트리거만.
   // gameStartRef는 마운트 useEffect에서 performance.now()로 채움 (initializer 안에서 impure 함수 호출 금지).
@@ -209,7 +215,10 @@ function SoloPage() {
     (cause: GameOverInfo['cause']) => {
       const sm = refs.current.scoreMirror
       // 점수만큼 코인 적립(999 상한) → 적립량 + 지갑가득 여부를 게임오버 모달에 전달.
-      const { earned, walletFull } = earnCoins(sm.score)
+      // wedding 게임변형 진행 중엔 코인 적립 차단(시청 완료 전). quit 경로 포함.
+      const { earned, walletFull } = weddingArmedRef.current
+        ? { earned: 0, walletFull: false }
+        : earnCoins(sm.score)
       setGameOverInfo({
         finalScore: sm.score,
         maxLevel: sm.level,
@@ -230,6 +239,7 @@ function SoloPage() {
     equippedSkinRef.current = getEquippedSkin()
     equippedCatSkinRef.current = getEquippedCatSkin()
     armedRef.current = getProposeArmed()
+    weddingArmedRef.current = getWeddingArmed()
     gameStartRef.current = performance.now()
     setGameOverInfo(null)
     setShowGameOverModal(false)
@@ -240,7 +250,13 @@ function SoloPage() {
     setToasts([])
     pausedAtRef.current = 0
     setGameState('playing')
-  }, [getEquippedEffects, getEquippedSkin, getEquippedCatSkin, getProposeArmed])
+  }, [
+    getEquippedEffects,
+    getEquippedSkin,
+    getEquippedCatSkin,
+    getProposeArmed,
+    getWeddingArmed,
+  ])
 
   // 컷신 마지막(modal) 진입 시 1회 — 해금 세팅 + 코인 적립 + 결과 모달 구성.
   // 멱등 가드(storyModalDoneRef): 모달 뜨는 순간 즉시 proposeEndingCleared=true →
@@ -551,6 +567,10 @@ function SoloPage() {
       showToast,
       getPigeonSpawnMul: () => equippedEffectsRef.current.pigeonSpawnMul ?? 1,
       getItemSpawnMul: () => equippedEffectsRef.current.itemSpawnMul ?? 1,
+      getPigeonDisabled: () =>
+        equippedEffectsRef.current.pigeonDisabled ?? false,
+      getWeddingItemMode: () =>
+        equippedEffectsRef.current.itemPoolOverride === 'wedding',
     })
 
     scheduleCatTarget({
@@ -729,6 +749,9 @@ function SoloPage() {
               {item.kind === 'fish' && <Fish />}
               {item.kind === 'cucumber' && <Cucumber />}
               {item.kind === 'sweetPotato' && <SweetPotato />}
+              {item.kind === 'weddingRing' && <WeddingRing />}
+              {item.kind === 'weddingInvitation' && <WeddingInvitation />}
+              {item.kind === 'weddingBouquet' && <WeddingBouquet />}
             </div>
           )
         })}
