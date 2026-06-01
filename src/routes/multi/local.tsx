@@ -46,6 +46,7 @@ import { PvpHud } from '@/game/ui/PvpHud'
 import { QuitConfirmModal } from '@/game/ui/QuitConfirmModal'
 import { updateParticles } from '@/game/particles'
 
+import { audioManager } from '@/features/audio/audioManager'
 import { usePvpHistory } from '@/features/pvp-history/usePvpHistory'
 
 import { CenterModal } from '@/ui/CenterModal'
@@ -435,6 +436,34 @@ function LocalPvpPage() {
   const catFacing = cat.facing === 'right' ? -1 : 1
 
   const remainingMs = Math.max(0, PVP_TIME_LIMIT - (now - r.pvp.startedAt))
+
+  // ── BGM 씬 매핑 (B3b) — PvpGameState → 곡 토큰. 토큰이 바뀔 때만 effect 1회 발화(매 프레임 X).
+  //   pvpSetup: 무음(게임 시작 전). playing/gameover: pvp곡(같은 'pvp' 토큰이라 승부 전이 시 안 끊김).
+  //   paused/confirmQuit: calm(멈춤 연장선). gameover는 솔로와 달리 sfx 없음(승리화면).
+  //   /multi/local 라우트 곡은 B2 미호출 → B3b 전담(B3a 솔로와 대칭, setup 무음 보장).
+  let audioScene: 'pvp' | 'calm' | 'silent'
+  if (gameState === 'pvpSetup') {
+    audioScene = 'silent'
+  } else if (gameState === 'paused' || gameState === 'confirmQuit') {
+    audioScene = 'calm'
+  } else {
+    // playing | gameover → pvp 유지
+    audioScene = 'pvp'
+  }
+
+  useEffect(() => {
+    switch (audioScene) {
+      case 'pvp':
+        audioManager.playBgm('bgmPvp')
+        break
+      case 'calm':
+        audioManager.playBgm('bgmCalm')
+        break
+      case 'silent':
+        audioManager.stopBgm({ fade: true })
+        break
+    }
+  }, [audioScene])
 
   return (
     <>

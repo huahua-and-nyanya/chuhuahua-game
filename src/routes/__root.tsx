@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { IconVolume, IconVolumeOff } from '@tabler/icons-react'
 import {
   createRootRoute,
   Link,
@@ -11,6 +12,8 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ICON_ASSETS, PAGE_BGS } from '@/assets'
 import { DSFrame } from '@/components/layout/DSFrame'
 import { GameFrameCard } from '@/components/layout/GameFrameCard'
+import { audioManager } from '@/features/audio/audioManager'
+import { useAudio } from '@/features/audio/useAudio'
 import { useCoins } from '@/features/coins/useCoins'
 import { VirtualController } from '@/game/ui/VirtualController'
 import { useResponsiveScale } from '@/hooks/useResponsiveScale'
@@ -39,6 +42,13 @@ const CORNER_ACTIONS_SLOT_CLASSES =
   'absolute top-frame-inner right-frame-inner flex flex-row gap-sm z-[2]'
 const SIDE_MENU_SLOT_CLASSES =
   'absolute right-frame-inner bottom-frame-inner flex flex-col gap-nav-button-gap z-[2] max-md:hidden'
+// 음소거 토글 — `< 메인으로`(PixelButton ghost)와 동일 동작: 평소 투명, hover/active 시에만
+// 연핑크 배경. 단 아이콘 버튼이라 hover 배경이 원형(rounded-full). hover 색은 ghost 토큰 재사용.
+const MUTE_BUTTON_CLASSES =
+  'inline-flex items-center justify-center cursor-pointer rounded-full p-2 ' +
+  'bg-transparent text-button-ghost-text ' +
+  'hover:bg-button-ghost-bg-hover active:bg-button-ghost-bg-hover ' +
+  'transition-colors duration-[var(--transition-fast)]'
 
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -48,11 +58,26 @@ function RootLayout() {
   const isContentRoute = ['/ranking', '/howto'].includes(pathname)
   const navigate = useNavigate()
   const { coins, refresh: refreshCoins } = useCoins()
+  const { muted, toggleMuted } = useAudio()
   // 라우트 변경 시 코인 재읽기 — solo의 earnCoins(다른 useWardrobe 인스턴스)가 갱신한
   // localStorage 값을 메인 복귀 시 반영 (root는 안 unmount → state가 stale로 남는 문제).
   useEffect(() => {
     refreshCoins()
   }, [pathname, refreshCoins])
+  // 라우트별 BGM 매핑 (pathname 기반만). 같은 트랙 playBgm은 B1에서 no-op이라
+  // {/, /ranking, /howto} 그룹은 bgmTitle을 공유하며 이동해도 안 끊김.
+  // /solo·/multi/local은 여기서 호출 안 함 — 내부 상태별 곡을 각 라우트가 전담(B3a/B3b).
+  //   solo: 웨딩(title)/일반(main) 분기, pvp: setup 무음 + playing pvp곡 등.
+  //   (B2가 깔면 effect 순서상 부모가 자식 뒤에 실행돼 setup 무음/웨딩 분기를 덮음.)
+  //   /solo·/multi/local·/dev/*는 어느 분기에도 안 걸려 미호출.
+  // armAudio 정합: 첫 진입 시 arm 전이면 currentBgmTrack에 보관됐다 첫 상호작용에 재생(B1).
+  useEffect(() => {
+    if (pathname === '/' || pathname === '/ranking' || pathname === '/howto') {
+      audioManager.playBgm('bgmTitle')
+    } else if (pathname === '/wardrobe') {
+      audioManager.playBgm('bgmCalm')
+    }
+  }, [pathname])
   const { scale, isMobile, dsFrameMaxWidth } = useResponsiveScale()
   const seasonBg = PAGE_BGS[getCurrentSeason()]
 
@@ -133,14 +158,33 @@ function RootLayout() {
 
   return (
     <>
-      {/* 메인 외 라우트: 페이지 좌상단 fixed — 카드/frameStack 레이아웃에 영향 0. */}
-      {!isMain && (
-        <Link to="/" className="top-lg left-lg fixed z-10">
-          <PixelButton variant="ghost" size="sm">
-            {'< 메인으로'}
-          </PixelButton>
-        </Link>
-      )}
+      {/* 상단 고정 헤더 행 — 좌(메인으로)·우(음소거)를 한 행에 묶어 같은 높이선 정렬(items-center).
+          카드/frameStack 레이아웃엔 영향 0(fixed). /dev는 위에서 early-return이라 미적용.
+          좌측 `< 메인으로`는 !isMain 한정 → 메인에선 빈 spacer로 두고 음소거만 우측 유지. */}
+      <div className="top-md right-md left-md fixed z-10 flex items-center justify-between">
+        {!isMain ? (
+          <Link to="/">
+            <PixelButton variant="ghost" size="sm">
+              {'< 메인으로'}
+            </PixelButton>
+          </Link>
+        ) : (
+          <span />
+        )}
+
+        <button
+          type="button"
+          className={MUTE_BUTTON_CLASSES}
+          onClick={toggleMuted}
+          aria-label={muted ? '소리 켜기' : '소리 끄기'}
+        >
+          {muted ? (
+            <IconVolumeOff size={26} stroke={2} />
+          ) : (
+            <IconVolume size={26} stroke={2} />
+          )}
+        </button>
+      </div>
 
       <div className="page-bg" style={{ backgroundImage: `url(${seasonBg})` }}>
         <main className={styles.page}>
