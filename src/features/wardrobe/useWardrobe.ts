@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { clothPath } from '@/assets/clothes'
 import type { ClothEffects, GachaResult, Grade, WardrobeState } from './types'
-import { CLOTHES, CLOTHES_BY_GRADE } from './clothes'
+import { CLOTHES, CLOTHES_BY_GRADE, STORY_CLOTH_IDS } from './clothes'
 import {
   coinsStorage,
   pityStorage,
@@ -15,11 +15,12 @@ export const GACHA_COST = 15 // 가챠 1회 비용 (코인 적립 50점당 1개 
 const GACHA_PITY = 10 // 천장: B 10연속 → 다음은 A 이상 보장
 const MAX_COINS = 999 // 지갑 상한 — 초과 적립분은 버려지고 게임오버에서 "지갑이 다 찼어" 안내
 
-const GACHA_RATES = { B: 0.7, A: 0.2, S: 0.099, 'S+': 0.001 }
+// 합 1.0. B는 else 분기라 임계값 미사용(문서값) — S/A/S+만 cascade 임계에 쓰임.
+const GACHA_RATES = { B: 0.601, A: 0.2, S: 0.099, 'S+': 0.1 }
 
-// 중복(이미 보유) 추첨 시 등급별 코인 환불. S+는 가챠 풀 비대상이라 환불 케이스 없음.
+// 중복(이미 보유) 추첨 시 등급별 코인 환불. S+(wedding)는 환불 미정의 → 중복 시 0 (희소 보상이라 의도).
 const REFUND_BY_GRADE: Partial<Record<Grade, number>> = { B: 1, A: 3, S: 5 }
-// S+는 proposeEndingCleared === true 일 때만 풀에 진입
+// S+는 proposeEndingCleared === true 일 때만 풀에 진입 (clear 전엔 sPlusRate=0)
 
 export function useWardrobe() {
   const wardrobeRef = useRef<WardrobeState>(wardrobeStorage.load())
@@ -71,6 +72,25 @@ export function useWardrobe() {
     const eq = wardrobeRef.current.equipped
     if (!eq) return undefined
     return CLOTHES[eq]?.pair ? clothPath('cat', eq, 'full') : undefined
+  }, [])
+
+  // propose 코스튬 스토리 armed 판정 — 데이트룩 + LV10 컷신 노출 조건.
+  // equipped === 'propose' && rose·vacation·propose 3벌 모두 보유 && 미클리어.
+  // isSolo 조건은 호출처(solo.tsx)가 담당. 게임 시작 시 1회 스냅샷용이라 storage를 직접 읽음.
+  const getProposeArmed = useCallback((): boolean => {
+    const { equipped, owned } = wardrobeRef.current
+    if (equipped !== 'propose') return false
+    if (!STORY_CLOTH_IDS.every((id) => owned.includes(id))) return false
+    return !playStatsStorage.load().proposeEndingCleared
+  }, [])
+
+  // propose 엔딩 클리어 마킹 — STORY_MODAL 도달 시 1회 호출(컷신 완료 = 해금 확정).
+  // 멱등: 이미 true면 no-op. 이후 pullGacha가 storage를 직접 읽어 S+(wedding) 풀에 포함.
+  // 게이팅은 storage 기반이라 별도 state 불요 — 다음 가챠/재플레이 스냅샷부터 반영.
+  const markProposeEndingCleared = useCallback(() => {
+    const cur = playStatsStorage.load()
+    if (cur.proposeEndingCleared) return
+    playStatsStorage.save({ ...cur, proposeEndingCleared: true })
   }, [])
 
   // 점수로 코인 적립 — MAX_COINS(999) 상한. 상한 초과분은 버려지고 walletFull로 알림.
@@ -156,6 +176,8 @@ export function useWardrobe() {
     getEquippedEffects,
     getEquippedSkin,
     getEquippedCatSkin,
+    getProposeArmed,
+    markProposeEndingCleared,
     earnCoins,
     pullGacha,
   }

@@ -13,12 +13,30 @@ interface CatProps {
   boosted?: boolean
   slowed?: boolean
   equippedSrc?: string
+  // propose 코스튬 스토리 armed — 전 상태를 데이트룩 스프라이트로 교체. (글로우/버블은 그대로)
+  armed?: boolean
+  // propose 컷신(story) — 정장 스프라이트. kissing이면 입 가린 수줍, 아니면 idle full.
+  story?: boolean
 }
 
 // 우선순위 (F-1.8 휘게 결정): kissing > angry > slowed > shielded > scared > equippedSrc > default
 // reference 원본은 kissing > shielded > slowed > angry > scared 순이었으나, 분노/슬로우 매커니즘 활성 시
 // 시각도 매커니즘 우선이 맞다는 결정으로 angry/slowed를 shielded 위로 이동.
+// armed면 같은 우선순위로 데이트룩 풀세트 사용 (slowed는 솔로에서 고양이 미발생 → catDate 폴백).
+// story(정장 컷신)는 armed보다 우선.
 function pickSrc(props: CatProps): string {
+  if (props.story) {
+    return props.kissing
+      ? CHARACTER_ASSETS.catProposeKissing
+      : CHARACTER_ASSETS.catProposeFull
+  }
+  if (props.armed) {
+    if (props.kissing) return CHARACTER_ASSETS.catDateKissing
+    if (props.angry) return CHARACTER_ASSETS.catDateAngry
+    if (props.shielded) return CHARACTER_ASSETS.catDateShield
+    if (props.scared) return CHARACTER_ASSETS.catDateScared
+    return CHARACTER_ASSETS.catDate
+  }
   if (props.kissing) return CHARACTER_ASSETS.catKissing
   if (props.angry) return CHARACTER_ASSETS.catAngry
   if (props.slowed) return CHARACTER_ASSETS.catSlow

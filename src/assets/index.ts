@@ -8,6 +8,7 @@ export {
   GAME_BGS,
   SPACE_BG,
   WARDROBE_BG,
+  BG_PROPOSE,
 } from './backgrounds'
 export {
   clothPath,

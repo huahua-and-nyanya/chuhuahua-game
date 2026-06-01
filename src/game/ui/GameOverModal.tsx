@@ -23,7 +23,9 @@ export type GameOverModalProps = {
   rank: number | null
   defaultName: string
   onSubmit: (name: string) => void
-  onRestart: () => void
+  // 'gameover'(기본): GAME OVER + 다시하기. 'story': propose 컷신 성공 결과(다시하기 없음).
+  variant?: 'gameover' | 'story'
+  onRestart?: () => void // story variant에선 미사용
   onMain: () => void
 }
 
@@ -50,10 +52,20 @@ function formatTime(ms: number): string {
 // 부모(라우트)가 게임오버 진입 시 mount, 다시하기/메인 시 unmount → useState 초기값 자동 reset.
 // nickname 초기값은 항상 빈 값. defaultName(이전 입력 캐시)은 placeholder로만 노출.
 export function GameOverModal(props: GameOverModalProps) {
-  const { open, info, rank, defaultName, onSubmit, onRestart, onMain } = props
+  const {
+    open,
+    info,
+    rank,
+    defaultName,
+    onSubmit,
+    onRestart,
+    onMain,
+    variant = 'gameover',
+  } = props
   const [nickname, setNickname] = useState('')
   const [registered, setRegistered] = useState(false)
 
+  const isStory = variant === 'story'
   const canRegister = rank !== null
   const handleSubmit = () => {
     const trimmed = nickname.trim()
@@ -62,7 +74,12 @@ export function GameOverModal(props: GameOverModalProps) {
     setRegistered(true)
   }
 
-  const title = canRegister ? `Top ${rank} 진입!` : 'GAME OVER'
+  // story: 성공 결과 — 헤더는 짧은 축하 문구. gameover: 랭크 진입/기본.
+  const title = isStory
+    ? '프로포즈 성공!'
+    : canRegister
+      ? `Top ${rank} 진입!`
+      : 'GAME OVER'
 
   return (
     <CenterModal
@@ -73,18 +90,24 @@ export function GameOverModal(props: GameOverModalProps) {
       closeOnEscape={false}
     >
       <div className="flex flex-col">
-        {/* GAME OVER 큰 텍스트 + 부제 — 등장 시 흔들림 */}
+        {/* 큰 텍스트 + 부제 — 등장 시 흔들림. story는 성공 문구, 그 외 GAME OVER. */}
         <div className="animate-gameover-shake mb-5.5 text-center">
           <h2
-            className="font-display text-3xl leading-none tracking-wider"
+            className={
+              isStory
+                ? 'font-display text-2xl leading-tight tracking-wide'
+                : 'font-display text-3xl leading-none tracking-wider'
+            }
             style={{ color: COLOR_PRIMARY }}
           >
-            GAME OVER
+            {isStory ? '프로포즈를 성공했어!' : 'GAME OVER'}
           </h2>
           <p className="font-body mt-3 text-xs" style={{ color: COLOR_LABEL }}>
-            {info.cause === 'quit'
-              ? '그만뒀어요'
-              : '비둘기가 고양이를 잡았어요'}
+            {isStory
+              ? '이제 뽑기에서 웨딩룩을 만날 수 있어!'
+              : info.cause === 'quit'
+                ? '그만뒀어요'
+                : '비둘기가 고양이를 잡았어요'}
           </p>
         </div>
 
@@ -196,20 +219,33 @@ export function GameOverModal(props: GameOverModalProps) {
           </div>
         )}
 
-        {/* 액션 — 메인으로(secondary) + 다시하기(primary), 가로 꽉 채움 */}
-        <div className="gap-sm flex w-full justify-center">
-          <PixelButton variant="secondary" size="lg" onClick={onMain}>
-            메인으로
-          </PixelButton>
-          <PixelButton
-            className="w-full"
-            variant="primary"
-            size="lg"
-            onClick={onRestart}
-          >
-            다시하기
-          </PixelButton>
-        </div>
+        {/* 액션 — story는 [메인으로]만. gameover는 메인으로 + 다시하기. */}
+        {isStory ? (
+          <div className="flex w-full justify-center">
+            <PixelButton
+              className="w-full"
+              variant="primary"
+              size="lg"
+              onClick={onMain}
+            >
+              메인으로
+            </PixelButton>
+          </div>
+        ) : (
+          <div className="gap-sm flex w-full justify-center">
+            <PixelButton variant="secondary" size="lg" onClick={onMain}>
+              메인으로
+            </PixelButton>
+            <PixelButton
+              className="w-full"
+              variant="primary"
+              size="lg"
+              onClick={onRestart}
+            >
+              다시하기
+            </PixelButton>
+          </div>
+        )}
       </div>
     </CenterModal>
   )

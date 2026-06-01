@@ -27,6 +27,7 @@ import {
   DEBUFF_AFTER_LV3_FIRST,
   DEBUFF_LEVEL_MIN,
   DEBUFF_STAGGER,
+  MAX_LEVEL,
   MAX_TOASTS,
 } from '@/game/constants'
 import {
@@ -74,6 +75,13 @@ import { useHistory } from '@/features/history/useHistory'
 import { useWardrobe } from '@/features/wardrobe'
 import type { ClothEffects } from '@/features/wardrobe/types'
 
+import { BG_PROPOSE } from '@/assets/backgrounds'
+import {
+  createStoryRuntime,
+  setupStory,
+  updateStory,
+} from '@/game/story/proposeStory'
+
 import '@/game/keyframes.css'
 
 export const Route = createFileRoute('/solo')({
@@ -90,30 +98,54 @@ const CHARACTER_BOX = 150 // px — 캐릭터 wrapper 정사각 (캐릭터/아�
 // 아이템 expireAt 까지 남은 시간이 본 값 이하면 item-expire 깜빡임 + 글로우 시작.
 const ITEM_EXPIRE_WARN_MS = 2000
 
-type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover'
+type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover' | 'story'
 
 function SoloPage() {
   const navigate = useNavigate()
   const history = useHistory()
-  const { getEquippedEffects, getEquippedSkin, getEquippedCatSkin, earnCoins } =
-    useWardrobe()
+  const {
+    getEquippedEffects,
+    getEquippedSkin,
+    getEquippedCatSkin,
+    getProposeArmed,
+    markProposeEndingCleared,
+    earnCoins,
+  } = useWardrobe()
   // 장착 옷 효과/스킨은 게임 시작 시 1회 스냅샷 (솔로 중 옷 변경 불가) — 매 프레임 ref만 읽음.
   const equippedEffectsRef = useRef<ClothEffects>(getEquippedEffects())
   // 장착 스킨(츄 풀바디 경로). 미장착이면 undefined → 기본 츄. idle 스프라이트에만 적용.
   const equippedSkinRef = useRef<string | undefined>(getEquippedSkin())
   // 페어 옷이면 냐냐도 같이 입는 스킨. 단독 옷이면 undefined → 기본 냐냐.
   const equippedCatSkinRef = useRef<string | undefined>(getEquippedCatSkin())
+  // propose 코스튬 스토리 armed — true면 LV1~9 츄/냐 데이트룩. 솔로(=isSolo)이므로 조건 충족 시 켜짐.
+  // 게임 중 옷장 진입 불가 → 시작 시 1회 스냅샷이면 충분 (effects/skin과 동일 패턴).
+  const armedRef = useRef<boolean>(getProposeArmed())
 
   // 게임 객체는 ref. React state는 표시 트리거만.
   // gameStartRef는 마운트 useEffect에서 performance.now()로 채움 (initializer 안에서 impure 함수 호출 금지).
   const refs = useRef<GameRefs>(createInitialState())
   const gameStartRef = useRef<number>(0)
+  // propose 컷신 상태머신 런타임 (gameState==='story' 동안만 의미 있음).
+  const storyRef = useRef(createStoryRuntime())
+  // 컷신 진입(LV10) 시점 점수 스냅샷 — 컷신 중 점수 불변이라 모달 결과로 그대로 사용.
+  const storySnapshotRef = useRef<{
+    finalScore: number
+    maxLevel: number
+    maxCombo: number
+    elapsedMs: number
+  } | null>(null)
+  // STORY_MODAL 1회성 처리(코인 적립/해금 세팅) 가드 — 모달 표시 시 한 번만.
+  const storyModalDoneRef = useRef(false)
   // 가상 컨트롤러는 root layout이 마운트, 입력은 chi-input.ts의 module-level virtualInputRef로 동기.
 
   const [gameState, setGameState] = useState<GameState>('playing')
   const [gameOverInfo, setGameOverInfo] = useState<GameOverInfo | null>(null)
   // 게임오버 → 카드 shake + 빨간 flash가 ~500ms 동안 끝난 뒤 모달 등장.
   const [showGameOverModal, setShowGameOverModal] = useState(false)
+  // 컷신 마지막 단계(modal) 진입 시 성공 결과 모달 표시.
+  const [showStoryModal, setShowStoryModal] = useState(false)
+  // STORY_MODAL에 넘길 결과(점수/레벨/코인 등) — GameOverInfo 재활용(variant='story').
+  const [storyResult, setStoryResult] = useState<GameOverInfo | null>(null)
   const [toasts, setToasts] = useState<ToastRef[]>([])
   // 일시정지 관리: paused 진입 시각.
   // 옵션 (a) 동선: confirmQuit 진입 시 paused 정산 → 더 놀래 = playing 직행 (paused 복귀 X).
@@ -197,13 +229,40 @@ function SoloPage() {
     equippedEffectsRef.current = getEquippedEffects()
     equippedSkinRef.current = getEquippedSkin()
     equippedCatSkinRef.current = getEquippedCatSkin()
+    armedRef.current = getProposeArmed()
     gameStartRef.current = performance.now()
     setGameOverInfo(null)
     setShowGameOverModal(false)
+    setShowStoryModal(false)
+    setStoryResult(null)
+    storyModalDoneRef.current = false
+    storySnapshotRef.current = null
     setToasts([])
     pausedAtRef.current = 0
     setGameState('playing')
-  }, [getEquippedEffects, getEquippedSkin, getEquippedCatSkin])
+  }, [getEquippedEffects, getEquippedSkin, getEquippedCatSkin, getProposeArmed])
+
+  // 컷신 마지막(modal) 진입 시 1회 — 해금 세팅 + 코인 적립 + 결과 모달 구성.
+  // 멱등 가드(storyModalDoneRef): 모달 뜨는 순간 즉시 proposeEndingCleared=true →
+  // 유저가 모달 안 닫고 메인 가도 해금 유지. 코인도 여기서 1회만 적립.
+  const handleStoryModal = useCallback(() => {
+    if (storyModalDoneRef.current) return
+    const snap = storySnapshotRef.current
+    if (!snap) return
+    storyModalDoneRef.current = true
+    markProposeEndingCleared()
+    const { earned, walletFull } = earnCoins(snap.finalScore)
+    setStoryResult({
+      finalScore: snap.finalScore,
+      maxLevel: snap.maxLevel,
+      maxCombo: snap.maxCombo,
+      elapsedMs: snap.elapsedMs,
+      cause: 'quit', // story variant에선 미표시 (필수 필드라 채움)
+      earnedCoins: earned,
+      walletFull,
+    })
+    setShowStoryModal(true)
+  }, [earnCoins, markProposeEndingCleared])
 
   // gameover 진입 → shake/flash가 ~500ms 동안 보인 뒤 모달 등장.
   // gameover 이탈은 startGame()/onMain만 가능, 둘 다 showGameOverModal을 명시 리셋.
@@ -283,6 +342,28 @@ function SoloPage() {
   // ── 콜백 (게임 루프 → 점수/효과/시각) ─────────────────────────────────
   const onLevelUp = useCallback(
     (newLevel: number) => {
+      // armed(propose 3벌 + 미클리어) + LV10 최초 도달 → 컷신 진입.
+      // setupStory로 오브젝트/효과 리셋 + 캐릭터 텔레포트를 동기 수행한 뒤 story로 전환.
+      // 이미 story면 무시 (재트리거 차단). 컷신 중엔 마일스톤 토스트 등 일반 처리 스킵.
+      if (
+        armedRef.current &&
+        newLevel === MAX_LEVEL &&
+        gameStateRef.current !== 'story'
+      ) {
+        // 진입 시점 점수 스냅샷 — 컷신 중 점수 불변이라 모달 결과로 그대로 쓴다.
+        // level.ts checkLevelUp이 scoreMirror.level을 newLevel로 먼저 갱신 후 호출 → sm.level=10.
+        const sm = refs.current.scoreMirror
+        storySnapshotRef.current = {
+          finalScore: sm.score,
+          maxLevel: sm.level,
+          maxCombo: sm.maxCombo,
+          elapsedMs: performance.now() - gameStartRef.current,
+        }
+        setupStory(refs.current, performance.now(), storyRef.current)
+        setShowStoryModal(false)
+        setGameState('story')
+        return
+      }
       if (isMilestoneLevel(newLevel)) {
         showToast(`LV${newLevel} 마일스톤!`, 'var(--color-game-accent-gold)')
       }
@@ -406,7 +487,15 @@ function SoloPage() {
 
   // ── 입력 ───────────────────────────────────────────────────────────
   const isPlaying = useCallback(() => gameStateRef.current === 'playing', [])
-  useChiInput({ refs: refs.current, enabled: isPlaying })
+  // 츄 입력 허용 — 일반 플레이(playing) + 컷신 walk 단계만. intro/kiss/jump/modal은 차단.
+  // ref-shaped 콜백(빈 deps)으로 동일 참조 유지 — useChiInput은 mount 시 1회만 구독.
+  const isChiInputEnabled = useCallback(
+    () =>
+      gameStateRef.current === 'playing' ||
+      (gameStateRef.current === 'story' && storyRef.current.phase === 'walk'),
+    [],
+  )
+  useChiInput({ refs: refs.current, enabled: isChiInputEnabled })
 
   // ESC 키 — playing↔paused 토글, confirmQuit 시 취소(=더 놀래).
   // gameover에선 무시. input/textarea 포커스 중엔 무시 (다른 모달의 닉네임 입력 등).
@@ -510,21 +599,42 @@ function SoloPage() {
     },
   })
 
+  // ── propose 컷신 루프 ──────────────────────────────────────────────
+  // story 동안만 활성. updateStory가 단계 전이 + chi 이동/점프 보간 + 이펙트 트리거.
+  // 일반 루프(enabled: playing)는 자동 정지하므로 둘이 동시에 돌지 않는다.
+  useGameLoop({
+    enabled: gameState === 'story',
+    update: (dt, now) => {
+      const r = refs.current
+      updateStory(r, storyRef.current, dt, now, {
+        onModal: handleStoryModal,
+      })
+      updateParticles(r.particles)
+      updateBgHearts(r.bgHearts)
+      expireTransients(r, now)
+    },
+  })
+
   // ── 게임오버 모달 핸들러 ────────────────────────────────────────────
-  const handleGameOverSubmit = (name: string) => {
-    if (!gameOverInfo) return
+  // 기록 저장 공용 — 게임오버/스토리 결과 모두 같은 경로(닉네임 캐시 포함).
+  const saveRecord = (name: string, info: GameOverInfo) => {
     history.save({
       name,
-      score: gameOverInfo.finalScore,
-      maxLevel: gameOverInfo.maxLevel,
-      maxCombo: gameOverInfo.maxCombo,
-      elapsedMs: gameOverInfo.elapsedMs,
+      score: info.finalScore,
+      maxLevel: info.maxLevel,
+      maxCombo: info.maxCombo,
+      elapsedMs: info.elapsedMs,
     })
     try {
       localStorage.setItem(NICKNAME_KEY, name)
     } catch {
       // 무시
     }
+  }
+
+  const handleGameOverSubmit = (name: string) => {
+    if (!gameOverInfo) return
+    saveRecord(name, gameOverInfo)
   }
 
   const defaultName = (() => {
@@ -563,14 +673,26 @@ function SoloPage() {
   const chiFacing = chi.facing === 'right' ? -1 : 1
   const catFacing = cat.facing === 'right' ? -1 : 1
 
-  const bgUrl = getBackgroundForLevel(sm.level)
+  // 컷신 파생값 — story 동안 정장 스프라이트/배경/점프 오프셋/HUD 숨김 분기.
+  const isStory = gameState === 'story'
+  const storyKiss = isStory && storyRef.current.phase === 'kiss'
+  const storyWalk = isStory && storyRef.current.phase === 'walk'
+  const storyChiJumpY = isStory ? storyRef.current.chiJumpY : 0
+  const storyCatJumpY = isStory ? storyRef.current.catJumpY : 0
+  // walk 중 츄 이동 여부 — 이동 시 토독토독, 정지 시 idle. dead-zone(0.05) 위로 살짝 마진.
+  const chiWalking = storyWalk && Math.hypot(chi.vx, chi.vy) > 0.1
+  // walk 중 냐는 제자리 idle bob (이동 안 함).
+  const catIdleBob = storyWalk
+
+  // story 중엔 getBackgroundForLevel 우회해 bgPropose 강제.
+  const bgUrl = isStory ? BG_PROPOSE : getBackgroundForLevel(sm.level)
 
   return (
     <>
       <div
         className={clsx(
           'absolute inset-0 overflow-hidden',
-          gameState === 'gameover' && 'animate-game-stage-shake',
+          (gameState === 'gameover' || storyKiss) && 'animate-game-stage-shake',
         )}
         style={{
           background: `url(${bgUrl}) center / cover no-repeat`,
@@ -618,7 +740,7 @@ function SoloPage() {
           className="absolute flex items-center justify-center"
           style={{
             left: chi.x,
-            top: chi.y,
+            top: chi.y + storyChiJumpY,
             width: CHARACTER_BOX,
             height: CHARACTER_BOX,
             transform: `translate(-50%, -50%) scaleX(${chiFacing})`,
@@ -626,14 +748,21 @@ function SoloPage() {
         >
           <div
             key={`chi-shake-${r.kissing.until}`}
-            className={clsx(chiKissing && 'animate-kiss-shake')}
+            className={clsx(
+              chiKissing && 'animate-kiss-shake',
+              // 컷신 walk: 이동 중이면 토독토독, 정지면 idle bob (kiss 중엔 미적용).
+              !chiKissing && chiWalking && 'animate-toddok',
+              !chiKissing && storyWalk && !chiWalking && 'animate-bounce-soft',
+            )}
           >
             <Chihuahua
               kissing={chiKissing}
-              boosted={chiBoosted}
-              mega={chiMega}
-              slowed={chiSlowed}
+              boosted={!isStory && chiBoosted}
+              mega={!isStory && chiMega}
+              slowed={!isStory && chiSlowed}
               equippedSrc={equippedSkinRef.current}
+              armed={armedRef.current}
+              story={isStory}
             />
           </div>
         </div>
@@ -643,7 +772,7 @@ function SoloPage() {
           className="absolute flex items-center justify-center"
           style={{
             left: cat.x,
-            top: cat.y,
+            top: cat.y + storyCatJumpY,
             width: CHARACTER_BOX,
             height: CHARACTER_BOX,
             transform: `translate(-50%, -50%) scaleX(${catFacing})`,
@@ -653,18 +782,24 @@ function SoloPage() {
               key=kissing.until → 매 kiss마다 inner remount → animation 재시작. */}
           <div
             key={`cat-bounce-${r.kissing.until}`}
-            className={clsx(catKissing && 'animate-kiss-bounce')}
+            className={clsx(
+              catKissing && 'animate-kiss-bounce',
+              // 컷신 walk: 냐는 제자리 idle bob (kiss 중엔 미적용).
+              !catKissing && catIdleBob && 'animate-bounce-soft',
+            )}
           >
             <Cat
               kissing={catKissing}
-              shielded={catShielded}
-              angry={catAngry}
-              scared={catScared}
+              shielded={!isStory && catShielded}
+              angry={!isStory && catAngry}
+              scared={!isStory && catScared}
               equippedSrc={equippedCatSkinRef.current}
+              armed={armedRef.current}
+              story={isStory}
             />
           </div>
         </div>
-        {catShielded && (
+        {!isStory && catShielded && (
           <div
             className="pointer-events-none absolute"
             style={{ left: cat.x, top: cat.y, width: 0, height: 0 }}
@@ -713,14 +848,17 @@ function SoloPage() {
         {/* 뽀뽀 "쪽!!" — z 10 */}
         <Mwah state={r.mwah} now={now} />
 
-        {/* HUD (좌상단 점수 + 우상단 LV/효과 게이지/토스트 stack) / 콤보 라벨 / 오버레이 / 플로트 텍스트 */}
-        <HUD
-          score={sm.score}
-          level={sm.level}
-          effects={effects}
-          now={now}
-          toasts={toasts}
-        />
+        {/* HUD (좌상단 점수 + 우상단 LV/효과 게이지/토스트 stack) / 콤보 라벨 / 오버레이 / 플로트 텍스트
+            컷신(story) 중엔 HUD 숨김 — 점수/레벨/게이지 미표시로 연출 몰입. */}
+        {!isStory && (
+          <HUD
+            score={sm.score}
+            level={sm.level}
+            effects={effects}
+            now={now}
+            toasts={toasts}
+          />
+        )}
         <ComboLabel combo={sm.combo} visible={gameState === 'playing'} />
         {/* 레벨업 효과 — z 18 (HUD/콤보 위) */}
         <LevelUpEffect state={r.levelUpEffect} now={now} />
@@ -729,6 +867,16 @@ function SoloPage() {
         {/* 게임오버 빨간 플래시 — 카드 전체 위에 1회 페이드. 모달보다 아래(모달은 portal/z-100). */}
         {gameState === 'gameover' && (
           <div className="animate-game-stage-flash pointer-events-none absolute inset-0 bg-[rgba(255,51,68,0.5)]" />
+        )}
+
+        {/* 컷신 walk 안내 배너 — 상단중앙, walk 단계 동안만. kiss 도달 시 사라짐.
+            HUD 숨김 상태라 z 충돌 적음. 핑크/잉크 톤, 토큰 클래스만 사용. */}
+        {storyWalk && (
+          <div className="pointer-events-none absolute top-4 left-1/2 z-20 -translate-x-1/2">
+            <div className="border-ink-base text-text-on-pink shadow-card font-display rounded-pill border-[3px] border-solid bg-pink-700 px-4 py-2 text-base leading-none whitespace-nowrap">
+              츄와와의 고백을 완성시켜줘!
+            </div>
+          </div>
         )}
       </div>
 
@@ -740,6 +888,21 @@ function SoloPage() {
           defaultName={defaultName}
           onSubmit={handleGameOverSubmit}
           onRestart={startGame}
+          onMain={() => navigate({ to: '/' })}
+        />
+      )}
+
+      {/* 컷신 성공 결과 모달 — GameOverModal 재활용(variant='story'). 점수/LV10 + 닉네임 등록 +
+          코인 + [메인으로]. 해금(proposeEndingCleared)/코인은 handleStoryModal에서 모달 표시 시 처리.
+          blocker는 story를 in-progress로 안 봐서 메인 이동 허용. */}
+      {showStoryModal && storyResult && (
+        <GameOverModal
+          open
+          variant="story"
+          info={storyResult}
+          rank={history.getRank(storyResult.finalScore)}
+          defaultName={defaultName}
+          onSubmit={(name) => saveRecord(name, storyResult)}
           onMain={() => navigate({ to: '/' })}
         />
       )}
