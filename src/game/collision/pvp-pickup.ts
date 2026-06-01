@@ -16,6 +16,10 @@ const PICKUP_COLORS: Record<ItemKind, string> = {
   fish: '#3b82f6',
   cucumber: '#10b981',
   sweetPotato: '#f59e0b',
+  // 웨딩 3종은 PvP에 미스폰 — 도달 불가. ItemKind Record 타입 완성용 자리.
+  weddingRing: '#f59e0b',
+  weddingInvitation: '#3b82f6',
+  weddingBouquet: '#10b981',
 }
 
 // F-1.9: 쉴드 차단 / 디버프 해제 시 캐릭터 머리 위 floatText.

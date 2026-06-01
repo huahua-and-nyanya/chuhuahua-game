@@ -17,12 +17,27 @@ import { clearAllTrackedTimeouts, trackedTimeout } from '@/hooks/trackedTimeout'
 import type { GameRefs } from './state'
 import type { PigeonEdge } from '@/game/state'
 
-// 솔로 스폰 가능 아이템 — 부스트(kibble)/쉴드(fish) + LV3+ 디버프(cucumber/sweetPotato).
-export type SoloSpawnKind = 'kibble' | 'fish' | 'cucumber' | 'sweetPotato'
+// 솔로 스폰 가능 아이템 — 부스트(kibble)/쉴드(fish) + LV3+ 디버프(cucumber/sweetPotato)
+// + wedding(S+) 게임변형 풀(weddingRing/Invitation/Bouquet).
+export type SoloSpawnKind =
+  | 'kibble'
+  | 'fish'
+  | 'cucumber'
+  | 'sweetPotato'
+  | 'weddingRing'
+  | 'weddingInvitation'
+  | 'weddingBouquet'
 
 const DEBUFF_KINDS: ReadonlySet<SoloSpawnKind> = new Set([
   'cucumber',
   'sweetPotato',
+])
+
+// wedding 게임변형 풀 — 일반 아이템 대신 등장. 재스폰은 고정 간격(레벨 factor 미적용).
+const WEDDING_KINDS: ReadonlySet<SoloSpawnKind> = new Set([
+  'weddingRing',
+  'weddingInvitation',
+  'weddingBouquet',
 ])
 
 export type SpawnDeps = {
@@ -40,6 +55,11 @@ export type SpawnDeps = {
   // itemSpawnMul: 아이템 첫/재스폰 간격 × 배율 (작을수록 아이템 자주 등장).
   getPigeonSpawnMul?: () => number
   getItemSpawnMul?: () => number
+  // 사이클 W (wedding S+ 게임변형):
+  // pigeonDisabled: true 시 비둘기 wave 예약 자체를 중단.
+  // weddingItemMode: true 시 일반 아이템(kibble/fish/디버프) 대신 웨딩 3종을 등장.
+  getPigeonDisabled?: () => boolean
+  getWeddingItemMode?: () => boolean
 }
 
 // 모듈 스코프 단일 인스턴스 (사이클 C: 동시에 진행되는 게임 하나).
@@ -52,17 +72,34 @@ export function startSpawnScheduler(deps: SpawnDeps): void {
 
   // 첫 아이템 1회씩. respawn은 픽업 처리 측(C-3)이 scheduleItemRespawn으로 트리거.
   const itemMul = deps.getItemSpawnMul?.() ?? 1
-  trackedTimeout(() => {
-    if (currentDeps !== deps) return
-    if (!canSpawnItem(deps.refs, 'kibble')) return
-    deps.spawnItem('kibble')
-  }, KIBBLE_FIRST_DELAY * itemMul)
 
-  trackedTimeout(() => {
-    if (currentDeps !== deps) return
-    if (!canSpawnItem(deps.refs, 'fish')) return
-    deps.spawnItem('fish')
-  }, FISH_FIRST_DELAY * itemMul)
+  if (deps.getWeddingItemMode?.()) {
+    // wedding 모드 — 일반 아이템 대신 웨딩 3종 첫 등장. 첫 딜레이는 기존 상수 재사용.
+    const weddingFirst: ReadonlyArray<[SoloSpawnKind, number]> = [
+      ['weddingRing', KIBBLE_FIRST_DELAY],
+      ['weddingInvitation', FISH_FIRST_DELAY],
+      ['weddingBouquet', KIBBLE_FIRST_DELAY],
+    ]
+    for (const [kind, delay] of weddingFirst) {
+      trackedTimeout(() => {
+        if (currentDeps !== deps) return
+        if (!canSpawnItem(deps.refs, kind)) return
+        deps.spawnItem(kind)
+      }, delay * itemMul)
+    }
+  } else {
+    trackedTimeout(() => {
+      if (currentDeps !== deps) return
+      if (!canSpawnItem(deps.refs, 'kibble')) return
+      deps.spawnItem('kibble')
+    }, KIBBLE_FIRST_DELAY * itemMul)
+
+    trackedTimeout(() => {
+      if (currentDeps !== deps) return
+      if (!canSpawnItem(deps.refs, 'fish')) return
+      deps.spawnItem('fish')
+    }, FISH_FIRST_DELAY * itemMul)
+  }
 
   schedulePigeonWave(deps)
 }
@@ -129,7 +166,11 @@ export function scheduleItemRespawn(kind: SoloSpawnKind): void {
   const isDebuff = DEBUFF_KINDS.has(kind)
   let min: number
   let max: number
-  if (isDebuff) {
+  if (WEDDING_KINDS.has(kind)) {
+    // 웨딩 3종 — 고정 간격(레벨 factor 미적용). 기존 일반 아이템 기본 범위 재사용.
+    min = ITEM_RESPAWN_MIN
+    max = ITEM_RESPAWN_MAX
+  } else if (isDebuff) {
     const factor = Math.max(
       DEBUFF_FACTOR_MIN,
       1 - Math.max(0, level - 3) * DEBUFF_FACTOR_PER_LEVEL,
@@ -183,6 +224,8 @@ function shuffleEdges(arr: PigeonEdge[]): PigeonEdge[] {
 }
 
 function schedulePigeonWave(deps: SpawnDeps): void {
+  // wedding 등 pigeonDisabled 게임변형 — wave 예약 자체를 건너뛴다(재귀 예약도 중단).
+  if (deps.getPigeonDisabled?.()) return
   const level = deps.getLevel()
   const baseDelay = Math.max(
     PIGEON_WAVE_MIN_DELAY,

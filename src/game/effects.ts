@@ -88,6 +88,13 @@ export function applyCatShield(
   refs.effects.catShield = { until: now + duration }
 }
 
+// wedding weddingBouquet 픽업 시 부여 — 고양이 일시 감속(catSlow). 배율은 getCatSpeedMul이
+// catSlow 활성 시 반환하는 0.55를 그대로 탄다(별도 인자 없음). 지속은 SWEETPOTATO_DURATION 재사용.
+// sweetPotato와 달리 상쇄로직/floatText 없음 — bouquet는 플레이어 유리 효과라 의미가 다름.
+export function applyCatSlow(refs: GameRefs, now: number): void {
+  refs.effects.catSlow = { until: now + SWEETPOTATO_DURATION }
+}
+
 // PvP에서 chi가 fish 픽업 시 부여 — sweetPotato 디버프 1회 차단 (소진).
 export function applyChiShield(
   refs: GameRefs,

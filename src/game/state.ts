@@ -38,7 +38,15 @@ export type PigeonWarningRef = Vec2 & {
 // === 아이템 ===
 // 솔로/PvP 모두 동일 타입, 모드별 효과 분기는 사용 측 책임.
 // id는 React key용 unique string. expireAt 만료 처리는 expireTransients(C-5')에서.
-export type ItemKind = 'kibble' | 'fish' | 'cucumber' | 'sweetPotato'
+// wedding* 3종은 wedding(S+) 착용 솔로에서만 등장하는 게임변형 아이템풀 (itemPoolOverride).
+export type ItemKind =
+  | 'kibble'
+  | 'fish'
+  | 'cucumber'
+  | 'sweetPotato'
+  | 'weddingRing'
+  | 'weddingInvitation'
+  | 'weddingBouquet'
 
 export type ItemRef = Vec2 & {
   id: string
