@@ -63,9 +63,9 @@ const KISS_MS = 1500 // proposeStory KISS_MS와 동일 톤
 // fade phase가 이 시간 후 cg로 넘어가므로 CSS 페이드 duration과 같아야 끊김/잘림 없음.
 export const WEDDING_FADE_MS = 1200
 const CG_MS = 3000 // CG 풀스크린 표시 (자막 없이)
-// 크레딧 세로 스크롤 지속 — globals.css --animate-wedding-credits-scroll(12000ms)과 정합.
+// 크레딧 세로 스크롤 지속 — globals.css --animate-wedding-credits-scroll(28000ms)과 정합.
 // credits phase가 이 시간 후 modal로 넘어가므로 CSS 스크롤 duration과 같아야 끝까지 보고 모달 전환.
-const CREDITS_MS = 12000
+const CREDITS_MS = 28000
 
 const WALK_HEART_INTERVAL = 320 // ms, walk 중 하트 간헐 스폰 간격
 
