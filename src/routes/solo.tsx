@@ -18,7 +18,11 @@ import { WeddingBouquet } from '@/game/items/WeddingBouquet'
 import { WeddingInvitation } from '@/game/items/WeddingInvitation'
 import { WeddingRing } from '@/game/items/WeddingRing'
 
-import { applyChiPhysics, useChiInput } from '@/game/ai/chi-input'
+import {
+  applyChiPhysics,
+  isAnyVirtualDirDown,
+  useChiInput,
+} from '@/game/ai/chi-input'
 import { scheduleCatTarget, stopCatTargetScheduler } from '@/game/ai/cat-target'
 import { updateCatFlee } from '@/game/ai/cat-flee'
 import { updatePigeons } from '@/game/ai/pigeon-fly'
@@ -110,6 +114,21 @@ const CHARACTER_BOX = 150 // px — 캐릭터 wrapper 정사각 (캐릭터/아�
 // 아이템 expireAt 까지 남은 시간이 본 값 이하면 item-expire 깜빡임 + 글로우 시작.
 const ITEM_EXPIRE_WARN_MS = 2000
 
+// wedding 자막 진행 키 — 스페이스/엔터 + 방향키/WASD. e.key 소문자 비교.
+// 모바일 가상패드는 별도(story 루프 폴링). subtitle phase에선 chi 이동 입력이 비활성이라 충돌 없음.
+const SUBTITLE_ADVANCE_KEYS = new Set([
+  ' ',
+  'enter',
+  'arrowup',
+  'arrowdown',
+  'arrowleft',
+  'arrowright',
+  'w',
+  'a',
+  's',
+  'd',
+])
+
 type GameState = 'playing' | 'paused' | 'confirmQuit' | 'gameover' | 'story'
 
 function SoloPage() {
@@ -161,6 +180,8 @@ function SoloPage() {
   const storyModalDoneRef = useRef(false)
   // wedding 자막 진행 키 잠금 — keydown 1회당 1줄. keyup 전엔 재진행 차단(반복/홀드 방지).
   const subtitleKeyLockRef = useRef(false)
+  // 가상패드 자막 진행 에지 감지 — 이전 프레임 방향 누름 상태. 0→1 전이에서만 1줄(키 잠금과 분리).
+  const subtitleVirtualPrevRef = useRef(false)
   // 가상 컨트롤러는 root layout이 마운트, 입력은 chi-input.ts의 module-level virtualInputRef로 동기.
 
   const [gameState, setGameState] = useState<GameState>('playing')
@@ -645,10 +666,10 @@ function SoloPage() {
     })
   }, [handleWeddingStoryModal])
 
-  // 자막 진행 키 — 스페이스/엔터. keydown 1회당 1줄(keyup 전 재진행 차단으로 홀드/반복 방지).
+  // 자막 진행 키 — 스페이스/엔터 + 방향키/WASD. keydown 1회당 1줄(keyup 전 재진행 차단으로 홀드/반복 방지).
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => {
-      if (e.key !== ' ' && e.key !== 'Enter') return
+      if (!SUBTITLE_ADVANCE_KEYS.has(e.key.toLowerCase())) return
       const target = e.target as HTMLElement | null
       if (
         target &&
@@ -669,7 +690,9 @@ function SoloPage() {
       advanceSubtitle()
     }
     const onUp = (e: KeyboardEvent) => {
-      if (e.key === ' ' || e.key === 'Enter') subtitleKeyLockRef.current = false
+      if (SUBTITLE_ADVANCE_KEYS.has(e.key.toLowerCase())) {
+        subtitleKeyLockRef.current = false
+      }
     }
     window.addEventListener('keydown', onDown)
     window.addEventListener('keyup', onUp)
@@ -777,6 +800,16 @@ function SoloPage() {
           onModal: handleStoryModal,
         })
       }
+      // 가상패드(모바일) 자막 진행 — 이벤트가 안 와 폴링. 에지(0→1)에서만 1줄(키 잠금과 분리).
+      // 키보드 방향/WASD는 window keydown 핸들러가 별도 처리하므로 여기선 가상패드만 본다.
+      const subtitleVirtualDown =
+        storyKindRef.current === 'wedding' &&
+        weddingStoryRef.current.phase === 'subtitle' &&
+        isAnyVirtualDirDown()
+      if (subtitleVirtualDown && !subtitleVirtualPrevRef.current) {
+        advanceSubtitle()
+      }
+      subtitleVirtualPrevRef.current = subtitleVirtualDown
       updateParticles(r.particles)
       updateBgHearts(r.bgHearts)
       expireTransients(r, now)
@@ -1114,7 +1147,12 @@ function SoloPage() {
                   src={CHARACTER_ASSETS.chiCatWeddingCg}
                   alt=""
                   draggable={false}
-                  className="pointer-events-none absolute inset-0 z-45 h-full w-full object-contain"
+                  className={clsx(
+                    'pointer-events-none absolute inset-0 z-45 h-full w-full object-contain',
+                    // cg 단계에서만 fade-in 클래스 — subtitle/modal 전환 시 클래스 제거되어 재생 안 됨.
+                    // (페이드는 cg 3초 안에 완료, 클래스 제거 후 opacity 기본값 1로 그대로 유지.)
+                    weddingPhase === 'cg' && 'animate-wedding-cg-in',
+                  )}
                 />
               )}
               {/* 자막 — CG 아래 검정 레터박스 띠. 클릭으로도 진행(div pointer-events-auto).
@@ -1124,7 +1162,7 @@ function SoloPage() {
                   type="button"
                   onClick={advanceSubtitle}
                   aria-label="다음"
-                  className="absolute inset-x-0 bottom-0 z-50 flex w-full cursor-pointer flex-col items-center gap-2 px-6 pb-6"
+                  className="absolute inset-x-0 bottom-0 z-50 flex w-full cursor-pointer flex-col items-center gap-2 px-6 pb-2"
                 >
                   <span
                     key={weddingStoryRef.current.subtitleIndex}
