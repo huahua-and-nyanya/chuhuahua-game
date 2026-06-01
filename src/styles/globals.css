@@ -192,6 +192,9 @@
   --animate-wedding-fade-dim: wedding-fade-in 1000ms ease-in-out forwards;
   /* CG 스르륵 등장 — cg phase 진입 시 1회(검정 1.2s 완료 후). subtitle/modal 전환 땐 미적용(클래스 제거). */
   --animate-wedding-cg-in: wedding-fade-in 1000ms ease-in-out forwards;
+  /* 엔딩 크레딧 세로 스크롤 — weddingStory.ts CREDITS_MS(12000)와 정합. linear 일정 속도. */
+  --animate-wedding-credits-scroll: wedding-credits-scroll 12000ms linear
+    forwards;
   --animate-subtitle-blink: subtitle-blink 1s steps(1, end) infinite;
 
   /* === 상태 색상 (Tailwind utility 생성용 노출) === */

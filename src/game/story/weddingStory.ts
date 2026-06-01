@@ -14,9 +14,9 @@ import {
 // proposeStory 패턴 미러 — solo.tsx가 gameState==='story' 동안 storyKind='wedding'으로 분기 호출.
 // proposeStory와 다른 점:
 //   - walk: 유저가 츄를 좌우로만 조작(applyChiPhysics), 냐는 츄의 거울 대칭(midX 기준). 가운데서 만남.
-//   - jump 단계 없음. kiss 후 검정 페이드 → CG(3초) → 자막 6줄(유저 진행) → 모달.
+//   - jump 단계 없음. kiss 후 검정 페이드 → CG(3초) → 자막 6줄(유저 진행) → 크레딧 → 모달.
 // 전이: intro →(타이밍)→ walk →(둘이 KISS_DIST 도달)→ kiss →(타이밍)→ fade →(타이밍)→ cg
-//        →(타이밍)→ subtitle →(유저가 6줄 진행)→ modal.
+//        →(타이밍)→ subtitle →(유저가 6줄 진행)→ credits →(스크롤 종료 또는 스킵)→ modal.
 
 export type WeddingPhase =
   | 'intro'
@@ -25,6 +25,7 @@ export type WeddingPhase =
   | 'fade'
   | 'cg'
   | 'subtitle'
+  | 'credits'
   | 'modal'
 
 export type WeddingStoryRuntime = {
@@ -34,14 +35,16 @@ export type WeddingStoryRuntime = {
   subtitleIndex: number // subtitle 단계 현재 줄(0~SUBTITLE_LINES.length-1)
 }
 
-// CG 자막 — cg 3초 후 한 줄씩 표시, 유저가 클릭/스페이스/엔터로 진행 (순서 고정).
-export const SUBTITLE_LINES = [
-  '...그렇게 둘은 평생을 약속한 사이가 되었습니다.',
-  '가만, 둘이 무슨 이야기를 나누는지 들어볼까요?',
-  '츄와와: 왈왈, 왈왈왈!',
-  '냐냐: 냐옹...',
-  '...뭐라는 진 모르겠지만, 아무튼 행복해 보입니다!',
-  '둘의 영원한 행복을 만들어줘 고마워요.',
+// CG 자막 — cg 3초 후 한 줄씩 표시, 유저가 클릭/키/가상패드로 진행 (순서 고정).
+// italic: 캐릭터 대사(왈왈/냐옹)는 기울임으로 발화 톤 구분.
+export type SubtitleLine = { text: string; italic?: boolean }
+export const SUBTITLE_LINES: readonly SubtitleLine[] = [
+  { text: '...그렇게 둘은 평생을 약속한 사이가 되었습니다.' },
+  { text: '가만, 둘이 무슨 이야기를 나누는지 들어볼까요?' },
+  { text: '왈왈, 왈왈왈!', italic: true },
+  { text: '냐옹...', italic: true },
+  { text: '...뭐라고 하는 건진 모르겠지만, 아무튼 행복해 보입니다!' },
+  { text: '둘의 영원한 행복을 만들어줘 고마워요.' },
 ] as const
 
 export function createWeddingStoryRuntime(): WeddingStoryRuntime {
@@ -60,6 +63,9 @@ const KISS_MS = 1500 // proposeStory KISS_MS와 동일 톤
 // fade phase가 이 시간 후 cg로 넘어가므로 CSS 페이드 duration과 같아야 끊김/잘림 없음.
 export const WEDDING_FADE_MS = 1200
 const CG_MS = 3000 // CG 풀스크린 표시 (자막 없이)
+// 크레딧 세로 스크롤 지속 — globals.css --animate-wedding-credits-scroll(12000ms)과 정합.
+// credits phase가 이 시간 후 modal로 넘어가므로 CSS 스크롤 duration과 같아야 끝까지 보고 모달 전환.
+const CREDITS_MS = 12000
 
 const WALK_HEART_INTERVAL = 320 // ms, walk 중 하트 간헐 스폰 간격
 
@@ -133,9 +139,8 @@ export function updateWeddingStory(
   story: WeddingStoryRuntime,
   dt: number,
   now: number,
-  _cb: WeddingStoryCallbacks,
+  cb: WeddingStoryCallbacks,
 ): void {
-  void _cb
   const elapsed = now - story.phaseStartAt
   switch (story.phase) {
     case 'intro':
@@ -180,25 +185,43 @@ export function updateWeddingStory(
     case 'subtitle':
       // 진행은 advanceWeddingSubtitle(유저 입력)이 담당. RAF는 대기.
       break
+    case 'credits':
+      // 크레딧 스크롤 종료(CREDITS_MS) → 모달. 유저 스킵은 skipWeddingCredits(입력)이 담당.
+      if (elapsed >= CREDITS_MS) {
+        cb.onModal()
+        enterPhase(story, 'modal', now)
+      }
+      break
     case 'modal':
       break
   }
 }
 
-// 자막 한 줄 진행 — 클릭/스페이스/엔터 1회당 호출(solo.tsx). 중복진행 방지는 호출처가 보장.
-// 다음 줄로 넘기고, 마지막 줄에서 진행하면 모달 표시 + modal 단계로.
+// 자막 한 줄 진행 — 클릭/키/가상패드 1회당 호출(solo.tsx). 중복진행 방지는 호출처가 보장.
+// 다음 줄로 넘기고, 마지막 줄에서 진행하면 크레딧 단계로(모달 직결 아님 — credits 후 모달).
 export function advanceWeddingSubtitle(
   story: WeddingStoryRuntime,
   now: number,
-  cb: WeddingStoryCallbacks,
+  _cb: WeddingStoryCallbacks,
 ): void {
+  void _cb
   if (story.phase !== 'subtitle') return
   if (story.subtitleIndex < SUBTITLE_LINES.length - 1) {
     story.subtitleIndex += 1
   } else {
-    cb.onModal()
-    enterPhase(story, 'modal', now)
+    enterPhase(story, 'credits', now)
   }
+}
+
+// 크레딧 스킵 — credits 중 유저 입력(클릭/키/가상패드) 시 즉시 모달. 중복은 호출처(onModal 멱등)가 보장.
+export function skipWeddingCredits(
+  story: WeddingStoryRuntime,
+  now: number,
+  cb: WeddingStoryCallbacks,
+): void {
+  if (story.phase !== 'credits') return
+  cb.onModal()
+  enterPhase(story, 'modal', now)
 }
 
 // walk 중 작은 하트 1개 — chi 위에서 살짝 떠오름 (proposeStory.spawnWalkHeart 미러).

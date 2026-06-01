@@ -49,4 +49,7 @@ export const CHARACTER_ASSETS = {
   catWeddingShield: '/assets/clothes/cat-wedding-shield.png',
   // wedding 엔딩 컷신 CG (츄·냐 합체 일러스트, 풀스크린) — W3a 등록. clothPath는 cg kind 미지원.
   chiCatWeddingCg: '/assets/clothes/chi-cat-wedding-cg.png',
+  // wedding 엔딩 크레딧 양옆 댄스 스프라이트 (각 256² 1장, 위치 bob으로 춤) — W3b 등록.
+  chiWeddingDance: '/assets/clothes/chi-wedding-dance.png',
+  catWeddingDance: '/assets/clothes/cat-wedding-dance.png',
 } as const

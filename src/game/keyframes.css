@@ -346,6 +346,17 @@
   }
 }
 
+/* wedding 엔딩 크레딧 세로 스크롤 — 아래(화면 밖)에서 위(화면 밖)로 전체 통과. linear 일정 속도.
+ * %는 컨텐츠 wrapper 자체 높이 기준 — wrapper가 min-h-full(프레임 높이) 이상이라 시작/끝 모두 화면 밖. */
+@keyframes wedding-credits-scroll {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
 /* wedding 자막 진행 인디케이터(▽) 깜빡임 — "다음 누르라" 신호. 1s 무한, on/off 이산. */
 @keyframes subtitle-blink {
   0%,
