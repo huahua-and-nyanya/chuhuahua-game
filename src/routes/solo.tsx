@@ -87,8 +87,10 @@ import {
   updateStory,
 } from '@/game/story/proposeStory'
 import {
+  advanceWeddingSubtitle,
   createWeddingStoryRuntime,
   setupWeddingStory,
+  SUBTITLE_LINES,
   updateWeddingStory,
 } from '@/game/story/weddingStory'
 
@@ -157,6 +159,8 @@ function SoloPage() {
   } | null>(null)
   // STORY_MODAL 1회성 처리(코인 적립/해금 세팅) 가드 — 모달 표시 시 한 번만.
   const storyModalDoneRef = useRef(false)
+  // wedding 자막 진행 키 잠금 — keydown 1회당 1줄. keyup 전엔 재진행 차단(반복/홀드 방지).
+  const subtitleKeyLockRef = useRef(false)
   // 가상 컨트롤러는 root layout이 마운트, 입력은 chi-input.ts의 module-level virtualInputRef로 동기.
 
   const [gameState, setGameState] = useState<GameState>('playing')
@@ -585,12 +589,18 @@ function SoloPage() {
 
   // ── 입력 ───────────────────────────────────────────────────────────
   const isPlaying = useCallback(() => gameStateRef.current === 'playing', [])
-  // 츄 입력 허용 — 일반 플레이(playing) + 컷신 walk 단계만. intro/kiss/jump/modal은 차단.
+  // 츄 입력 허용 — 일반 플레이(playing) + propose walk + wedding walk 단계만.
+  // 그 외 컷신 단계(intro/kiss/fade/cg/subtitle/modal/jump)는 차단(특히 subtitle은 진행키 전용).
   // ref-shaped 콜백(빈 deps)으로 동일 참조 유지 — useChiInput은 mount 시 1회만 구독.
   const isChiInputEnabled = useCallback(
     () =>
       gameStateRef.current === 'playing' ||
-      (gameStateRef.current === 'story' && storyRef.current.phase === 'walk'),
+      (gameStateRef.current === 'story' &&
+        storyKindRef.current === 'propose' &&
+        storyRef.current.phase === 'walk') ||
+      (gameStateRef.current === 'story' &&
+        storyKindRef.current === 'wedding' &&
+        weddingStoryRef.current.phase === 'walk'),
     [],
   )
   useChiInput({ refs: refs.current, enabled: isChiInputEnabled })
@@ -619,6 +629,55 @@ function SoloPage() {
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [togglePause, cancelQuit])
+
+  // wedding 자막 진행 — 클릭/스페이스/엔터 1회당 한 줄. 마지막 줄에서 진행 시 모달.
+  // ref만 변경 → story 루프(30fps forceRender)가 다음 프레임에 새 줄/모달 반영.
+  const advanceSubtitle = useCallback(() => {
+    if (
+      gameStateRef.current !== 'story' ||
+      storyKindRef.current !== 'wedding' ||
+      weddingStoryRef.current.phase !== 'subtitle'
+    ) {
+      return
+    }
+    advanceWeddingSubtitle(weddingStoryRef.current, performance.now(), {
+      onModal: handleWeddingStoryModal,
+    })
+  }, [handleWeddingStoryModal])
+
+  // 자막 진행 키 — 스페이스/엔터. keydown 1회당 1줄(keyup 전 재진행 차단으로 홀드/반복 방지).
+  useEffect(() => {
+    const onDown = (e: KeyboardEvent) => {
+      if (e.key !== ' ' && e.key !== 'Enter') return
+      const target = e.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
+      ) {
+        return
+      }
+      if (
+        gameStateRef.current !== 'story' ||
+        storyKindRef.current !== 'wedding' ||
+        weddingStoryRef.current.phase !== 'subtitle'
+      ) {
+        return
+      }
+      e.preventDefault()
+      if (subtitleKeyLockRef.current) return
+      subtitleKeyLockRef.current = true
+      advanceSubtitle()
+    }
+    const onUp = (e: KeyboardEvent) => {
+      if (e.key === ' ' || e.key === 'Enter') subtitleKeyLockRef.current = false
+    }
+    window.addEventListener('keydown', onDown)
+    window.addEventListener('keyup', onUp)
+    return () => {
+      window.removeEventListener('keydown', onDown)
+      window.removeEventListener('keyup', onUp)
+    }
+  }, [advanceSubtitle])
 
   // ── 스폰 + cat-target 스케줄러 (gameState 토글에 묶음) ──────────────
   useEffect(() => {
@@ -796,10 +855,15 @@ function SoloPage() {
   const chiWalking = storyWalk && Math.hypot(chi.vx, chi.vy) > 0.1
   // walk 중 냐는 제자리 idle bob (이동 안 함).
   const catIdleBob = storyWalk
-  // wedding 엔딩 컷신 파생 — 양쪽 자동 walk(둘 다 토독토독), kiss 흔들림, fade/cg/modal 오버레이.
+  // wedding 엔딩 컷신 파생 — walk(유저조작+냐 거울, 둘 다 토독토독), kiss 흔들림, fade/cg/subtitle/modal 오버레이.
   const weddingPhase = isWeddingStory ? weddingStoryRef.current.phase : null
   const weddingWalk = weddingPhase === 'walk'
   const weddingKiss = weddingPhase === 'kiss'
+  const weddingSubtitle = weddingPhase === 'subtitle'
+  // 현재 자막 줄 — subtitle 단계에서만 의미. 인덱스 안전 클램프.
+  const weddingSubtitleLine = weddingSubtitle
+    ? (SUBTITLE_LINES[weddingStoryRef.current.subtitleIndex] ?? '')
+    : ''
 
   // story 중엔 getBackgroundForLevel 우회. propose는 bgPropose(야경 호텔), wedding은 제단(LV5 배경) 유지.
   // (wedding CG phase부터는 페이드+CG가 배경을 덮음.)
@@ -1014,25 +1078,38 @@ function SoloPage() {
           </div>
         )}
 
-        {/* wedding 엔딩 — 검정 페이드 → CG 풀스크린(3초, 스킵불가) → 모달 직전 블러.
-            fade: 검정 0→1 페이드 인. cg/modal: 검정 유지 + CG. modal: CG 위 블러+딤.
+        {/* wedding walk 안내 배너 — propose 배너 미러. 좌우 조작으로 가운데서 만나도록 유도. */}
+        {weddingWalk && (
+          <div className="pointer-events-none absolute top-4 left-1/2 z-20 -translate-x-1/2">
+            <div className="border-ink-base text-text-on-pink shadow-card font-display rounded-pill border-[3px] border-solid bg-pink-700 px-4 py-2 text-base leading-none whitespace-nowrap">
+              평생 함께할 것을 뽀뽀로 증명하자!
+            </div>
+          </div>
+        )}
+
+        {/* wedding 엔딩 — 검정 페이드 → CG 풀스크린(3초) → 자막 6줄(유저 진행) → 모달 직전 블러.
+            fade: 검정 0→1 페이드 인. cg/subtitle/modal: 검정 유지 + CG(contain, 위아래 검정 레터박스).
+            subtitle: 하단 검정띠에 자막 + ▽. modal: CG 위 블러+딤(페이드 인).
             검정/딤은 1회성 로직이라 rgba 직접 허용(위임 명시). z는 게임요소 위, 모달(portal z-100) 아래. */}
         {isWeddingStory &&
           (weddingPhase === 'fade' ||
             weddingPhase === 'cg' ||
+            weddingPhase === 'subtitle' ||
             weddingPhase === 'modal') && (
             <>
               <div
                 className={clsx(
                   'pointer-events-none absolute inset-0 z-40',
-                  weddingPhase === 'fade' && 'animate-wedding-fade-in',
+                  weddingPhase === 'fade' && 'animate-wedding-fade-black',
                 )}
                 style={{
                   background: 'rgba(0, 0, 0, 1)',
                   ...(weddingPhase === 'fade' ? null : { opacity: 1 }),
                 }}
               />
-              {(weddingPhase === 'cg' || weddingPhase === 'modal') && (
+              {(weddingPhase === 'cg' ||
+                weddingPhase === 'subtitle' ||
+                weddingPhase === 'modal') && (
                 <img
                   src={CHARACTER_ASSETS.chiCatWeddingCg}
                   alt=""
@@ -1040,8 +1117,28 @@ function SoloPage() {
                   className="pointer-events-none absolute inset-0 z-45 h-full w-full object-contain"
                 />
               )}
+              {/* 자막 — CG 아래 검정 레터박스 띠. 클릭으로도 진행(div pointer-events-auto).
+                  ▽는 다음 진행 신호로 깜빡임. 각 줄 진입 시 페이드 인. */}
+              {weddingSubtitle && (
+                <button
+                  type="button"
+                  onClick={advanceSubtitle}
+                  aria-label="다음"
+                  className="absolute inset-x-0 bottom-0 z-50 flex w-full cursor-pointer flex-col items-center gap-2 px-6 pb-6"
+                >
+                  <span
+                    key={weddingStoryRef.current.subtitleIndex}
+                    className="animate-wedding-fade-subtitle text-text-on-pink font-display block text-center text-base leading-relaxed"
+                  >
+                    {weddingSubtitleLine}
+                  </span>
+                  <span className="animate-subtitle-blink text-text-on-pink font-display block text-base leading-none">
+                    ▽
+                  </span>
+                </button>
+              )}
               {weddingPhase === 'modal' && (
-                <div className="pointer-events-none absolute inset-0 z-48 bg-[rgba(0,0,0,0.25)] backdrop-blur-sm" />
+                <div className="animate-wedding-fade-dim pointer-events-none absolute inset-0 z-48 bg-[rgba(0,0,0,0.25)] backdrop-blur-sm" />
               )}
             </>
           )}
