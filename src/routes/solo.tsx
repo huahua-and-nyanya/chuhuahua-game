@@ -84,7 +84,7 @@ import { useWardrobe } from '@/features/wardrobe'
 import type { ClothEffects } from '@/features/wardrobe/types'
 
 import { CHARACTER_ASSETS } from '@/assets'
-import { BG_PROPOSE, WEDDING_BGS } from '@/assets/backgrounds'
+import { BG_PROPOSE, TITLE_LOGO, WEDDING_BGS } from '@/assets/backgrounds'
 import {
   createStoryRuntime,
   setupStory,
@@ -94,6 +94,7 @@ import {
   advanceWeddingSubtitle,
   createWeddingStoryRuntime,
   setupWeddingStory,
+  skipWeddingCredits,
   SUBTITLE_LINES,
   updateWeddingStory,
 } from '@/game/story/weddingStory'
@@ -651,19 +652,22 @@ function SoloPage() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [togglePause, cancelQuit])
 
-  // wedding 자막 진행 — 클릭/스페이스/엔터 1회당 한 줄. 마지막 줄에서 진행 시 모달.
-  // ref만 변경 → story 루프(30fps forceRender)가 다음 프레임에 새 줄/모달 반영.
+  // wedding 컷신 유저 진행 — 클릭/키/가상패드 1회. subtitle이면 다음 줄(마지막 줄 후 크레딧),
+  // credits면 스크롤 스킵 → 모달. ref만 변경 → story 루프(30fps forceRender)가 다음 프레임 반영.
   const advanceSubtitle = useCallback(() => {
     if (
       gameStateRef.current !== 'story' ||
-      storyKindRef.current !== 'wedding' ||
-      weddingStoryRef.current.phase !== 'subtitle'
+      storyKindRef.current !== 'wedding'
     ) {
       return
     }
-    advanceWeddingSubtitle(weddingStoryRef.current, performance.now(), {
-      onModal: handleWeddingStoryModal,
-    })
+    const phase = weddingStoryRef.current.phase
+    const cb = { onModal: handleWeddingStoryModal }
+    if (phase === 'subtitle') {
+      advanceWeddingSubtitle(weddingStoryRef.current, performance.now(), cb)
+    } else if (phase === 'credits') {
+      skipWeddingCredits(weddingStoryRef.current, performance.now(), cb)
+    }
   }, [handleWeddingStoryModal])
 
   // 자막 진행 키 — 스페이스/엔터 + 방향키/WASD. keydown 1회당 1줄(keyup 전 재진행 차단으로 홀드/반복 방지).
@@ -677,10 +681,11 @@ function SoloPage() {
       ) {
         return
       }
+      const phase = weddingStoryRef.current.phase
       if (
         gameStateRef.current !== 'story' ||
         storyKindRef.current !== 'wedding' ||
-        weddingStoryRef.current.phase !== 'subtitle'
+        (phase !== 'subtitle' && phase !== 'credits')
       ) {
         return
       }
@@ -800,11 +805,12 @@ function SoloPage() {
           onModal: handleStoryModal,
         })
       }
-      // 가상패드(모바일) 자막 진행 — 이벤트가 안 와 폴링. 에지(0→1)에서만 1줄(키 잠금과 분리).
-      // 키보드 방향/WASD는 window keydown 핸들러가 별도 처리하므로 여기선 가상패드만 본다.
+      // 가상패드(모바일) 진행 — 이벤트가 안 와 폴링. 에지(0→1)에서만 1회(키 잠금과 분리).
+      // subtitle(다음 줄)/credits(스킵) 둘 다 대상. 키보드는 window keydown이 별도 처리.
+      const wp = weddingStoryRef.current.phase
       const subtitleVirtualDown =
         storyKindRef.current === 'wedding' &&
-        weddingStoryRef.current.phase === 'subtitle' &&
+        (wp === 'subtitle' || wp === 'credits') &&
         isAnyVirtualDirDown()
       if (subtitleVirtualDown && !subtitleVirtualPrevRef.current) {
         advanceSubtitle()
@@ -893,10 +899,13 @@ function SoloPage() {
   const weddingWalk = weddingPhase === 'walk'
   const weddingKiss = weddingPhase === 'kiss'
   const weddingSubtitle = weddingPhase === 'subtitle'
-  // 현재 자막 줄 — subtitle 단계에서만 의미. 인덱스 안전 클램프.
-  const weddingSubtitleLine = weddingSubtitle
-    ? (SUBTITLE_LINES[weddingStoryRef.current.subtitleIndex] ?? '')
-    : ''
+  const weddingCredits = weddingPhase === 'credits'
+  // 현재 자막 줄 — subtitle 단계에서만 의미. 인덱스 안전 클램프. 캐릭터 대사는 italic.
+  const weddingSubtitleEntry = weddingSubtitle
+    ? SUBTITLE_LINES[weddingStoryRef.current.subtitleIndex]
+    : undefined
+  const weddingSubtitleLine = weddingSubtitleEntry?.text ?? ''
+  const weddingSubtitleItalic = weddingSubtitleEntry?.italic ?? false
 
   // story 중엔 getBackgroundForLevel 우회. propose는 bgPropose(야경 호텔), wedding은 제단(LV5 배경) 유지.
   // (wedding CG phase부터는 페이드+CG가 배경을 덮음.)
@@ -1166,7 +1175,10 @@ function SoloPage() {
                 >
                   <span
                     key={weddingStoryRef.current.subtitleIndex}
-                    className="animate-wedding-fade-subtitle text-text-on-pink font-display block text-center text-base leading-relaxed"
+                    className={clsx(
+                      'animate-wedding-fade-subtitle text-text-on-pink font-display block text-center text-base leading-relaxed',
+                      weddingSubtitleItalic && 'italic',
+                    )}
                   >
                     {weddingSubtitleLine}
                   </span>
@@ -1180,6 +1192,73 @@ function SoloPage() {
               )}
             </>
           )}
+
+        {/* wedding 엔딩 크레딧 — 검정 위 세로 스크롤(아래→위). 클릭/키/가상패드로 스킵.
+            텍스트만 스크롤, 양옆 댄스는 화면 고정 통통. 검정은 1회성 로직이라 rgba 직접 허용. */}
+        {isWeddingStory && weddingCredits && (
+          <div
+            onClick={advanceSubtitle}
+            className="absolute inset-0 z-40 cursor-pointer overflow-hidden"
+            style={{ background: 'rgba(0, 0, 0, 1)' }}
+          >
+            {/* 스크롤 컨텐츠 — wrapper가 min-h-full 이상이라 시작/끝 모두 화면 밖 */}
+            <div className="animate-wedding-credits-scroll gap-xl absolute inset-x-0 top-0 flex min-h-full flex-col items-center justify-center px-6 text-center">
+              <img
+                src={TITLE_LOGO}
+                alt=""
+                draggable={false}
+                className="w-[65%] max-w-[65%] object-contain"
+              />
+              <span className="text-text-on-pink font-display text-lg leading-relaxed">
+                츄와와 ~뽀뽀 돌격~
+              </span>
+
+              <div className="gap-sm flex flex-col items-center">
+                <span className="text-text-on-pink font-display text-sm opacity-80">
+                  제작
+                </span>
+                <span className="text-text-on-pink font-display text-base leading-relaxed">
+                  김co수
+                </span>
+                <span className="text-text-on-pink font-display text-base leading-relaxed">
+                  워워
+                </span>
+              </div>
+
+              <div className="gap-sm flex flex-col items-center">
+                <div className="bg-text-on-pink h-px w-24 opacity-60" />
+                <span className="text-text-on-pink font-display text-base leading-relaxed">
+                  데이콘 월간 해커톤
+                </span>
+                <span className="text-text-on-pink font-display text-sm leading-relaxed opacity-80">
+                  10분 안에 중독시켜라
+                </span>
+                <span className="text-text-on-pink font-display text-sm leading-relaxed opacity-80">
+                  — 웹 미니게임 챌린지 —
+                </span>
+                <div className="bg-text-on-pink h-px w-24 opacity-60" />
+              </div>
+
+              <span className="text-text-on-pink font-display text-lg leading-relaxed">
+                Thanks to play
+              </span>
+            </div>
+
+            {/* 양옆 댄스 — 스크롤과 별개로 화면 하단 고정, 통통(bounce-soft 재사용) */}
+            <img
+              src={CHARACTER_ASSETS.chiWeddingDance}
+              alt=""
+              draggable={false}
+              className="animate-bounce-soft pointer-events-none absolute bottom-4 left-4 z-10 w-24 object-contain"
+            />
+            <img
+              src={CHARACTER_ASSETS.catWeddingDance}
+              alt=""
+              draggable={false}
+              className="animate-bounce-soft pointer-events-none absolute right-4 bottom-4 z-10 w-24 object-contain"
+            />
+          </div>
+        )}
       </div>
 
       {showGameOverModal && gameOverInfo && (
