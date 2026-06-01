@@ -4,6 +4,8 @@ import {
   LEVEL_THRESHOLDS,
   LEVEL_UP_DURATION,
   MAX_LEVEL,
+  WEDDING_LEVEL_THRESHOLDS,
+  WEDDING_MAX_LEVEL,
 } from '@/game/constants'
 import type { GameRefs } from '@/game/loop/state'
 import { addParticles } from '@/game/particles'
@@ -39,9 +41,12 @@ function spawnLevelUpBurst(refs: GameRefs, now: number): void {
 // LEVEL_THRESHOLDS = [0, 10, 25, 45, 70, 100, 135, 175, 220, 270, 325] (길이 11, LV0~LV10).
 
 // 점수에 해당하는 최대 레벨. 임계점을 통과한 가장 큰 인덱스를 반환.
-export function computeLevel(score: number): number {
-  for (let i = MAX_LEVEL; i >= 0; i--) {
-    if (score >= LEVEL_THRESHOLDS[i]) return i
+// weddingMode면 5압축 곡선(WEDDING_*)으로 산출 — LV5 캡. 일반 호출은 기존 곡선 그대로.
+export function computeLevel(score: number, weddingMode = false): number {
+  const thresholds = weddingMode ? WEDDING_LEVEL_THRESHOLDS : LEVEL_THRESHOLDS
+  const maxLevel = weddingMode ? WEDDING_MAX_LEVEL : MAX_LEVEL
+  for (let i = maxLevel; i >= 0; i--) {
+    if (score >= thresholds[i]) return i
   }
   return 0
 }
@@ -52,14 +57,16 @@ export type CheckLevelUpParams = {
   newScore: number
   now: number
   onLevelUp: (newLevel: number) => void
+  // wedding 게임변형 — 5압축 곡선으로 레벨 산출. 미지정 시 일반 곡선.
+  weddingMode?: boolean
 }
 
 // 점수 증가로 레벨이 올랐는지 검사하고, 올랐으면 levelUpEffect 트리거 + 콜백 호출.
 // 18개 금하트 파티클 / 토스트 같은 시각 효과는 라우트(C-5')의 onLevelUp이 책임.
 export function checkLevelUp(params: CheckLevelUpParams): void {
-  const { refs, oldScore, newScore, now, onLevelUp } = params
-  const oldLevel = computeLevel(oldScore)
-  const newLevel = computeLevel(newScore)
+  const { refs, oldScore, newScore, now, onLevelUp, weddingMode } = params
+  const oldLevel = computeLevel(oldScore, weddingMode)
+  const newLevel = computeLevel(newScore, weddingMode)
   if (newLevel <= oldLevel) return
 
   refs.scoreMirror.level = newLevel

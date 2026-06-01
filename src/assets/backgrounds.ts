@@ -24,6 +24,16 @@ export const GAME_BGS = [
 
 export const SPACE_BG = '/assets/backgrounds/bg-space.png' as const
 
+// wedding 게임변형 전용 배경 (LV0~LV5 6장). 레벨에 idx 직결: LV0=신혼집 … LV5=제단.
+export const WEDDING_BGS = [
+  '/assets/backgrounds/bg-wedding-0-home.png',
+  '/assets/backgrounds/bg-wedding-1-car.png',
+  '/assets/backgrounds/bg-wedding-2-lawn.png',
+  '/assets/backgrounds/bg-wedding-3-room.png',
+  '/assets/backgrounds/bg-wedding-4-aisle.png',
+  '/assets/backgrounds/bg-wedding-5-altar.png',
+] as const
+
 // propose 스토리 컷신 전용 배경 (야경 호텔 뷰). story 중에만 getBackgroundForLevel 우회해 강제.
 export const BG_PROPOSE = '/assets/backgrounds/bg-propose.png' as const
 
