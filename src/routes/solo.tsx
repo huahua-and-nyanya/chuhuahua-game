@@ -385,7 +385,10 @@ function SoloPage() {
       }
       // LV3 도달 시 디버프 아이템 활성화 (cucumber 먼저, sweetPotato는 +stagger 후).
       // reference 985~988.
-      if (newLevel === DEBUFF_LEVEL_MIN) {
+      // wedding 게임변형 모드에선 기본 디버프 미등장 — 디버프 첫 스폰 예약 자체를 건너뛴다.
+      const weddingMode =
+        equippedEffectsRef.current.itemPoolOverride === 'wedding'
+      if (newLevel === DEBUFF_LEVEL_MIN && !weddingMode) {
         scheduleDebuffFirstSpawn('cucumber', DEBUFF_AFTER_LV3_FIRST)
         scheduleDebuffFirstSpawn(
           'sweetPotato',
@@ -417,6 +420,7 @@ function SoloPage() {
         combo: refs.current.scoreMirror.combo,
         now,
         showToast,
+        weddingMode: equippedEffectsRef.current.itemPoolOverride === 'wedding',
       })
       checkLevelUp({
         refs: refs.current,
