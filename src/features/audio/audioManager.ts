@@ -17,12 +17,14 @@ const CROSSFADE_MS = 500
 const FADE_STEP_MS = 25
 
 // ── 모듈 상태 ────────────────────────────────────────────────
+// 음소거 = pause(곡 진행도 멈춤). 해제 시 멈춘 지점부터 이어서 재생(A안).
+// 단 라우트/상태로 트랙이 바뀌면 새 곡은 처음부터(pendingRestart) — 음소거 해제 이어서와 구분.
 let muted = readStoredMuted()
 let armed = false
 // 논리적 현재 bgm 트랙(재생 중이어야 하는 것). 같은 트랙 재호출 no-op 판정 기준.
 let currentBgmTrack: BgmTrack | null = null
-// arm 전에 요청된 트랙 — 첫 상호작용 시 재생.
-let pendingBgmTrack: BgmTrack | null = null
+// 다음 실제 재생 시 처음부터 여부. 트랙 전환 시 true(처음부터), 음소거 해제만이면 false(이어서).
+let pendingRestart = false
 
 const bgmEls = new Map<BgmTrack, HTMLAudioElement>()
 let sfxEl: HTMLAudioElement | null = null
@@ -48,7 +50,6 @@ function getBgmEl(track: BgmTrack): HTMLAudioElement {
     el.loop = true
     el.preload = 'auto'
     el.volume = 0
-    el.muted = muted
     bgmEls.set(track, el)
   }
   return el
@@ -59,7 +60,6 @@ function getSfxEl(track: SfxTrack): HTMLAudioElement {
     sfxEl = new Audio(AUDIO_ASSETS[track])
     sfxEl.loop = false
     sfxEl.preload = 'auto'
-    sfxEl.muted = muted
   }
   return sfxEl
 }
@@ -118,12 +118,19 @@ function emit(): void {
 }
 
 // ── bgm 전환 ─────────────────────────────────────────────────
-function startBgm(track: BgmTrack, crossfade: boolean): void {
+// restart=true면 target을 처음부터(트랙 전환). false면 멈춘 지점부터(음소거 해제 이어서).
+function startBgm(track: BgmTrack, crossfade: boolean, restart: boolean): void {
   const dur = crossfade ? CROSSFADE_MS : 0
   const target = getBgmEl(track)
-  target.muted = muted
+  if (restart) {
+    try {
+      target.currentTime = 0
+    } catch {
+      // 무시
+    }
+  }
 
-  // 다른 트랙들은 fadeout 후 정지(위치는 유지 — 다음에 그 트랙으로 돌아오면 이어짐).
+  // 다른 트랙들은 fadeout 후 정지.
   for (const [t, el] of bgmEls) {
     if (t === track) continue
     fadeTo(el, 0, dur, () => el.pause())
@@ -133,24 +140,35 @@ function startBgm(track: BgmTrack, crossfade: boolean): void {
   fadeTo(target, BGM_VOLUME, dur)
 }
 
+// 재생 가능 조건 — arm(자동재생 우회) 완료 + 음소거 아님.
+function shouldPlay(): boolean {
+  return armed && !muted
+}
+
+// currentBgmTrack을 실제 재생. pendingRestart면 처음부터, 아니면 멈춘 지점부터.
+function resumeCurrent(): void {
+  if (!shouldPlay() || !currentBgmTrack) return
+  startBgm(currentBgmTrack, true, pendingRestart)
+  pendingRestart = false
+}
+
 // ── 공개 API ─────────────────────────────────────────────────
 function playBgm(track: BgmTrack, opts?: { crossfade?: boolean }): void {
-  // 이미 같은 트랙이면 no-op — 곡 이어짐(재시작 X). arm 전 pending 상태도 동일 판정.
+  // 이미 같은 트랙이면 no-op — 곡 이어짐(재시작 X). 그룹 내 라우트 이동 시 안 끊김.
   if (currentBgmTrack === track) return
   currentBgmTrack = track
+  // 트랙이 바뀜 → 다음 실제 재생은 처음부터.
+  pendingRestart = true
 
-  if (!armed) {
-    // 첫 상호작용 전 — 보관만. arm 시 재생.
-    pendingBgmTrack = track
-    return
-  }
-  pendingBgmTrack = null
-  startBgm(track, opts?.crossfade ?? true)
+  // arm 전이거나 음소거면 기록만 — arm/음소거 해제 시 resumeCurrent가 재생.
+  if (!shouldPlay()) return
+  startBgm(track, opts?.crossfade ?? true, true)
+  pendingRestart = false
 }
 
 function stopBgm(opts?: { fade?: boolean }): void {
   currentBgmTrack = null
-  pendingBgmTrack = null
+  pendingRestart = false
   const dur = (opts?.fade ?? true) ? CROSSFADE_MS : 0
   for (const el of bgmEls.values()) {
     fadeTo(el, 0, dur, () => el.pause())
@@ -160,8 +178,9 @@ function stopBgm(opts?: { fade?: boolean }): void {
 function playSfx(track: SfxTrack): void {
   // sfx 재생 시 현 bgm 정지(즉시).
   stopBgm({ fade: false })
+  // 음소거면 sfx도 재생 안 함.
+  if (muted) return
   const el = getSfxEl(track)
-  el.muted = muted
   el.volume = SFX_VOLUME
   try {
     el.currentTime = 0
@@ -177,7 +196,13 @@ function setMuted(next: boolean): void {
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(MUTED_KEY, String(next))
   }
-  for (const el of allEls()) el.muted = next
+  if (next) {
+    // 음소거 = pause(곡 진행도 멈춤). currentTime은 유지 → 해제 시 이어서.
+    for (const el of allEls()) el.pause()
+  } else {
+    // 해제 = 현재 트랙 재생. 트랙 전환 없었으면 멈춘 지점부터(pendingRestart=false).
+    resumeCurrent()
+  }
   emit()
 }
 
@@ -185,15 +210,11 @@ function getMuted(): boolean {
   return muted
 }
 
-// 첫 유저 상호작용 시 1회 — 자동재생 정책 우회 + 대기 트랙 재생.
+// 첫 유저 상호작용 시 1회 — 자동재생 정책 우회. 음소거 아니면 현재 트랙 재생.
 function armAudio(): void {
   if (armed) return
   armed = true
-  if (pendingBgmTrack) {
-    const t = pendingBgmTrack
-    pendingBgmTrack = null
-    startBgm(t, false)
-  }
+  resumeCurrent()
 }
 
 function subscribe(cb: () => void): () => void {
