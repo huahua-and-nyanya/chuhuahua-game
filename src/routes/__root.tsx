@@ -1,5 +1,4 @@
 import { useEffect, type ReactNode } from 'react'
-import { motion } from 'framer-motion'
 import { IconVolume, IconVolumeOff } from '@tabler/icons-react'
 import {
   createRootRoute,
@@ -42,14 +41,13 @@ const CORNER_ACTIONS_SLOT_CLASSES =
   'absolute top-frame-inner right-frame-inner flex flex-row gap-sm z-[2]'
 const SIDE_MENU_SLOT_CLASSES =
   'absolute right-frame-inner bottom-frame-inner flex flex-col gap-nav-button-gap z-[2] max-md:hidden'
-// 음소거 토글 원형 버튼 — IconNavButton ROOT_CLASSES 톤 미러(공용 컴포넌트는 png 전용이라 별도).
-// 흰 원 + 핑크 보더 안에 Tabler 아이콘(currentColor → text-ink-base).
+// 음소거 토글 — `< 메인으로`(PixelButton ghost)와 동일 동작: 평소 투명, hover/active 시에만
+// 연핑크 배경. 단 아이콘 버튼이라 hover 배경이 원형(rounded-full). hover 색은 ghost 토큰 재사용.
 const MUTE_BUTTON_CLASSES =
-  'inline-flex items-center justify-center cursor-pointer shrink-0 p-0 ' +
-  'w-icon-button h-icon-button text-ink-base ' +
-  'bg-bg-icon-button ' +
-  'border-[length:var(--icon-button-border-width)] border-solid border-border-icon-button ' +
-  'rounded-full shadow-icon-button-rest'
+  'inline-flex items-center justify-center cursor-pointer rounded-full p-2 ' +
+  'bg-transparent text-button-ghost-text ' +
+  'hover:bg-button-ghost-bg-hover active:bg-button-ghost-bg-hover ' +
+  'transition-colors duration-[var(--transition-fast)]'
 
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -145,32 +143,33 @@ function RootLayout() {
 
   return (
     <>
-      {/* 메인 외 라우트: 페이지 좌상단 fixed — 카드/frameStack 레이아웃에 영향 0. */}
-      {!isMain && (
-        <Link to="/" className="top-md left-md fixed z-10">
-          <PixelButton variant="ghost" size="sm">
-            {'< 메인으로'}
-          </PixelButton>
-        </Link>
-      )}
-
-      {/* 음소거 토글: 좌상단 메인으로의 거울(우상단). 모든 라우트 표시(/dev는 위에서 early-return).
-          기능이 달라 형태도 원형 아이콘 버튼 — IconNavButton(랭킹/도움말) 톤. */}
-      <motion.button
-        type="button"
-        className={`top-md right-md fixed z-10 ${MUTE_BUTTON_CLASSES}`}
-        onClick={toggleMuted}
-        aria-label={muted ? '소리 켜기' : '소리 끄기'}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.96 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-      >
-        {muted ? (
-          <IconVolumeOff size={24} stroke={2} />
+      {/* 상단 고정 헤더 행 — 좌(메인으로)·우(음소거)를 한 행에 묶어 같은 높이선 정렬(items-center).
+          카드/frameStack 레이아웃엔 영향 0(fixed). /dev는 위에서 early-return이라 미적용.
+          좌측 `< 메인으로`는 !isMain 한정 → 메인에선 빈 spacer로 두고 음소거만 우측 유지. */}
+      <div className="top-md right-md left-md fixed z-10 flex items-center justify-between">
+        {!isMain ? (
+          <Link to="/">
+            <PixelButton variant="ghost" size="sm">
+              {'< 메인으로'}
+            </PixelButton>
+          </Link>
         ) : (
-          <IconVolume size={24} stroke={2} />
+          <span />
         )}
-      </motion.button>
+
+        <button
+          type="button"
+          className={MUTE_BUTTON_CLASSES}
+          onClick={toggleMuted}
+          aria-label={muted ? '소리 켜기' : '소리 끄기'}
+        >
+          {muted ? (
+            <IconVolumeOff size={26} stroke={2} />
+          ) : (
+            <IconVolume size={26} stroke={2} />
+          )}
+        </button>
+      </div>
 
       <div className="page-bg" style={{ backgroundImage: `url(${seasonBg})` }}>
         <main className={styles.page}>
