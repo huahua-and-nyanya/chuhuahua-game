@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { motion } from 'framer-motion'
 import { IconVolume, IconVolumeOff } from '@tabler/icons-react'
 import {
   createRootRoute,
@@ -41,6 +42,14 @@ const CORNER_ACTIONS_SLOT_CLASSES =
   'absolute top-frame-inner right-frame-inner flex flex-row gap-sm z-[2]'
 const SIDE_MENU_SLOT_CLASSES =
   'absolute right-frame-inner bottom-frame-inner flex flex-col gap-nav-button-gap z-[2] max-md:hidden'
+// 음소거 토글 원형 버튼 — IconNavButton ROOT_CLASSES 톤 미러(공용 컴포넌트는 png 전용이라 별도).
+// 흰 원 + 핑크 보더 안에 Tabler 아이콘(currentColor → text-ink-base).
+const MUTE_BUTTON_CLASSES =
+  'inline-flex items-center justify-center cursor-pointer shrink-0 p-0 ' +
+  'w-icon-button h-icon-button text-ink-base ' +
+  'bg-bg-icon-button ' +
+  'border-[length:var(--icon-button-border-width)] border-solid border-border-icon-button ' +
+  'rounded-full shadow-icon-button-rest'
 
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -138,23 +147,30 @@ function RootLayout() {
     <>
       {/* 메인 외 라우트: 페이지 좌상단 fixed — 카드/frameStack 레이아웃에 영향 0. */}
       {!isMain && (
-        <Link to="/" className="top-lg left-lg fixed z-10">
+        <Link to="/" className="top-md left-md fixed z-10">
           <PixelButton variant="ghost" size="sm">
             {'< 메인으로'}
           </PixelButton>
         </Link>
       )}
 
-      {/* 음소거 토글: 좌상단 메인으로의 거울(우상단). 모든 라우트 표시(/dev는 위에서 early-return). */}
-      <div className="top-lg right-lg fixed z-10">
-        <PixelButton variant="ghost" size="sm" onClick={toggleMuted}>
-          {muted ? (
-            <IconVolumeOff size={26} stroke={2} />
-          ) : (
-            <IconVolume size={26} stroke={2} />
-          )}
-        </PixelButton>
-      </div>
+      {/* 음소거 토글: 좌상단 메인으로의 거울(우상단). 모든 라우트 표시(/dev는 위에서 early-return).
+          기능이 달라 형태도 원형 아이콘 버튼 — IconNavButton(랭킹/도움말) 톤. */}
+      <motion.button
+        type="button"
+        className={`top-md right-md fixed z-10 ${MUTE_BUTTON_CLASSES}`}
+        onClick={toggleMuted}
+        aria-label={muted ? '소리 켜기' : '소리 끄기'}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.96 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+      >
+        {muted ? (
+          <IconVolumeOff size={24} stroke={2} />
+        ) : (
+          <IconVolume size={24} stroke={2} />
+        )}
+      </motion.button>
 
       <div className="page-bg" style={{ backgroundImage: `url(${seasonBg})` }}>
         <main className={styles.page}>
