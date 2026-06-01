@@ -66,16 +66,16 @@ function RootLayout() {
   }, [pathname, refreshCoins])
   // 라우트별 BGM 매핑 (pathname 기반만). 같은 트랙 playBgm은 B1에서 no-op이라
   // {/, /ranking, /howto} 그룹은 bgmTitle을 공유하며 이동해도 안 끊김.
-  // /solo는 여기서 호출 안 함 — 웨딩(title)/일반(main) 분기는 B3가 startGame 시 전담
-  // (B2가 main을 깔면 웨딩 진입 시 곡 깜빡임). /solo·/dev/*는 어느 분기에도 안 걸려 미호출.
-  // armAudio 정합: 첫 진입 시 arm 전이면 pendingBgmTrack에 보관됐다 첫 상호작용에 재생(B1).
+  // /solo·/multi/local은 여기서 호출 안 함 — 내부 상태별 곡을 각 라우트가 전담(B3a/B3b).
+  //   solo: 웨딩(title)/일반(main) 분기, pvp: setup 무음 + playing pvp곡 등.
+  //   (B2가 깔면 effect 순서상 부모가 자식 뒤에 실행돼 setup 무음/웨딩 분기를 덮음.)
+  //   /solo·/multi/local·/dev/*는 어느 분기에도 안 걸려 미호출.
+  // armAudio 정합: 첫 진입 시 arm 전이면 currentBgmTrack에 보관됐다 첫 상호작용에 재생(B1).
   useEffect(() => {
     if (pathname === '/' || pathname === '/ranking' || pathname === '/howto') {
       audioManager.playBgm('bgmTitle')
     } else if (pathname === '/wardrobe') {
       audioManager.playBgm('bgmCalm')
-    } else if (pathname === '/multi/local') {
-      audioManager.playBgm('bgmPvp')
     }
   }, [pathname])
   const { scale, isMobile, dsFrameMaxWidth } = useResponsiveScale()
