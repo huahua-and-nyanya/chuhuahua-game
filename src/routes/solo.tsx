@@ -1243,28 +1243,23 @@ function SoloPage() {
               </span>
             </div>
 
-            {/* 양옆 댄스 — 좌우 끝 세로중앙 고정, 통통 + 2바운스마다 좌우반전.
-                3층 분리(각 층 transform 1종): wrapper(정렬 -translate-y-1/2) /
-                flip 레이어(scaleX 반전) / inner img(bounce translateY) — 서로 안 덮음. */}
+            {/* 양옆 댄스 — 좌우 끝 세로중앙 고정, 통통(bounce-soft).
+                wrapper(정렬 -translate-y-1/2) + inner img(bounce) 2층 — bounce keyframe이 정렬을 안 덮게 분리. */}
             <div className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2">
-              <div className="animate-wedding-dance-flip">
-                <img
-                  src={CHARACTER_ASSETS.chiWeddingDance}
-                  alt=""
-                  draggable={false}
-                  className="animate-bounce-soft w-24 object-contain"
-                />
-              </div>
+              <img
+                src={CHARACTER_ASSETS.chiWeddingDance}
+                alt=""
+                draggable={false}
+                className="animate-bounce-soft w-24 object-contain"
+              />
             </div>
             <div className="pointer-events-none absolute top-1/2 right-4 z-10 -translate-y-1/2">
-              <div className="animate-wedding-dance-flip">
-                <img
-                  src={CHARACTER_ASSETS.catWeddingDance}
-                  alt=""
-                  draggable={false}
-                  className="animate-bounce-soft w-24 object-contain"
-                />
-              </div>
+              <img
+                src={CHARACTER_ASSETS.catWeddingDance}
+                alt=""
+                draggable={false}
+                className="animate-bounce-soft w-24 object-contain"
+              />
             </div>
           </div>
         )}

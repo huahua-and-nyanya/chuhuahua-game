@@ -346,19 +346,6 @@
   }
 }
 
-/* wedding 크레딧 댄스 좌우반전 — bounce-soft 2주기(2×0.9s=1.8s)에 scaleX 1→-1→1 스무스 반전.
- * 50%(첫 바운스 끝)에서 완전 반전, 100%(둘째 바운스 끝)에 복귀. ease-in-out로 0 통과하며 "휙"이 아닌 부드러운 회전.
- * 정렬(wrapper translate)·bounce(inner translateY)와 충돌 안 나게 중간 층(flip) 단독 transform. */
-@keyframes wedding-dance-flip {
-  0%,
-  100% {
-    transform: scaleX(1);
-  }
-  50% {
-    transform: scaleX(-1);
-  }
-}
-
 /* wedding 크레딧 로고 좌우 흔들림 — reference title-wave 이식(rotate ±2deg). 4s ease-in-out 무한. */
 @keyframes wedding-title-wave {
   0%,
