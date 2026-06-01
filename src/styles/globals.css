@@ -195,6 +195,8 @@
   /* 엔딩 크레딧 세로 스크롤 — weddingStory.ts CREDITS_MS(28000)와 정합. linear 일정 속도. */
   --animate-wedding-credits-scroll: wedding-credits-scroll 28000ms linear
     forwards;
+  /* 크레딧 댄스 좌우반전 — bounce-soft 0.9s × 2 = 1.8s 주기. ease-in-out로 스무스 회전. */
+  --animate-wedding-dance-flip: wedding-dance-flip 1800ms ease-in-out infinite;
   /* 크레딧 로고 좌우 흔들림 — reference title-wave. 4s ease-in-out 무한. */
   --animate-wedding-title-wave: wedding-title-wave 4s ease-in-out infinite;
   --animate-subtitle-blink: subtitle-blink 1s steps(1, end) infinite;
