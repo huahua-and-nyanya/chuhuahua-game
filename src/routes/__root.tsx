@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { IconVolume, IconVolumeOff } from '@tabler/icons-react'
 import {
   createRootRoute,
   Link,
@@ -147,7 +148,11 @@ function RootLayout() {
       {/* 음소거 토글: 좌상단 메인으로의 거울(우상단). 모든 라우트 표시(/dev는 위에서 early-return). */}
       <div className="top-lg right-lg fixed z-10">
         <PixelButton variant="ghost" size="sm" onClick={toggleMuted}>
-          {muted ? '🔇' : '🔊'}
+          {muted ? (
+            <IconVolumeOff size={26} stroke={2} />
+          ) : (
+            <IconVolume size={26} stroke={2} />
+          )}
         </PixelButton>
       </div>
 
