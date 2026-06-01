@@ -185,7 +185,12 @@
   --animate-item-bob: item-bob 1.4s ease-in-out infinite;
   --animate-item-expire: item-expire 0.5s ease-in-out infinite;
   --animate-pvp-time-pulse: pvp-time-pulse 600ms ease-in-out infinite;
-  --animate-wedding-fade-in: wedding-fade-in 500ms ease-out forwards;
+  /* wedding 엔딩 페이드 — 같은 wedding-fade-in(0→1 opacity) keyframe을 용도별 duration으로 분리.
+     검정(뽀뽀→CG): WEDDING_FADE_MS(weddingStory.ts)와 정합 1.2s / 자막 줄전환 0.8s / 모달 dim 1s. */
+  --animate-wedding-fade-black: wedding-fade-in 1200ms ease-in-out forwards;
+  --animate-wedding-fade-subtitle: wedding-fade-in 800ms ease-in-out forwards;
+  --animate-wedding-fade-dim: wedding-fade-in 1000ms ease-in-out forwards;
+  --animate-subtitle-blink: subtitle-blink 1s steps(1, end) infinite;
 
   /* === 상태 색상 (Tailwind utility 생성용 노출) === */
   --color-danger: #d94747;
