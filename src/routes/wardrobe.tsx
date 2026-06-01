@@ -326,7 +326,7 @@ function WeddingEquipPrompt({
 }) {
   return (
     <div className="gap-xl flex flex-col items-center text-center">
-      <div className="text-ink-base text-lg leading-relaxed font-bold">
+      <div className="text-ink-base py-4 text-lg leading-relaxed font-bold">
         이 옷을 입고 플레이하면
         <br />
         둘의 특별한 엔딩을 볼 수 있어요
