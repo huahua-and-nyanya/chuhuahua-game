@@ -53,11 +53,16 @@ export function useWardrobe() {
     [persistAll],
   )
 
-  // 현재 장착 옷의 효과 반환 (없으면 빈 객체)
+  // 현재 장착 옷의 효과 반환 (없으면 빈 객체).
+  // S+ 옷은 1회 시청 완료(usedClothes 포함) 후 효과 전부 무효 → {} 반환.
+  // (이로써 pigeonDisabled/itemPoolOverride 자동 해제 = 비둘기 복귀 + 일반 아이템풀.)
   const getEquippedEffects = useCallback((): ClothEffects => {
-    const eq = wardrobeRef.current.equipped
+    const { equipped: eq, usedClothes } = wardrobeRef.current
     if (!eq) return {}
-    return CLOTHES[eq]?.effects ?? {}
+    const cloth = CLOTHES[eq]
+    if (!cloth) return {}
+    if (cloth.grade === 'S+' && usedClothes.includes(eq)) return {}
+    return cloth.effects ?? {}
   }, [])
 
   // 현재 장착 옷의 게임 내 스킨(츄 풀바디) 경로. 미장착이면 undefined → 기본 츄.
@@ -82,6 +87,14 @@ export function useWardrobe() {
     if (equipped !== 'propose') return false
     if (!STORY_CLOTH_IDS.every((id) => owned.includes(id))) return false
     return !playStatsStorage.load().proposeEndingCleared
+  }, [])
+
+  // wedding 게임변형 armed 판정 — wedding 착용 + 미사용(usedClothes 미포함)이면 true.
+  // getProposeArmed 패턴 미러. isSolo 조건은 호출처(solo.tsx) 담당.
+  const getWeddingArmed = useCallback((): boolean => {
+    const { equipped, usedClothes } = wardrobeRef.current
+    if (equipped !== 'wedding') return false
+    return !usedClothes.includes('wedding')
   }, [])
 
   // propose 엔딩 클리어 마킹 — STORY_MODAL 도달 시 1회 호출(컷신 완료 = 해금 확정).
@@ -172,11 +185,13 @@ export function useWardrobe() {
     pity,
     owned: wardrobe.owned,
     equipped: wardrobe.equipped,
+    usedClothes: wardrobe.usedClothes,
     toggleEquip,
     getEquippedEffects,
     getEquippedSkin,
     getEquippedCatSkin,
     getProposeArmed,
+    getWeddingArmed,
     markProposeEndingCleared,
     earnCoins,
     pullGacha,

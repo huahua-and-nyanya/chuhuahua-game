@@ -243,17 +243,18 @@ export const CLOTHES_S: Record<string, ClothEntry> = {
 }
 
 // S+ 등급 (1벌) — 웨딩. propose 엔딩 클리어 후에만 가챠 풀 진입(useWardrobe S+ 게이팅).
-// 능력 없음(표기만 S+, effects {}), applyTo: 'idle' — 본 게임 변형(5레벨압축/비둘기없음 등)은
-// 다음 브랜치. kissing 자산은 존재하나 idle 적용이라 현재 플레이엔 미사용(베이스 폴백).
+// 게임변형: pigeonDisabled(비둘기 없음) + itemPoolOverride 'wedding'(웨딩 3종 풀).
+// 1회 시청 완료(usedClothes 'wedding') 후엔 효과 전부 무효 → 외형만 유지(useWardrobe 게이팅).
+// 5레벨 압축/배경/엔딩 컷신은 후속 브랜치(W2~W3).
 export const CLOTHES_S_PLUS: Record<string, ClothEntry> = {
   wedding: {
     id: 'wedding',
     name: '우리의 미래',
     grade: 'S+',
     pair: true,
-    applyTo: 'idle',
+    applyTo: 'all',
     description: '우리를 방해하는 것은 더이상 없다',
-    effects: {},
+    effects: { pigeonDisabled: true, itemPoolOverride: 'wedding' },
     kissingAsset: true,
   },
 }
