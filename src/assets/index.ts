@@ -18,3 +18,5 @@ export {
   FITTING_ROOM_BG_PATH,
 } from './clothes'
 export { dsFrameBg, wasdPad, dpad } from './ui'
+export { AUDIO_ASSETS } from './audio'
+export type { AudioKey, BgmTrack, SfxTrack } from './audio'

@@ -11,6 +11,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ICON_ASSETS, PAGE_BGS } from '@/assets'
 import { DSFrame } from '@/components/layout/DSFrame'
 import { GameFrameCard } from '@/components/layout/GameFrameCard'
+import { useAudio } from '@/features/audio/useAudio'
 import { useCoins } from '@/features/coins/useCoins'
 import { VirtualController } from '@/game/ui/VirtualController'
 import { useResponsiveScale } from '@/hooks/useResponsiveScale'
@@ -48,6 +49,7 @@ function RootLayout() {
   const isContentRoute = ['/ranking', '/howto'].includes(pathname)
   const navigate = useNavigate()
   const { coins, refresh: refreshCoins } = useCoins()
+  const { muted, toggleMuted } = useAudio()
   // 라우트 변경 시 코인 재읽기 — solo의 earnCoins(다른 useWardrobe 인스턴스)가 갱신한
   // localStorage 값을 메인 복귀 시 반영 (root는 안 unmount → state가 stale로 남는 문제).
   useEffect(() => {
@@ -141,6 +143,13 @@ function RootLayout() {
           </PixelButton>
         </Link>
       )}
+
+      {/* 음소거 토글: 좌상단 메인으로의 거울(우상단). 모든 라우트 표시(/dev는 위에서 early-return). */}
+      <div className="top-lg right-lg fixed z-10">
+        <PixelButton variant="ghost" size="sm" onClick={toggleMuted}>
+          {muted ? '🔇' : '🔊'}
+        </PixelButton>
+      </div>
 
       <div className="page-bg" style={{ backgroundImage: `url(${seasonBg})` }}>
         <main className={styles.page}>
