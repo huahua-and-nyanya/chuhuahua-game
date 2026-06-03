@@ -34,6 +34,7 @@ export interface WardrobeState {
 
 export interface PlayStats {
   proposeEndingCleared: boolean
+  freeGachaUsed: boolean // 첫 옷장 진입 무료 가챠 1회 소진 여부
 }
 
 export type GachaResult =

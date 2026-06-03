@@ -95,8 +95,17 @@ function FallbackImage({
 }
 
 function WardrobePage() {
-  const { coins, owned, equipped, usedClothes, toggleEquip, pullGacha } =
-    useWardrobe()
+  const {
+    coins,
+    owned,
+    equipped,
+    usedClothes,
+    toggleEquip,
+    pullGacha,
+    freeGachaAvailable,
+  } = useWardrobe()
+  // 첫 옷장 진입 무료 가챠 온보딩 — 마운트 스냅샷이 true면 강제 모달 노출.
+  const [onboardingOpen, setOnboardingOpen] = useState(freeGachaAvailable)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [gachaResult, setGachaResult] = useState<GachaResult | null>(null)
   // wedding 착용 안내모달 대기 중인 옷 id (현재 'wedding'만). null이면 모달 닫힘.
@@ -112,6 +121,12 @@ function WardrobePage() {
 
   const handleGacha = () => {
     setGachaResult(pullGacha())
+  }
+
+  // 온보딩 무료 가챠 — 코인 차감 없이 1회 뽑고 온보딩 모달을 닫는다. 결과는 기존 결과 모달로.
+  const handleFreeGacha = () => {
+    setGachaResult(pullGacha({ free: true }))
+    setOnboardingOpen(false)
   }
 
   const ownedClothes = ALL_CLOTHES.filter((c) => owned.includes(c.id)).filter(
@@ -296,6 +311,19 @@ function WardrobePage() {
         )}
       </CenterModal>
 
+      {/* 첫 옷장 진입 무료 가챠 온보딩 — 강제 모달(배경/ESC/X 닫기 비활성). 무료 뽑기만 가능. */}
+      <CenterModal
+        open={onboardingOpen}
+        onClose={() => {}}
+        closeOnBackdropClick={false}
+        closeOnEscape={false}
+        showClose={false}
+        title="옷장에 온 걸 환영해요"
+        zIndex={95}
+      >
+        <WardrobeOnboarding onPull={handleFreeGacha} />
+      </CenterModal>
+
       {/* wedding 착용 안내 — 엔딩 미시청 wedding 장착 시도마다(매번) 표시. used면 requestEquip이 스킵. */}
       <CenterModal
         open={weddingEquipPrompt !== null}
@@ -311,6 +339,32 @@ function WardrobePage() {
           onCancel={() => setWeddingEquipPrompt(null)}
         />
       </CenterModal>
+    </div>
+  )
+}
+
+// 첫 옷장 진입 온보딩 — 무료 가챠 1회 유도. 강제 모달 본문(닫기 버튼 없음, '무료로 뽑기'만).
+function WardrobeOnboarding({ onPull }: { onPull: () => void }) {
+  return (
+    <div className="gap-xl flex flex-col items-center text-center">
+      <img
+        src={CAPSULE_ICON_PATH}
+        alt=""
+        aria-hidden="true"
+        className="h-20 w-20 object-contain"
+      />
+      <div className="gap-sm flex flex-col">
+        <div className="text-ink-base text-lg font-bold">
+          새 옷을 만나볼까요?
+        </div>
+        <div className="text-text-muted text-sm leading-snug">
+          첫 뽑기는 무료예요.
+          <br />한 번 뽑아서 츄와와에게 입혀 보세요.
+        </div>
+      </div>
+      <PixelButton className="w-full" onClick={onPull}>
+        무료로 뽑기
+      </PixelButton>
     </div>
   )
 }

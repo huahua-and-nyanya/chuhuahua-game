@@ -30,6 +30,10 @@ export function useWardrobe() {
   // 렌더에서 ref를 직접 읽지 않도록 보유/장착/천장 스냅샷은 state로 노출.
   const [wardrobe, setWardrobe] = useState(() => wardrobeStorage.load())
   const [pity, setPity] = useState(() => pityStorage.load())
+  // 첫 옷장 진입 무료 가챠 가능 여부 — 마운트 스냅샷. 무료 가챠 소진 시 false.
+  const [freeGachaAvailable, setFreeGachaAvailable] = useState(
+    () => !playStatsStorage.load().freeGachaUsed,
+  )
 
   const persistAll = useCallback(() => {
     wardrobeStorage.save(wardrobeRef.current)
@@ -135,67 +139,85 @@ export function useWardrobe() {
     [],
   )
 
-  // 가챠 추첨 — 결과 반환 (UI에서 모달 표시용)
-  const pullGacha = useCallback((): GachaResult => {
-    const { proposeEndingCleared } = playStatsStorage.load()
-    if (coinsRef.current < GACHA_COST) {
-      return { error: true, cost: GACHA_COST, have: coinsRef.current }
-    }
-    coinsRef.current -= GACHA_COST
-
-    // 등급 결정
-    let grade: Grade
-    if (pityRef.current >= GACHA_PITY) {
-      grade =
-        Math.random() < GACHA_RATES.S / (GACHA_RATES.S + GACHA_RATES.A)
-          ? 'S'
-          : 'A'
-    } else {
-      const r = Math.random()
-      const sPlusRate = proposeEndingCleared ? GACHA_RATES['S+'] : 0
-      if (r < sPlusRate) grade = 'S+'
-      else if (r < sPlusRate + GACHA_RATES.S) grade = 'S'
-      else if (r < sPlusRate + GACHA_RATES.S + GACHA_RATES.A) grade = 'A'
-      else grade = 'B'
-    }
-
-    // 풀에서 추첨 — 비어있으면 B로 강등 (S+ 미등록 등)
-    let pool = CLOTHES_BY_GRADE[grade] ?? []
-    if (pool.length === 0) {
-      grade = 'B'
-      pool = CLOTHES_BY_GRADE.B
-    }
-    const clothId = pool[Math.floor(Math.random() * pool.length)]
-    const cloth = CLOTHES[clothId]
-
-    // 천장 갱신
-    if (grade === 'B') pityRef.current += 1
-    else pityRef.current = 0
-
-    // 보유 처리 — 신규면 보유 추가, 중복이면 등급별 코인 환불(상한 내).
-    const alreadyOwned = wardrobeRef.current.owned.includes(clothId)
-    let refund = 0
-    if (!alreadyOwned) {
-      wardrobeRef.current = {
-        ...wardrobeRef.current,
-        owned: [...wardrobeRef.current.owned, clothId],
+  // 가챠 추첨 — 결과 반환 (UI에서 모달 표시용).
+  // opts.free: 첫 옷장 무료 가챠 — 코인 부족 검사/차감/중복 환불을 스킵하고 freeGachaUsed 마킹.
+  const pullGacha = useCallback(
+    (opts?: { free?: boolean }): GachaResult => {
+      const free = opts?.free ?? false
+      const { proposeEndingCleared } = playStatsStorage.load()
+      if (!free) {
+        if (coinsRef.current < GACHA_COST) {
+          return { error: true, cost: GACHA_COST, have: coinsRef.current }
+        }
+        coinsRef.current -= GACHA_COST
       }
-    } else {
-      refund = REFUND_BY_GRADE[cloth.grade] ?? 0
-      if (refund > 0) {
-        coinsRef.current = Math.min(MAX_COINS, coinsRef.current + refund)
-      }
-    }
 
-    persistAll()
-    return { error: false, cloth, alreadyOwned, refund } as const
-  }, [persistAll])
+      // 등급 결정
+      let grade: Grade
+      if (pityRef.current >= GACHA_PITY) {
+        grade =
+          Math.random() < GACHA_RATES.S / (GACHA_RATES.S + GACHA_RATES.A)
+            ? 'S'
+            : 'A'
+      } else {
+        const r = Math.random()
+        const sPlusRate = proposeEndingCleared ? GACHA_RATES['S+'] : 0
+        if (r < sPlusRate) grade = 'S+'
+        else if (r < sPlusRate + GACHA_RATES.S) grade = 'S'
+        else if (r < sPlusRate + GACHA_RATES.S + GACHA_RATES.A) grade = 'A'
+        else grade = 'B'
+      }
+
+      // 풀에서 추첨 — 비어있으면 B로 강등 (S+ 미등록 등)
+      let pool = CLOTHES_BY_GRADE[grade] ?? []
+      if (pool.length === 0) {
+        grade = 'B'
+        pool = CLOTHES_BY_GRADE.B
+      }
+      const clothId = pool[Math.floor(Math.random() * pool.length)]
+      const cloth = CLOTHES[clothId]
+
+      // 천장 갱신
+      if (grade === 'B') pityRef.current += 1
+      else pityRef.current = 0
+
+      // 보유 처리 — 신규면 보유 추가, 중복이면 등급별 코인 환불(상한 내).
+      // 무료 가챠는 코인 미사용이라 중복이어도 환불하지 않는다.
+      const alreadyOwned = wardrobeRef.current.owned.includes(clothId)
+      let refund = 0
+      if (!alreadyOwned) {
+        wardrobeRef.current = {
+          ...wardrobeRef.current,
+          owned: [...wardrobeRef.current.owned, clothId],
+        }
+      } else if (!free) {
+        refund = REFUND_BY_GRADE[cloth.grade] ?? 0
+        if (refund > 0) {
+          coinsRef.current = Math.min(MAX_COINS, coinsRef.current + refund)
+        }
+      }
+
+      // 무료 가챠 1회 소진 마킹 — 다음 진입부터 온보딩 미노출.
+      if (free) {
+        const cur = playStatsStorage.load()
+        if (!cur.freeGachaUsed) {
+          playStatsStorage.save({ ...cur, freeGachaUsed: true })
+        }
+        setFreeGachaAvailable(false)
+      }
+
+      persistAll()
+      return { error: false, cloth, alreadyOwned, refund } as const
+    },
+    [persistAll],
+  )
 
   return {
     wardrobeRef,
     coinsRef,
     coins,
     pity,
+    freeGachaAvailable,
     owned: wardrobe.owned,
     equipped: wardrobe.equipped,
     usedClothes: wardrobe.usedClothes,

@@ -9,6 +9,8 @@ interface CenterModalProps {
   children: ReactNode
   closeOnBackdropClick?: boolean
   closeOnEscape?: boolean
+  // false면 X 닫기 버튼 미렌더 — 강제 모달(온보딩 등)에서 backdrop/escape 비활성과 함께 사용.
+  showClose?: boolean
   // 기본 z-index(100) 위로 모달을 쌓을 때 사용. 인라인 style이 클래스 z를 덮어씀.
   zIndex?: number
 }
@@ -41,6 +43,7 @@ export function CenterModal({
   children,
   closeOnBackdropClick = true,
   closeOnEscape = true,
+  showClose = true,
   zIndex,
 }: CenterModalProps) {
   useEffect(() => {
@@ -80,14 +83,16 @@ export function CenterModal({
         aria-modal="true"
         aria-label={title}
       >
-        <button
-          type="button"
-          className={CLOSE_CLASSES}
-          onClick={onClose}
-          aria-label="닫기"
-        >
-          X
-        </button>
+        {showClose && (
+          <button
+            type="button"
+            className={CLOSE_CLASSES}
+            onClick={onClose}
+            aria-label="닫기"
+          >
+            X
+          </button>
+        )}
         <PixelCard header={title}>{children}</PixelCard>
       </div>
     </div>,
