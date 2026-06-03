@@ -5,9 +5,13 @@ export const RENDER_FPS = 30 // React 렌더 주기 (RAF는 60fps)
 
 // === 프레임률 독립 (dt 보정) ===
 // 이동 로직은 60fps 기준으로 튜닝됨 — frameScale(dt)로 저fps에서 이동량을 보정해
-// 슬로우모션을 막는다. 60fps면 s≈1(기존과 동일), 30fps면 s≈2.
+// 슬로우모션을 막는다. 60fps면 dt비율 s≈1, 30fps면 s≈2.
 export const PHYSICS_FRAME_MS = 1000 / 60 // 물리 기준 프레임(60fps) 길이
 export const MAX_FRAME_SCALE = 2 // dt 폭주(탭 복귀 등) 시 이동량 상한 — 충돌 터널링 방지
+// 게임 전반 속도 배율 — frameScale에 곱해져 모든 이동(캐릭터/비둘기, 솔로/PvP)에 일괄 적용.
+// dt 보정으로 60fps 정규화되면서 (기존 고주사율 환경의 빠른 체감 대비) 굼떠진 것을 끌어올린다.
+// 1.0 = 정확히 60fps 기준 속도. 직접 플레이하며 이 값 하나로 전체 속도감을 조정한다.
+export const GAME_SPEED_MUL = 1.5
 
 // === 캐릭터 ===
 export const KISS_DIST = 42 // px, 츄와 ↔ 고양이 뽀뽀 판정 거리
