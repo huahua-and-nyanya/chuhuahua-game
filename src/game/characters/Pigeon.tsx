@@ -28,9 +28,9 @@ export function Pigeon({ fleeing, vx = 0, vy = 0 }: PigeonProps): JSX.Element {
         height: 90,
         objectFit: 'contain',
         flexShrink: 0,
-        filter: fleeing
-          ? 'grayscale(0.5) opacity(0.8)'
-          : 'drop-shadow(0 0 4px rgba(255, 50, 50, 0.4))',
+        // flying 시 drop-shadow는 등장 순간(특히 wave 다수) 페인트 비용이 커 제거.
+        // fleeing의 grayscale/opacity는 blur가 아니라 가벼워 유지.
+        filter: fleeing ? 'grayscale(0.5) opacity(0.8)' : 'none',
         transform,
         transition: 'transform 0.15s ease-out, filter 0.2s ease',
         pointerEvents: 'none',
