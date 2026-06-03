@@ -13,6 +13,7 @@ import {
   PIGEON_WAVE_MIN_DELAY,
 } from '@/game/constants'
 import { clearAllTrackedTimeouts, trackedTimeout } from '@/hooks/trackedTimeout'
+import { difficultyLevel } from '@/game/progression/level'
 
 import type { GameRefs } from './state'
 import type { PigeonEdge } from '@/game/state'
@@ -208,7 +209,11 @@ const WAVE_EDGES: PigeonEdge[] = ['top', 'left', 'right', 'bottom']
 //   하한을 cap 적용된 maxSize 기준으로 계산 → LV11+ 구간도 5~10 유지.
 //   예) LV6 → 3~6, LV10 → 5~10, LV2 → 1~2, LV1 → 1.
 function pickWaveSize(level: number): number {
-  const maxSize = Math.min(level, PIGEON_WAVE_MAX_SIZE)
+  // LV6+ 후반 압축 — 상한 계산에 difficultyLevel 적용(LV10 상한 10 → 7).
+  const maxSize = Math.min(
+    Math.floor(difficultyLevel(level)),
+    PIGEON_WAVE_MAX_SIZE,
+  )
   const minSize = Math.max(1, Math.ceil(maxSize / 2))
   return minSize + Math.floor(Math.random() * (maxSize - minSize + 1))
 }
@@ -227,9 +232,11 @@ function schedulePigeonWave(deps: SpawnDeps): void {
   // wedding 등 pigeonDisabled 게임변형 — wave 예약 자체를 건너뛴다(재귀 예약도 중단).
   if (deps.getPigeonDisabled?.()) return
   const level = deps.getLevel()
+  // LV6+ 후반 압축 — wave 간격 단축 기울기에 difficultyLevel 적용(LV10 5.0s → 7.4s).
   const baseDelay = Math.max(
     PIGEON_WAVE_MIN_DELAY,
-    PIGEON_WAVE_BASE_DELAY - level * PIGEON_WAVE_DELAY_PER_LEVEL,
+    PIGEON_WAVE_BASE_DELAY -
+      difficultyLevel(level) * PIGEON_WAVE_DELAY_PER_LEVEL,
   )
   const pigeonMul = deps.getPigeonSpawnMul?.() ?? 1
   const delay =

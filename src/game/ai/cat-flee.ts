@@ -17,6 +17,7 @@ import {
 import { getCatSpeedMul } from '@/game/effects'
 import type { GameRefs } from '@/game/loop/state'
 import { clamp } from '@/game/physics'
+import { difficultyLevel } from '@/game/progression/level'
 
 // reference 1728: dash 발동 최소 레벨.
 const DASH_MIN_LEVEL = 2
@@ -41,7 +42,8 @@ export function updateCatFlee(
 ): void {
   void dt
   const { cat, chi, pigeons, ai } = refs
-  const baseLerp = CAT_LERP_BASE + level * CAT_LERP_PER_LEVEL
+  // LV6+ 후반 압축 — 추격 lerp만 difficultyLevel 적용. 회피(flee*)는 의도적으로 제외.
+  const baseLerp = CAT_LERP_BASE + difficultyLevel(level) * CAT_LERP_PER_LEVEL
   // 회피 매커니즘 — 레벨↑ 시 트리거 거리/도망 거리/lerp 배수 모두 증가.
   const fleeTrigger = CAT_FLEE_TRIGGER_BASE + level * CAT_FLEE_TRIGGER_PER_LEVEL
   const fleeLookahead =

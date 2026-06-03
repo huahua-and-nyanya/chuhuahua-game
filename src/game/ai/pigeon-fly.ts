@@ -5,6 +5,7 @@ import {
   PIGEON_SPEED_PER_LEVEL,
 } from '@/game/constants'
 import type { GameRefs } from '@/game/loop/state'
+import { difficultyLevel } from '@/game/progression/level'
 
 // 화면 밖 cull margin — reference 1765: 양옆/위아래 모두 120px.
 const OFFSCREEN_MARGIN = 120
@@ -18,7 +19,9 @@ const OFFSCREEN_MARGIN = 120
 export function updatePigeons(refs: GameRefs, level: number, dt: number): void {
   void dt
   const { pigeons, cat } = refs
-  const psp = PIGEON_SPEED_BASE + level * PIGEON_SPEED_PER_LEVEL
+  // LV6+ 후반 압축 — difficultyLevel로 레벨 기울기를 완만하게(LV10 5.6 → 4.6).
+  const psp =
+    PIGEON_SPEED_BASE + difficultyLevel(level) * PIGEON_SPEED_PER_LEVEL
 
   const surviving: typeof pigeons = []
   for (const pigeon of pigeons) {

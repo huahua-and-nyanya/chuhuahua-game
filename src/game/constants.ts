@@ -100,6 +100,12 @@ export const MAX_LEVEL = 10
 export const WEDDING_LEVEL_THRESHOLDS = [0, 15, 35, 60, 90, 130] as const
 export const WEDDING_MAX_LEVEL = 5
 
+// 후반 난이도 압축 — LV이 FROM 초과 시 난이도 레버의 레벨 기울기를 SLOPE배로 완만하게.
+// LV5까지는 기존 곡선 그대로, LV6+만 증가율을 줄여 후반 난도 급상승을 완화한다.
+// (적용 레버: 비둘기 속도/wave 간격/wave 크기/냐 추격 lerp. progression/level.ts difficultyLevel)
+export const DIFFICULTY_SOFTEN_FROM = 5
+export const DIFFICULTY_SOFTEN_SLOPE = 0.5
+
 // === PvP 게임 규칙 ===
 export const PVP_TIME_LIMIT = 30000 // ms — 츄와와에게 주어진 시간
 export const PVP_KISS_GOAL = 10
