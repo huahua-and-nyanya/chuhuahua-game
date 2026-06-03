@@ -1,4 +1,9 @@
-import { GAME_HEIGHT, GAME_WIDTH } from './constants'
+import {
+  GAME_HEIGHT,
+  GAME_WIDTH,
+  MAX_FRAME_SCALE,
+  PHYSICS_FRAME_MS,
+} from './constants'
 
 // === 거리 / 각도 ===
 
@@ -33,6 +38,13 @@ export function clamp(v: number, min: number, max: number): number {
 // t는 0~1 가정, 클램프 안 함 (호출 측 책임)
 export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t
+}
+
+// 프레임률 독립 스케일 — dt(ms)를 60fps 프레임 기준 배수로 환산.
+// 위치(x += vx * s)와 lerp 가속(v += (target-v)*k*s)에 곱해 저fps 슬로우모션을 보정한다.
+// MAX_FRAME_SCALE로 상한 — dt 폭주(탭 복귀/심한 끊김) 시 순간이동·충돌 터널링 방지.
+export function frameScale(dt: number): number {
+  return clamp(dt / PHYSICS_FRAME_MS, 0, MAX_FRAME_SCALE)
 }
 
 // === 충돌 ===

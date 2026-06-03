@@ -1,7 +1,7 @@
 import { ACCEL, GAME_HEIGHT, GAME_WIDTH, MAX_SPEED } from '@/game/constants'
 import { getCatSpeedMul } from '@/game/effects'
 import type { GameRefs } from '@/game/loop/state'
-import { clamp } from '@/game/physics'
+import { clamp, frameScale } from '@/game/physics'
 
 import { isKeyDown, type VirtualInputState } from './chi-input'
 
@@ -46,7 +46,7 @@ export function applyCatPvpPhysics(
   now: number,
   dt: number,
 ): void {
-  void dt
+  const s = frameScale(dt)
   const cat = refs.cat
 
   // PvP에선 cat = 화살표 키 + (모바일) D-pad 가상 입력 OR. 둘 다 같은 방향 신호 동등.
@@ -72,8 +72,8 @@ export function applyCatPvpPhysics(
     ctvy = (ctvy / clen) * speed
   }
 
-  cat.vx += (ctvx - cat.vx) * ACCEL
-  cat.vy += (ctvy - cat.vy) * ACCEL
+  cat.vx += (ctvx - cat.vx) * ACCEL * s
+  cat.vy += (ctvy - cat.vy) * ACCEL * s
 
   if (Math.abs(cat.vx) < 0.05) cat.vx = 0
   if (Math.abs(cat.vy) < 0.05) cat.vy = 0
@@ -86,8 +86,8 @@ export function applyCatPvpPhysics(
       ? CAT_MARGIN_SPEDUP
       : CAT_MARGIN_DEFAULT
 
-  let cnx = cat.x + cat.vx
-  let cny = cat.y + cat.vy
+  let cnx = cat.x + cat.vx * s
+  let cny = cat.y + cat.vy * s
   if (cnx < margin || cnx > GAME_WIDTH - margin) {
     cnx = clamp(cnx, margin, GAME_WIDTH - margin)
     cat.vx = 0

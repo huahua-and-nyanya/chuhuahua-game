@@ -16,7 +16,7 @@ import {
 } from '@/game/constants'
 import { getCatSpeedMul } from '@/game/effects'
 import type { GameRefs } from '@/game/loop/state'
-import { clamp } from '@/game/physics'
+import { clamp, frameScale } from '@/game/physics'
 import { difficultyLevel } from '@/game/progression/level'
 
 // reference 1728: dash 발동 최소 레벨.
@@ -40,7 +40,7 @@ export function updateCatFlee(
   dt: number,
   catSpeedMul = 1,
 ): void {
-  void dt
+  const s = frameScale(dt)
   const { cat, chi, pigeons, ai } = refs
   // LV6+ 후반 압축 — 추격 lerp만 difficultyLevel 적용. 회피(flee*)는 의도적으로 제외.
   const baseLerp = CAT_LERP_BASE + difficultyLevel(level) * CAT_LERP_PER_LEVEL
@@ -158,8 +158,8 @@ export function updateCatFlee(
   // 솔로엔 둘 다 안 스폰되므로 PvP F에서만 실제 영향.
   // 옷 효과 catSpeedMul은 디버프 배율과 곱연산.
   const speedMul = getCatSpeedMul(refs, now) * catSpeedMul
-  cat.x += (target.x - cat.x) * activeLerp * speedMul
-  cat.y += (target.y - cat.y) * activeLerp * speedMul
+  cat.x += (target.x - cat.x) * activeLerp * speedMul * s
+  cat.y += (target.y - cat.y) * activeLerp * speedMul * s
 
   // facing — 시선은 chi 추적 (PvP에선 본 분기 사용 안 함).
   if (chi.x > cat.x + 5) cat.facing = 'right'

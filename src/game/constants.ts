@@ -3,6 +3,12 @@ export const GAME_WIDTH = 640 // px
 export const GAME_HEIGHT = 480 // px
 export const RENDER_FPS = 30 // React 렌더 주기 (RAF는 60fps)
 
+// === 프레임률 독립 (dt 보정) ===
+// 이동 로직은 60fps 기준으로 튜닝됨 — frameScale(dt)로 저fps에서 이동량을 보정해
+// 슬로우모션을 막는다. 60fps면 s≈1(기존과 동일), 30fps면 s≈2.
+export const PHYSICS_FRAME_MS = 1000 / 60 // 물리 기준 프레임(60fps) 길이
+export const MAX_FRAME_SCALE = 2 // dt 폭주(탭 복귀 등) 시 이동량 상한 — 충돌 터널링 방지
+
 // === 캐릭터 ===
 export const KISS_DIST = 42 // px, 츄와 ↔ 고양이 뽀뽀 판정 거리
 export const KISS_DURATION = 500 // ms, 뽀뽀 무적 시간 (= 2단계 통통 점프 동안 무적 보장)

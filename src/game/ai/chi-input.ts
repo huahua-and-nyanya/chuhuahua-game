@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { ACCEL, GAME_HEIGHT, GAME_WIDTH, MAX_SPEED } from '@/game/constants'
 import { getChiSpeedMul } from '@/game/effects'
 import type { GameRefs } from '@/game/loop/state'
-import { clamp } from '@/game/physics'
+import { clamp, frameScale } from '@/game/physics'
 
 // reference 739: keysRef.current = {} 패턴 그대로.
 // 모듈 스코프 단일 인스턴스 — 사이클 C 제약(동시 게임 1개)과 일관.
@@ -124,8 +124,8 @@ export function applyChiPhysics(
   getMode?: () => 'solo' | 'pvp',
   chiSpeedMul = 1,
 ): void {
-  void dt
   void getLevel
+  const s = frameScale(dt)
   const k = keysRef.current
   const v = virtualInputRef.current
   const chi = refs.chi
@@ -153,9 +153,9 @@ export function applyChiPhysics(
     tvy = (tvy / len) * speed
   }
 
-  // lerp 적용. reference 1625-1626 그대로 — ACCEL 배수, dt 정규화 X.
-  chi.vx += (tvx - chi.vx) * ACCEL
-  chi.vy += (tvy - chi.vy) * ACCEL
+  // lerp 적용. reference 1625-1626 — ACCEL 배수에 frameScale(s) 곱해 프레임률 독립.
+  chi.vx += (tvx - chi.vx) * ACCEL * s
+  chi.vy += (tvy - chi.vy) * ACCEL * s
 
   // 미세 속도 dead-zone (reference 1627-1628).
   if (Math.abs(chi.vx) < 0.05) chi.vx = 0
@@ -164,8 +164,8 @@ export function applyChiPhysics(
   // 위치 갱신 + 동적 clamp (reference 1633: slow=65, 평소=50).
   const isSlow = refs.effects.chiSlow.until > now
   const margin = isSlow ? CHI_MARGIN_SLOW : CHI_MARGIN_NORMAL
-  let nx = chi.x + chi.vx
-  let ny = chi.y + chi.vy
+  let nx = chi.x + chi.vx * s
+  let ny = chi.y + chi.vy * s
   if (nx < margin || nx > GAME_WIDTH - margin) {
     nx = clamp(nx, margin, GAME_WIDTH - margin)
     chi.vx = 0
