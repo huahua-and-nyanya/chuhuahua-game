@@ -188,7 +188,7 @@ export function GameOverModal(props: GameOverModalProps) {
                       : `닉네임 (최대 ${NICKNAME_MAX}자)`
                   }
                   autoFocus
-                  className="font-body h-10.5 flex-1 rounded-xl border-[1.5px] px-3.5 text-sm leading-relaxed"
+                  className="font-body h-10.5 min-w-0 flex-1 rounded-xl border-[1.5px] px-3.5 text-sm leading-relaxed"
                   style={{
                     borderColor: COLOR_INPUT_BORDER,
                     color: COLOR_VALUE,
@@ -209,7 +209,7 @@ export function GameOverModal(props: GameOverModalProps) {
                 style={{ background: COLOR_PINK_SOFT }}
               >
                 <span
-                  className="font-body flex-1 text-sm font-medium"
+                  className="font-body min-w-0 flex-1 truncate text-sm font-medium"
                   style={{ color: COLOR_VALUE }}
                 >
                   {nickname.trim()}
