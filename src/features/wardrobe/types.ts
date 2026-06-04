@@ -6,7 +6,8 @@ export interface ClothEffects {
   chiSpeedMul?: number
   catSpeedMul?: number
   pigeonSpawnMul?: number
-  itemSpawnMul?: number
+  itemSpawnMul?: number // 전체 아이템 간격 배수 (<1 = 자주)
+  aidItemSpawnMul?: number // 우호 아이템(kibble/fish)만 간격 배수 (<1 = 자주)
   // S+ 전용 게임변형 필드
   pigeonDisabled?: boolean
   itemPoolOverride?: string

@@ -10,6 +10,7 @@ export const GRADE_POLICY = {
       'catSpeedMul',
       'pigeonSpawnMul',
       'itemSpawnMul',
+      'aidItemSpawnMul',
     ],
   },
   S: {
@@ -20,6 +21,7 @@ export const GRADE_POLICY = {
       'catSpeedMul',
       'pigeonSpawnMul',
       'itemSpawnMul',
+      'aidItemSpawnMul',
     ],
   },
   'S+': {

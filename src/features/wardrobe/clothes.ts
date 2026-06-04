@@ -224,6 +224,7 @@ export const CLOTHES_S: Record<string, ClothEntry> = {
     effects: {
       catSpeedMul: 0.7,
       pigeonSpawnMul: 1.7,
+      aidItemSpawnMul: 0.6,
     },
     kissingAsset: true,
     endingId: 'propose',
@@ -238,6 +239,7 @@ export const CLOTHES_S: Record<string, ClothEntry> = {
     effects: {
       chiSpeedMul: 1.5,
       pigeonSpawnMul: 1.7,
+      aidItemSpawnMul: 0.6,
     },
   },
 }

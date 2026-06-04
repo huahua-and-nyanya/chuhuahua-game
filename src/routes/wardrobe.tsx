@@ -62,6 +62,10 @@ function effectLabel(effects: ClothEffects): string[] {
     lines.push(
       `아이템 ${Math.round((1 - effects.itemSpawnMul) * 100)}% 더 자주`,
     )
+  if (effects.aidItemSpawnMul)
+    lines.push(
+      `도움 아이템 ${Math.round((1 - effects.aidItemSpawnMul) * 100)}% 더 자주`,
+    )
   return lines
 }
 
