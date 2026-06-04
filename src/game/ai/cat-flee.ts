@@ -42,6 +42,8 @@ export function updateCatFlee(
 ): void {
   const s = frameScale(dt)
   const { cat, chi, pigeons, ai } = refs
+  // 쉴드 활성 시 비둘기 1회 무효(pigeon-hit) — 피할 이유가 없으니 회피 대신 돌진(아래).
+  const shieldOn = refs.effects.catShield.until > now
   // LV6+ 후반 압축 — 추격 lerp만 difficultyLevel 적용. 회피(flee*)는 의도적으로 제외.
   const baseLerp = CAT_LERP_BASE + difficultyLevel(level) * CAT_LERP_PER_LEVEL
   // 회피 매커니즘 — 레벨↑ 시 트리거 거리/도망 거리/lerp 배수 모두 증가.
@@ -65,20 +67,30 @@ export function updateCatFlee(
       }
     }
     if (closest !== null) {
-      const dxp = cat.x - closest.x
-      const dyp = cat.y - closest.y
-      const len = minD || 1
-      target = {
-        x: clamp(
-          cat.x + (dxp / len) * fleeLookahead,
-          SCREEN_MARGIN,
-          GAME_WIDTH - SCREEN_MARGIN,
-        ),
-        y: clamp(
-          cat.y + (dyp / len) * fleeLookahead,
-          SCREEN_MARGIN,
-          GAME_HEIGHT - SCREEN_MARGIN,
-        ),
+      if (shieldOn) {
+        // 쉴드 — 회피 대신 가장 가까운 비둘기로 당당히 돌진. 닿으면 pigeon-hit이 격퇴(푸시)+점수,
+        // 쉴드는 유지. 비둘기 위치로 직접 향하므로 회피 특유의 좌우 떨림도 사라진다.
+        target = {
+          x: clamp(closest.x, SCREEN_MARGIN, GAME_WIDTH - SCREEN_MARGIN),
+          y: clamp(closest.y, SCREEN_MARGIN, GAME_HEIGHT - SCREEN_MARGIN),
+        }
+      } else {
+        // 평소 — 비둘기 반대 방향으로 도망.
+        const dxp = cat.x - closest.x
+        const dyp = cat.y - closest.y
+        const len = minD || 1
+        target = {
+          x: clamp(
+            cat.x + (dxp / len) * fleeLookahead,
+            SCREEN_MARGIN,
+            GAME_WIDTH - SCREEN_MARGIN,
+          ),
+          y: clamp(
+            cat.y + (dyp / len) * fleeLookahead,
+            SCREEN_MARGIN,
+            GAME_HEIGHT - SCREEN_MARGIN,
+          ),
+        }
       }
       activeLerp = baseLerp * fleeLerpMul
     }
