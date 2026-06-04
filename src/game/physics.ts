@@ -41,11 +41,12 @@ export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t
 }
 
-// 프레임률 독립 스케일 × 게임 속도 배율 — dt(ms)를 60fps 프레임 기준 배수로 환산 후 GAME_SPEED_MUL 곱.
-// 위치(x += vx * s)와 lerp 가속(v += (target-v)*k*s)에 곱해 저fps 슬로우모션 보정 + 전반 속도 조정.
+// 프레임률 독립 스케일 × 속도 배율 — dt(ms)를 60fps 프레임 기준 배수로 환산 후 speedMul 곱.
+// 위치(x += vx * s)와 lerp 가속(v += (target-v)*k*s)에 곱해 저fps 슬로우모션 보정 + 속도 조정.
 // dt 비율은 MAX_FRAME_SCALE로 상한 — dt 폭주(탭 복귀/심한 끊김) 시 순간이동·충돌 터널링 방지.
-export function frameScale(dt: number): number {
-  return clamp(dt / PHYSICS_FRAME_MS, 0, MAX_FRAME_SCALE) * GAME_SPEED_MUL
+// speedMul 기본은 GAME_SPEED_MUL(전반). 비둘기처럼 배율을 따로 주려면 PIGEON_SPEED_MUL 등을 넘긴다.
+export function frameScale(dt: number, speedMul = GAME_SPEED_MUL): number {
+  return clamp(dt / PHYSICS_FRAME_MS, 0, MAX_FRAME_SCALE) * speedMul
 }
 
 // === 충돌 ===

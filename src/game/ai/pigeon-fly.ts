@@ -2,6 +2,7 @@ import {
   GAME_HEIGHT,
   GAME_WIDTH,
   PIGEON_SPEED_BASE,
+  PIGEON_SPEED_MUL,
   PIGEON_SPEED_PER_LEVEL,
 } from '@/game/constants'
 import type { GameRefs } from '@/game/loop/state'
@@ -18,7 +19,8 @@ const OFFSCREEN_MARGIN = 120
 // 츄 60px 내 접근 시 fleeing 전환 책임은 C-3' pigeon-hit.ts에 있음.
 // dt 인자는 호환용으로만 받음.
 export function updatePigeons(refs: GameRefs, level: number, dt: number): void {
-  const s = frameScale(dt)
+  // 비둘기는 전반 속도 배율(GAME_SPEED_MUL) 미적용 — PIGEON_SPEED_MUL(기본 1.0)로 따로 둔다.
+  const s = frameScale(dt, PIGEON_SPEED_MUL)
   const { pigeons, cat } = refs
   // LV6+ 후반 압축 — difficultyLevel로 레벨 기울기를 완만하게(LV10 5.6 → 4.6).
   const psp =
