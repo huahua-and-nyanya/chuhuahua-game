@@ -12,6 +12,9 @@ export const MAX_FRAME_SCALE = 2 // dt 폭주(탭 복귀 등) 시 이동량 상�
 // dt 보정으로 60fps 정규화되면서 (기존 고주사율 환경의 빠른 체감 대비) 굼떠진 것을 끌어올린다.
 // 1.0 = 정확히 60fps 기준 속도. 직접 플레이하며 이 값 하나로 전체 속도감을 조정한다.
 export const GAME_SPEED_MUL = 1.5
+// 비둘기 전용 속도 배율 — 전반 배율(GAME_SPEED_MUL)과 분리. 1.0 = 비둘기는 60fps 기준 속도 유지.
+// 츄/고양이는 빨라지되 비둘기는 따라 빨라지지 않게(난이도 과상승 방지) 별도로 둔다.
+export const PIGEON_SPEED_MUL = 1.0
 
 // === 캐릭터 ===
 export const KISS_DIST = 42 // px, 츄와 ↔ 고양이 뽀뽀 판정 거리
