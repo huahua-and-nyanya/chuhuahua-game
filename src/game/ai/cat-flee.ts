@@ -68,12 +68,15 @@ export function updateCatFlee(
     }
     if (closest !== null) {
       if (shieldOn) {
-        // 쉴드 — 회피 대신 가장 가까운 비둘기로 당당히 돌진. 닿으면 pigeon-hit이 격퇴(푸시)+점수,
+        // 쉴드 — 회피 대신 가장 가까운 비둘기로 당당히 향함. 닿으면 pigeon-hit이 격퇴(푸시)+점수,
         // 쉴드는 유지. 비둘기 위치로 직접 향하므로 회피 특유의 좌우 떨림도 사라진다.
+        // lerp는 회피 배수(fleeLerpMul) 없이 평소 추격 수준 — 비둘기가 cat 쪽으로 날아오므로
+        // 살짝만 향해도 닿는다. 강한 배수면 과하게 달려들어 부자연스러움.
         target = {
           x: clamp(closest.x, SCREEN_MARGIN, GAME_WIDTH - SCREEN_MARGIN),
           y: clamp(closest.y, SCREEN_MARGIN, GAME_HEIGHT - SCREEN_MARGIN),
         }
+        activeLerp = baseLerp
       } else {
         // 평소 — 비둘기 반대 방향으로 도망.
         const dxp = cat.x - closest.x
@@ -91,8 +94,8 @@ export function updateCatFlee(
             GAME_HEIGHT - SCREEN_MARGIN,
           ),
         }
+        activeLerp = baseLerp * fleeLerpMul
       }
-      activeLerp = baseLerp * fleeLerpMul
     }
   } else {
     const catSpedUp = refs.effects.catSpeedup.until > now
