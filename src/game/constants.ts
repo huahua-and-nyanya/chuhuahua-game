@@ -42,7 +42,7 @@ export const CAT_DASH_COOLDOWN = 1200 // ms
 
 // === 비둘기 ===
 export const PIGEON_SPEED_BASE = 1.6 // px/frame
-export const PIGEON_SPEED_PER_LEVEL = 0.4 // 난이도 강화: 0.25 → 0.4 (LV10: 5.6)
+export const PIGEON_SPEED_PER_LEVEL = 0.3 // 레벨당 속도 증가 (difficultyLevel 적용 시 LV10 약 3.85)
 // F-1.8: wave 시스템 도입 — 단일 스폰(PIGEON_SPAWN_*) 대신 spawnPigeonWave가 cadence 관리.
 // 기존 단일 스폰 상수는 레퍼런스로만 보관 (다른 모듈에서 import 안 함).
 export const PIGEON_SPAWN_MIN = 2500 // ms, [legacy] 단일 스폰 최소 간격
@@ -54,7 +54,7 @@ export const PIGEON_WAVE_DELAY_PER_LEVEL = 1200 // ms, 레벨당 단축
 export const PIGEON_WAVE_MIN_DELAY = 5000 // ms, 최소 wave 간격
 export const PIGEON_WAVE_DELAY_JITTER = 1800 // ms, base에 더해지는 랜덤 jitter 상한
 export const PIGEON_WAVE_MEMBER_SPACING = 600 // ms, 같은 wave 안 비둘기 간 간격
-export const PIGEON_WAVE_MAX_SIZE = 10 // wave당 비둘기 상한 — waveSize = min(level, N)
+export const PIGEON_WAVE_MAX_SIZE = 5 // wave당 비둘기 상한 — waveSize = min(difficultyLevel, N)
 export const PIGEON_HARD_CAP = 50 // 필드 비둘기 성능 안전망 (게임플레이 상한 아님, DOM/충돌검사 폭주 방지)
 export const PIGEON_SCARE_DIST = 60 // px, 츄와의 접근 시 도망 거리
 export const PIGEON_HIT_DIST = 30 // px, 피격 판정 거리
