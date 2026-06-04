@@ -737,6 +737,7 @@ function SoloPage() {
       showToast,
       getPigeonSpawnMul: () => equippedEffectsRef.current.pigeonSpawnMul ?? 1,
       getItemSpawnMul: () => equippedEffectsRef.current.itemSpawnMul ?? 1,
+      getAidItemSpawnMul: () => equippedEffectsRef.current.aidItemSpawnMul ?? 1,
       getPigeonDisabled: () =>
         equippedEffectsRef.current.pigeonDisabled ?? false,
       getWeddingItemMode: () =>

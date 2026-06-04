@@ -3,6 +3,16 @@ export const GAME_WIDTH = 640 // px
 export const GAME_HEIGHT = 480 // px
 export const RENDER_FPS = 30 // React 렌더 주기 (RAF는 60fps)
 
+// === 프레임률 독립 (dt 보정) ===
+// 이동 로직은 60fps 기준으로 튜닝됨 — frameScale(dt)로 저fps에서 이동량을 보정해
+// 슬로우모션을 막는다. 60fps면 dt비율 s≈1, 30fps면 s≈2.
+export const PHYSICS_FRAME_MS = 1000 / 60 // 물리 기준 프레임(60fps) 길이
+export const MAX_FRAME_SCALE = 2 // dt 폭주(탭 복귀 등) 시 이동량 상한 — 충돌 터널링 방지
+// 게임 전반 속도 배율 — frameScale에 곱해져 모든 이동(캐릭터/비둘기, 솔로/PvP)에 일괄 적용.
+// dt 보정으로 60fps 정규화되면서 (기존 고주사율 환경의 빠른 체감 대비) 굼떠진 것을 끌어올린다.
+// 1.0 = 정확히 60fps 기준 속도. 직접 플레이하며 이 값 하나로 전체 속도감을 조정한다.
+export const GAME_SPEED_MUL = 1.5
+
 // === 캐릭터 ===
 export const KISS_DIST = 42 // px, 츄와 ↔ 고양이 뽀뽀 판정 거리
 export const KISS_DURATION = 500 // ms, 뽀뽀 무적 시간 (= 2단계 통통 점프 동안 무적 보장)
@@ -99,6 +109,12 @@ export const MAX_LEVEL = 10
 // wedding 게임변형 — 5압축 레벨 곡선 (LV0~LV5, 길이 6). 일반 곡선과 별개, wedding 모드일 때만.
 export const WEDDING_LEVEL_THRESHOLDS = [0, 15, 35, 60, 90, 130] as const
 export const WEDDING_MAX_LEVEL = 5
+
+// 후반 난이도 압축 — LV이 FROM 초과 시 난이도 레버의 레벨 기울기를 SLOPE배로 완만하게.
+// LV5까지는 기존 곡선 그대로, LV6+만 증가율을 줄여 후반 난도 급상승을 완화한다.
+// (적용 레버: 비둘기 속도/wave 간격/wave 크기/냐 추격 lerp. progression/level.ts difficultyLevel)
+export const DIFFICULTY_SOFTEN_FROM = 5
+export const DIFFICULTY_SOFTEN_SLOPE = 0.5
 
 // === PvP 게임 규칙 ===
 export const PVP_TIME_LIMIT = 30000 // ms — 츄와와에게 주어진 시간

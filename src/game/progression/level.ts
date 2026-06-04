@@ -1,4 +1,6 @@
 import {
+  DIFFICULTY_SOFTEN_FROM,
+  DIFFICULTY_SOFTEN_SLOPE,
   GAME_HEIGHT,
   GAME_WIDTH,
   LEVEL_THRESHOLDS,
@@ -82,4 +84,16 @@ export function checkLevelUp(params: CheckLevelUpParams): void {
 // 의미 있는 레벨 마일스톤 — 토스트 강조용. 라우트에서 isMilestoneLevel(newLevel) 분기.
 export function isMilestoneLevel(level: number): boolean {
   return level === 2 || level === 3 || level === 5 || level === 7
+}
+
+// 후반 난이도 압축 — 난이도 레버(비둘기 속도/wave/냐 추격)가 쓰는 "유효 레벨".
+// LV이 DIFFICULTY_SOFTEN_FROM 이하면 그대로, 초과분만 기울기 ×SLOPE로 완만하게 한다.
+// 점수→레벨(computeLevel)은 그대로 두고, 레버에 들어가는 레벨값만 이 함수를 거친다.
+// 예) FROM=5, SLOPE=0.5 → LV5=5.0, LV7=6.0, LV10=7.5.
+export function difficultyLevel(level: number): number {
+  if (level <= DIFFICULTY_SOFTEN_FROM) return level
+  return (
+    DIFFICULTY_SOFTEN_FROM +
+    (level - DIFFICULTY_SOFTEN_FROM) * DIFFICULTY_SOFTEN_SLOPE
+  )
 }
