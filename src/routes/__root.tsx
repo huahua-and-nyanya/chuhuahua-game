@@ -195,7 +195,8 @@ function RootLayout() {
               <DSFrame maxWidth={dsFrameMaxWidth}>
                 <GameFrameCard scale={scale}>{gameCardChildren}</GameFrameCard>
                 {dsMenuRow}
-                <VirtualController />
+                {/* PvP에선 D-pad가 고양이를 조작 — WASD 패드는 츄와와 유지. 솔로는 둘 다 츄. */}
+                <VirtualController catControl={isPvpLocal} />
               </DSFrame>
             ) : (
               <>

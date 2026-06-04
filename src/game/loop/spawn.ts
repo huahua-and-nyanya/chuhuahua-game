@@ -13,6 +13,7 @@ import {
   PIGEON_WAVE_MIN_DELAY,
 } from '@/game/constants'
 import { clearAllTrackedTimeouts, trackedTimeout } from '@/hooks/trackedTimeout'
+import { difficultyLevel } from '@/game/progression/level'
 
 import type { GameRefs } from './state'
 import type { PigeonEdge } from '@/game/state'
@@ -52,9 +53,11 @@ export type SpawnDeps = {
   showToast?: (text: string, color: string) => void
   // 옷 효과 곱셈 배율 getter (사이클 W). 미지정 시 1.
   // pigeonSpawnMul: 비둘기 wave 간격 × 배율 (클수록 비둘기 적게 등장).
-  // itemSpawnMul: 아이템 첫/재스폰 간격 × 배율 (작을수록 아이템 자주 등장).
+  // itemSpawnMul: 아이템 첫/재스폰 간격 × 배율 (작을수록 아이템 자주 등장) — 전체 아이템.
+  // aidItemSpawnMul: 우호 아이템(kibble/fish)만 간격 × 배율 (작을수록 자주). 디버프/웨딩 풀엔 미적용.
   getPigeonSpawnMul?: () => number
   getItemSpawnMul?: () => number
+  getAidItemSpawnMul?: () => number
   // 사이클 W (wedding S+ 게임변형):
   // pigeonDisabled: true 시 비둘기 wave 예약 자체를 중단.
   // weddingItemMode: true 시 일반 아이템(kibble/fish/디버프) 대신 웨딩 3종을 등장.
@@ -72,6 +75,8 @@ export function startSpawnScheduler(deps: SpawnDeps): void {
 
   // 첫 아이템 1회씩. respawn은 픽업 처리 측(C-3)이 scheduleItemRespawn으로 트리거.
   const itemMul = deps.getItemSpawnMul?.() ?? 1
+  // 우호 아이템(kibble/fish) 전용 추가 배수 — 웨딩 풀엔 미적용(우호 아님).
+  const aidMul = deps.getAidItemSpawnMul?.() ?? 1
 
   if (deps.getWeddingItemMode?.()) {
     // wedding 모드 — 일반 아이템 대신 웨딩 3종 첫 등장. 첫 딜레이는 기존 상수 재사용.
@@ -88,17 +93,23 @@ export function startSpawnScheduler(deps: SpawnDeps): void {
       }, delay * itemMul)
     }
   } else {
-    trackedTimeout(() => {
-      if (currentDeps !== deps) return
-      if (!canSpawnItem(deps.refs, 'kibble')) return
-      deps.spawnItem('kibble')
-    }, KIBBLE_FIRST_DELAY * itemMul)
+    trackedTimeout(
+      () => {
+        if (currentDeps !== deps) return
+        if (!canSpawnItem(deps.refs, 'kibble')) return
+        deps.spawnItem('kibble')
+      },
+      KIBBLE_FIRST_DELAY * itemMul * aidMul,
+    )
 
-    trackedTimeout(() => {
-      if (currentDeps !== deps) return
-      if (!canSpawnItem(deps.refs, 'fish')) return
-      deps.spawnItem('fish')
-    }, FISH_FIRST_DELAY * itemMul)
+    trackedTimeout(
+      () => {
+        if (currentDeps !== deps) return
+        if (!canSpawnItem(deps.refs, 'fish')) return
+        deps.spawnItem('fish')
+      },
+      FISH_FIRST_DELAY * itemMul * aidMul,
+    )
   }
 
   schedulePigeonWave(deps)
@@ -189,7 +200,12 @@ export function scheduleItemRespawn(kind: SoloSpawnKind): void {
     max = ITEM_RESPAWN_MAX * factor
   }
   const itemMul = deps.getItemSpawnMul?.() ?? 1
-  const delay = (min + Math.random() * (max - min)) * itemMul
+  // 우호 아이템(kibble/fish)만 추가 배수 — 디버프/웨딩 3종은 aidMul=1로 기존과 동일.
+  const aidMul =
+    kind === 'kibble' || kind === 'fish'
+      ? (deps.getAidItemSpawnMul?.() ?? 1)
+      : 1
+  const delay = (min + Math.random() * (max - min)) * itemMul * aidMul
   trackedTimeout(() => {
     if (currentDeps !== deps) return
     if (!canSpawnItem(deps.refs, kind)) return
@@ -208,7 +224,11 @@ const WAVE_EDGES: PigeonEdge[] = ['top', 'left', 'right', 'bottom']
 //   하한을 cap 적용된 maxSize 기준으로 계산 → LV11+ 구간도 5~10 유지.
 //   예) LV6 → 3~6, LV10 → 5~10, LV2 → 1~2, LV1 → 1.
 function pickWaveSize(level: number): number {
-  const maxSize = Math.min(level, PIGEON_WAVE_MAX_SIZE)
+  // LV6+ 후반 압축 — 상한 계산에 difficultyLevel 적용(LV10 상한 10 → 7).
+  const maxSize = Math.min(
+    Math.floor(difficultyLevel(level)),
+    PIGEON_WAVE_MAX_SIZE,
+  )
   const minSize = Math.max(1, Math.ceil(maxSize / 2))
   return minSize + Math.floor(Math.random() * (maxSize - minSize + 1))
 }
@@ -227,9 +247,11 @@ function schedulePigeonWave(deps: SpawnDeps): void {
   // wedding 등 pigeonDisabled 게임변형 — wave 예약 자체를 건너뛴다(재귀 예약도 중단).
   if (deps.getPigeonDisabled?.()) return
   const level = deps.getLevel()
+  // LV6+ 후반 압축 — wave 간격 단축 기울기에 difficultyLevel 적용(LV10 5.0s → 7.4s).
   const baseDelay = Math.max(
     PIGEON_WAVE_MIN_DELAY,
-    PIGEON_WAVE_BASE_DELAY - level * PIGEON_WAVE_DELAY_PER_LEVEL,
+    PIGEON_WAVE_BASE_DELAY -
+      difficultyLevel(level) * PIGEON_WAVE_DELAY_PER_LEVEL,
   )
   const pigeonMul = deps.getPigeonSpawnMul?.() ?? 1
   const delay =

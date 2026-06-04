@@ -771,8 +771,9 @@ function PlayerReadyCard({
       aria-pressed={ready}
       onClick={onToggleReady}
       onKeyDown={(e) => {
-        // Enter/Space로도 토글. stopPropagation으로 window의 Enter(시작) 핸들러와 충돌 차단.
-        if (e.key === 'Enter' || e.key === ' ') {
+        // Space로만 카드 토글. Enter는 토글하지 않고 window의 전역 시작 핸들러로 위임한다.
+        // (카드가 포커스를 가진 채 Enter를 누르면 준비가 풀리고 시작도 막히던 문제 방지.)
+        if (e.key === ' ') {
           e.preventDefault()
           e.stopPropagation()
           onToggleReady()

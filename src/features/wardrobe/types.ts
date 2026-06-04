@@ -6,7 +6,8 @@ export interface ClothEffects {
   chiSpeedMul?: number
   catSpeedMul?: number
   pigeonSpawnMul?: number
-  itemSpawnMul?: number
+  itemSpawnMul?: number // 전체 아이템 간격 배수 (<1 = 자주)
+  aidItemSpawnMul?: number // 우호 아이템(kibble/fish)만 간격 배수 (<1 = 자주)
   // S+ 전용 게임변형 필드
   pigeonDisabled?: boolean
   itemPoolOverride?: string
@@ -34,6 +35,7 @@ export interface WardrobeState {
 
 export interface PlayStats {
   proposeEndingCleared: boolean
+  freeGachaUsed: boolean // 첫 옷장 진입 무료 가챠 1회 소진 여부
 }
 
 export type GachaResult =
