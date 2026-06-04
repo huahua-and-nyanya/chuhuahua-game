@@ -11,7 +11,10 @@ export const MAX_FRAME_SCALE = 2 // dt 폭주(탭 복귀 등) 시 이동량 상�
 // 게임 전반 속도 배율 — frameScale에 곱해져 모든 이동(캐릭터/비둘기, 솔로/PvP)에 일괄 적용.
 // dt 보정으로 60fps 정규화되면서 (기존 고주사율 환경의 빠른 체감 대비) 굼떠진 것을 끌어올린다.
 // 1.0 = 정확히 60fps 기준 속도. 직접 플레이하며 이 값 하나로 전체 속도감을 조정한다.
-export const GAME_SPEED_MUL = 1.5
+export const GAME_SPEED_MUL = 1.3
+// 비둘기 전용 속도 배율 — 전반 배율(GAME_SPEED_MUL)과 분리. 1.0 = 비둘기는 60fps 기준 속도 유지.
+// 츄/고양이는 빨라지되 비둘기는 따라 빨라지지 않게(난이도 과상승 방지) 별도로 둔다.
+export const PIGEON_SPEED_MUL = 1.0
 
 // === 캐릭터 ===
 export const KISS_DIST = 42 // px, 츄와 ↔ 고양이 뽀뽀 판정 거리
@@ -39,7 +42,7 @@ export const CAT_DASH_COOLDOWN = 1200 // ms
 
 // === 비둘기 ===
 export const PIGEON_SPEED_BASE = 1.6 // px/frame
-export const PIGEON_SPEED_PER_LEVEL = 0.4 // 난이도 강화: 0.25 → 0.4 (LV10: 5.6)
+export const PIGEON_SPEED_PER_LEVEL = 0.3 // 레벨당 속도 증가 (difficultyLevel 적용 시 LV10 약 3.85)
 // F-1.8: wave 시스템 도입 — 단일 스폰(PIGEON_SPAWN_*) 대신 spawnPigeonWave가 cadence 관리.
 // 기존 단일 스폰 상수는 레퍼런스로만 보관 (다른 모듈에서 import 안 함).
 export const PIGEON_SPAWN_MIN = 2500 // ms, [legacy] 단일 스폰 최소 간격
@@ -51,7 +54,7 @@ export const PIGEON_WAVE_DELAY_PER_LEVEL = 1200 // ms, 레벨당 단축
 export const PIGEON_WAVE_MIN_DELAY = 5000 // ms, 최소 wave 간격
 export const PIGEON_WAVE_DELAY_JITTER = 1800 // ms, base에 더해지는 랜덤 jitter 상한
 export const PIGEON_WAVE_MEMBER_SPACING = 600 // ms, 같은 wave 안 비둘기 간 간격
-export const PIGEON_WAVE_MAX_SIZE = 10 // wave당 비둘기 상한 — waveSize = min(level, N)
+export const PIGEON_WAVE_MAX_SIZE = 5 // wave당 비둘기 상한 — waveSize = min(difficultyLevel, N)
 export const PIGEON_HARD_CAP = 50 // 필드 비둘기 성능 안전망 (게임플레이 상한 아님, DOM/충돌검사 폭주 방지)
 export const PIGEON_SCARE_DIST = 60 // px, 츄와의 접근 시 도망 거리
 export const PIGEON_HIT_DIST = 30 // px, 피격 판정 거리
