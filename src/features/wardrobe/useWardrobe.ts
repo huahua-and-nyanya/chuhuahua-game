@@ -15,12 +15,12 @@ export const GACHA_COST = 15 // 가챠 1회 비용 (코인 적립 50점당 1개 
 const GACHA_PITY = 10 // 천장: B 10연속 → 다음은 A 이상 보장
 const MAX_COINS = 999 // 지갑 상한 — 초과 적립분은 버려지고 게임오버에서 "지갑이 다 찼어" 안내
 
-// 합 1.0. B는 else 분기라 임계값 미사용(문서값) — S/A/S+만 cascade 임계에 쓰임.
-const GACHA_RATES = { B: 0.601, A: 0.2, S: 0.099, 'S+': 0.1 }
+// 확률 추첨 등급은 S/A/B만. S+(wedding)는 확률 풀 미포함 — propose 엔딩 후 확정 가챠로만 등장.
+// B는 else 분기라 임계값 미사용(나머지 = 1 - S - A = 0.701).
+const GACHA_RATES = { A: 0.2, S: 0.099 }
 
-// 중복(이미 보유) 추첨 시 등급별 코인 환불. S+(wedding)는 환불 미정의 → 중복 시 0 (희소 보상이라 의도).
+// 중복(이미 보유) 추첨 시 등급별 코인 환불. S+(wedding)는 확정 1회라 중복 불가 → 미정의.
 const REFUND_BY_GRADE: Partial<Record<Grade, number>> = { B: 1, A: 3, S: 5 }
-// S+는 proposeEndingCleared === true 일 때만 풀에 진입 (clear 전엔 sPlusRate=0)
 
 export function useWardrobe() {
   const wardrobeRef = useRef<WardrobeState>(wardrobeStorage.load())
@@ -102,12 +102,17 @@ export function useWardrobe() {
   }, [])
 
   // propose 엔딩 클리어 마킹 — STORY_MODAL 도달 시 1회 호출(컷신 완료 = 해금 확정).
-  // 멱등: 이미 true면 no-op. 이후 pullGacha가 storage를 직접 읽어 S+(wedding) 풀에 포함.
+  // 멱등: 이미 true면 no-op. weddingGuaranteed도 함께 세워 다음 가챠 1회를 확률 없이
+  // S+(wedding) 확정으로 만든다(pullGacha가 storage를 직접 읽어 처리).
   // 게이팅은 storage 기반이라 별도 state 불요 — 다음 가챠/재플레이 스냅샷부터 반영.
   const markProposeEndingCleared = useCallback(() => {
     const cur = playStatsStorage.load()
     if (cur.proposeEndingCleared) return
-    playStatsStorage.save({ ...cur, proposeEndingCleared: true })
+    playStatsStorage.save({
+      ...cur,
+      proposeEndingCleared: true,
+      weddingGuaranteed: true,
+    })
   }, [])
 
   // wedding 게임변형 시청 완료 마킹 — 엔딩 모달 도달 시 1회 호출(컷신 완료 = 효과 소멸 확정).
@@ -144,7 +149,6 @@ export function useWardrobe() {
   const pullGacha = useCallback(
     (opts?: { free?: boolean }): GachaResult => {
       const free = opts?.free ?? false
-      const { proposeEndingCleared } = playStatsStorage.load()
       if (!free) {
         if (coinsRef.current < GACHA_COST) {
           return { error: true, cost: GACHA_COST, have: coinsRef.current }
@@ -152,29 +156,39 @@ export function useWardrobe() {
         coinsRef.current -= GACHA_COST
       }
 
-      // 등급 결정
-      let grade: Grade
-      if (pityRef.current >= GACHA_PITY) {
-        grade =
-          Math.random() < GACHA_RATES.S / (GACHA_RATES.S + GACHA_RATES.A)
-            ? 'S'
-            : 'A'
-      } else {
-        const r = Math.random()
-        const sPlusRate = proposeEndingCleared ? GACHA_RATES['S+'] : 0
-        if (r < sPlusRate) grade = 'S+'
-        else if (r < sPlusRate + GACHA_RATES.S) grade = 'S'
-        else if (r < sPlusRate + GACHA_RATES.S + GACHA_RATES.A) grade = 'A'
-        else grade = 'B'
-      }
+      // wedding 확정 게이트 — propose 엔딩 클리어 직후 1회. 확률 없이 S+(wedding) 고정.
+      // 이미 wedding 보유 시엔 무시(중복 방지). 이 가챠가 실행되면 플래그 소진.
+      const guaranteeWedding =
+        playStatsStorage.load().weddingGuaranteed &&
+        !wardrobeRef.current.owned.includes('wedding')
 
-      // 풀에서 추첨 — 비어있으면 B로 강등 (S+ 미등록 등)
-      let pool = CLOTHES_BY_GRADE[grade] ?? []
-      if (pool.length === 0) {
-        grade = 'B'
-        pool = CLOTHES_BY_GRADE.B
+      // 등급 결정 — S+는 확정 게이트로만 나온다(확률 추첨 풀엔 미포함).
+      let grade: Grade
+      let clothId: string
+      if (guaranteeWedding) {
+        grade = 'S+'
+        clothId = 'wedding'
+      } else {
+        if (pityRef.current >= GACHA_PITY) {
+          grade =
+            Math.random() < GACHA_RATES.S / (GACHA_RATES.S + GACHA_RATES.A)
+              ? 'S'
+              : 'A'
+        } else {
+          const r = Math.random()
+          if (r < GACHA_RATES.S) grade = 'S'
+          else if (r < GACHA_RATES.S + GACHA_RATES.A) grade = 'A'
+          else grade = 'B'
+        }
+
+        // 풀에서 추첨 — 비어있으면 B로 강등 (방어적)
+        let pool = CLOTHES_BY_GRADE[grade] ?? []
+        if (pool.length === 0) {
+          grade = 'B'
+          pool = CLOTHES_BY_GRADE.B
+        }
+        clothId = pool[Math.floor(Math.random() * pool.length)]
       }
-      const clothId = pool[Math.floor(Math.random() * pool.length)]
       const cloth = CLOTHES[clothId]
 
       // 천장 갱신
@@ -194,6 +208,14 @@ export function useWardrobe() {
         refund = REFUND_BY_GRADE[cloth.grade] ?? 0
         if (refund > 0) {
           coinsRef.current = Math.min(MAX_COINS, coinsRef.current + refund)
+        }
+      }
+
+      // wedding 확정 가챠 소진 마킹 — 이번 추첨이 확정분이면 플래그 내려 1회용 보장.
+      if (guaranteeWedding) {
+        const cur = playStatsStorage.load()
+        if (cur.weddingGuaranteed) {
+          playStatsStorage.save({ ...cur, weddingGuaranteed: false })
         }
       }
 

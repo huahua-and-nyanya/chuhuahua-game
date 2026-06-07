@@ -65,15 +65,26 @@ export const playStatsStorage = {
   load(): PlayStats {
     try {
       const raw = localStorage.getItem(PLAY_STATS_KEY)
-      if (!raw) return { proposeEndingCleared: false, freeGachaUsed: false }
+      if (!raw)
+        return {
+          proposeEndingCleared: false,
+          freeGachaUsed: false,
+          weddingGuaranteed: false,
+        }
       const parsed = JSON.parse(raw)
       return {
         proposeEndingCleared: parsed.proposeEndingCleared === true,
         // 하위호환 — 기존 저장본에 필드 없으면 false (무료 가챠 미사용).
         freeGachaUsed: parsed.freeGachaUsed === true,
+        // 하위호환 — 기존 저장본에 필드 없으면 false (확정 가챠 대기 아님).
+        weddingGuaranteed: parsed.weddingGuaranteed === true,
       }
     } catch {
-      return { proposeEndingCleared: false, freeGachaUsed: false }
+      return {
+        proposeEndingCleared: false,
+        freeGachaUsed: false,
+        weddingGuaranteed: false,
+      }
     }
   },
   save(stats: PlayStats): void {
