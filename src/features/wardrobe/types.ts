@@ -36,6 +36,9 @@ export interface WardrobeState {
 export interface PlayStats {
   proposeEndingCleared: boolean
   freeGachaUsed: boolean // 첫 옷장 진입 무료 가챠 1회 소진 여부
+  // propose 엔딩 클리어 직후 1회용 — 다음 가챠를 확률 없이 S+(wedding) 확정으로 만든다.
+  // 그 가챠가 실행되면 false로 소진. wedding 보유 시엔 무시.
+  weddingGuaranteed: boolean
 }
 
 export type GachaResult =
