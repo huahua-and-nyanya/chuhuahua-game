@@ -1,0 +1,14 @@
+{
+  "name": "츄와와 ~뽀뽀 돌격~",
+  "short_name": "츄와와",
+  "description": "뽀뽀하려는 츄와와, 죽어도 싫은 고양이. 비둘기를 피하며 점수를 쌓는 브라우저 게임.",
+  "lang": "ko",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff3d7f",
+  "icons": [
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}
